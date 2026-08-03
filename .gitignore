@@ -1,0 +1,10 @@
+# local working instructions, never published
+CLAUDE.md
+
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+.venv/

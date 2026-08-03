@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+title: "diorthosis: compiling published critical editions into TEI and AI-ready Markdown"
+type: software
+authors:
+  - family-names: Girardi
+    given-names: Romain
+    affiliation: "CEPAM UMR 7264, Université Côte d'Azur"
+repository-code: "https://github.com/romain-girardi-eng/diorthosis"
+license: MIT
+keywords:
+  - critical-edition
+  - apparatus-criticus
+  - TEI
+  - digital-humanities
+  - classics
+  - textual-criticism
+abstract: >-
+  diorthosis compiles published critical editions (born-digital PDFs, or the
+  ALTO/hOCR output of any OCR engine) into TEI P5 with the apparatus criticus
+  split, anchored to its in-text markers and preserved verbatim, plus a
+  deterministic AI-ready Markdown view (md-ce) rendered from the same model.
+  Block-level provenance distinguishes decoded from OCR-generated text
+  permanently.
