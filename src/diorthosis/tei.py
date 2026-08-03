@@ -30,10 +30,9 @@ from __future__ import annotations
 import unicodedata
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from xml.dom import minidom
 
 from . import __version__
-from .anchor import _MARKER
+from .anchor import marker_positions
 from .conspectus import Registry, builtin_editors
 from .grammar import Attribution, ParsedEntry, parse_entry
 from .model import Block, Document, Layer, Page
@@ -88,6 +87,9 @@ def _emit_reading(app: ET.Element, tag: str, text: str, attr: Attribution,
     el.set("source", src)
   if quals & _UNCERTAIN:
     el.set("cert", "low")
+  if attr.sources or attr.references:
+    cite = ET.SubElement(el, "note", {"type": "cited-source"})
+    cite.text = " ".join([*attr.sources, *attr.references])
   for q in quals & _PLACEMENT:
     for w in attr.witnesses:
       wd = ET.SubElement(app, "witDetail",
@@ -126,7 +128,7 @@ def _anchored_ab(parent: ET.Element, block: Block,
   if block.generative:
     ab.set("subtype", "generative")
 
-  marker_spans = {m.start(): m.end() for m in _MARKER.finditer(block.text)}
+  marker_spans = marker_positions(block.text)
   last_node: ET.Element | None = None
 
   def append_text(chunk: str) -> None:
@@ -163,12 +165,14 @@ def _collect_page_apparatus(page: Page, registry: Registry | None):
     if block.layer is not Layer.APPARATUS:
       continue
     entries_plan: list[tuple] = []
-    for e in block.entries or []:
+    for ei, e in enumerate(block.entries or []):
       parsed = parse_entry(e.raw, registry) if registry is not None else None
       start_id = end_id = None
       if (e.anchor is not None and e.anchor.block_index is not None
           and e.anchor.char_offset is not None):
-        end_id = f"a-p{page.index}-m{e.anchor.value}"
+        # ids are minted per ENTRY, not per marker number: marker numbers
+        # restart each printed page and may even repeat within one
+        end_id = f"a-p{page.index}-e{ei}"
         anchors.setdefault(e.anchor.block_index, []).append(
           _AnchorPoint(e.anchor.char_offset, end_id, e.anchor.value))
         if parsed is not None:
@@ -203,7 +207,7 @@ def _header(tei: ET.Element, doc: Document, title: str | None,
     "text stream."
   )
   sd = ET.SubElement(fd, "sourceDesc")
-  ET.SubElement(sd, "p").text = doc.source_name
+  ET.SubElement(sd, "bibl").text = doc.source_name
   if registry is not None and registry.witnesses:
     lw = ET.SubElement(sd, "listWit")
     for siglum, desc in registry.witnesses.items():
@@ -249,7 +253,7 @@ def to_tei(doc: Document, title: str | None = None,
     pb = ET.SubElement(edition, "pb")
     if page.printed_page:
       pb.set("n", page.printed_page)
-    pb.set("facs", f"page-{page.index}")
+    pb.set("xml:id", f"page-{page.index}")
 
     for bi, block in enumerate(page.blocks):
       if block.layer is Layer.TEXT:
@@ -258,7 +262,10 @@ def to_tei(doc: Document, title: str | None = None,
         for ref in block.inline_refs:
           ET.SubElement(edition, "note", {"type": "witness-ref"}).text = ref
       elif block.layer is Layer.HEADING:
-        ET.SubElement(edition, "head").text = block.text
+        # <head> is only legal in a div's opening sequence; we deliberately
+        # refuse to infer nested <div> structure, so section titles become
+        # <label>, which is legal anywhere
+        ET.SubElement(edition, "label", {"type": "section-title"}).text = block.text
       elif block.layer is Layer.APPARATUS:
         entries_plan = next(plan_iter, (block, []))[1]
         for e, parsed, start_id, end_id in entries_plan:
@@ -312,10 +319,11 @@ def to_tei(doc: Document, title: str | None = None,
   if registry is not None:
     _editors_bibl(header, registry, used_editors)
 
-  raw = ET.tostring(tei, encoding="unicode")
-  pretty = minidom.parseString(raw).toprettyxml(indent="  ")
-  pretty = "\n".join(ln for ln in pretty.split("\n") if ln.strip())
-  return unicodedata.normalize("NFC", pretty) + "\n"
+  # ET.indent leaves mixed-content elements (those carrying text) untouched,
+  # so <ab> stays byte-verbatim — minidom's pretty-printer corrupted it
+  ET.indent(tei, space="  ")
+  raw = ET.tostring(tei, encoding="unicode", xml_declaration=True)
+  return unicodedata.normalize("NFC", raw) + "\n"
 
 
 __all__ = ["to_tei", "TEI_NS"]

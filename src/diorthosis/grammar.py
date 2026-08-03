@@ -179,12 +179,40 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
   return " ".join(words).strip(), attr
 
 
+# Tokens that betray a FOREIGN apparatus convention (e.g. Göttingen
+# Septuagint): an unbalanced "]" is another series' lemma separator; bare
+# un-dotted operator keywords open its entries; numeric minuscule sigla and
+# occurrence markers (78-569, 2°) are its witness system. Parsing such an
+# entry with this grammar produced silent misattribution — refusal is the
+# only honest output until a grammar for that series exists.
+_FOREIGN_OPENER = re.compile(r"^(om|pr|tr|init|fin|hab)\s")
+# Only the UNAMBIGUOUS foreign shapes: minuscule ranges (78-569) and
+# occurrence markers (2°). Plain bare numerals stay legal in text —
+# the home series quotes fragment and column numbers inline
+# ("Fr. 102 Holl", "PG VI, 1580").
+_FOREIGN_WITNESS = re.compile(r"^\d{1,4}-\d{1,4}°?$|^\d+°$")
+
+
+def _looks_foreign(flat: str) -> bool:
+  if flat.count("]") > flat.count("["):
+    return True
+  return bool(_FOREIGN_OPENER.match(flat))
+
+
+def _residual_foreign_tokens(*texts: str) -> bool:
+  for t in texts:
+    for tok in t.split():
+      if _FOREIGN_WITNESS.match(tok.strip(".,;:")):
+        return True
+  return False
+
+
 def parse_entry(raw: str, registry: Registry) -> ParsedEntry | None:
   """Parse one apparatus entry, or return None when its shape is not ours.
 
-  Refusal conditions are part of the design: no colon (prose entry), or a
-  lemma/reading segment that ends up empty after attribution peeling —
-  both mean the entry does not follow the LEMMA : READING convention.
+  Refusal conditions are part of the design: no colon (prose entry), a
+  segment that empties after attribution peeling, or any sign of a FOREIGN
+  series' conventions — a wrong structure is worse than no structure.
   """
   # mid-word parentheses hold editorial letters — Κατα(να)θεματίζοντας —
   # and belong to the word; only space-preceded parentheticals are commentary
@@ -198,6 +226,8 @@ def parse_entry(raw: str, registry: Registry) -> ParsedEntry | None:
     comments.append(m_open.group(0))
     flat = flat[: m_open.start()]
   flat = re.sub(r"\s+", " ", flat).strip()
+  if _looks_foreign(flat):
+    return None
   # "corr. ex" introduces the pre-correction reading: a segment boundary,
   # with the operator recorded on the reading it introduces
   flat = flat.replace(" corr. ex ", " : corr. ex ")
@@ -243,6 +273,18 @@ def parse_entry(raw: str, registry: Registry) -> ParsedEntry | None:
     if not text and attr.empty:
       return None
     readings.append(Reading(text=text, attribution=attr))
+
+  # bare numerals are locus references ONLY in the company of a work token
+  # ("Dial. 66, 2"); alone they are another series' numeric sigla
+  for attr in (lemma_attr, *(r.attribution for r in readings)):
+    # bare numerals with a cross-reference qualifier ("cf. 62, 2") are a
+    # locus in the home series; without any such context they are another
+    # series' numeric sigla
+    if (attr.references and "cf." not in attr.qualifiers and not any(
+        re.search(r"[A-Za-z]", ref) for ref in attr.references)):
+      return None
+  if _residual_foreign_tokens(lemma, *(r.text for r in readings)):
+    return None
   return ParsedEntry(
     lemma=lemma, lemma_attribution=lemma_attr,
     readings=readings, comments=comments,

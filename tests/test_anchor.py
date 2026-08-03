@@ -81,7 +81,8 @@ class TestAnchorPage:
   def test_resolution_and_honest_counters(self) -> None:
     p = self.page()
     stats = anchor_page(p)
-    assert stats == {"entries": 3, "anchored": 2, "unanchored": 1}
+    assert stats == {"entries": 3, "anchored": 2, "unanchored": 1,
+                     "ambiguous": 0, "duplicate_markers": 0}
     entries = p.blocks[1].entries
     assert entries[0].anchor is not None and entries[0].anchor.block_index == 0
     assert entries[0].anchor.char_offset == "λοιπὸν ζήσητε".index("ζ") + len("ζήσητε")
@@ -89,3 +90,76 @@ class TestAnchorPage:
     # entry itself is preserved — never dropped
     assert entries[2].anchor is not None
     assert entries[2].anchor.block_index is None
+
+
+class TestDuplicateMarkers:
+  """Marker numbers may repeat within a page (5 pages of the reference
+  edition). The lemma is the discriminator; without a unique confirmation
+  the anchor honestly stays unresolved."""
+
+  def registry(self):
+    from diorthosis.conspectus import Registry, with_builtin_editors
+    return with_builtin_editors(Registry())
+
+  def page(self) -> Page:
+    p = Page(index=208, printed_page="202")
+    p.blocks.append(block(
+      Layer.TEXT, "δὲ αὐτοὺς καλοῦσιν8. ἔπειτα πεποίηνται τότε8 τὰ ἔργα."))
+    p.blocks.append(block(Layer.APPARATUS, "8 Τότε : ποτέ prop. Pearson."))
+    return p
+
+  def test_lemma_discriminates_between_occurrences(self) -> None:
+    p = self.page()
+    stats = anchor_page(p, self.registry())
+    assert stats["duplicate_markers"] == 1
+    [entry] = p.blocks[1].entries
+    assert entry.anchor is not None and entry.anchor.char_offset is not None
+    # the SECOND occurrence (after τότε) is the right one
+    before = p.blocks[0].text[: entry.anchor.char_offset]
+    assert before.endswith("τότε")
+
+  def test_without_registry_ambiguous_stays_unresolved(self) -> None:
+    p = self.page()
+    stats = anchor_page(p, None)
+    assert stats["ambiguous"] == 1
+    [entry] = p.blocks[1].entries
+    assert entry.anchor is not None and entry.anchor.block_index is None
+
+
+class TestMarkerTypography:
+  def test_marker_after_editorial_bracket_and_elision(self) -> None:
+    # full-book histogram: ] 16x, elision apostrophe 10x, ) 2x, ; 1x
+    assert [n for n, _ in find_markers("[λέγειν καὶ]8 ἕπεται")] == ["8"]
+    assert [n for n, _ in find_markers("οὐκ ἐσθίομεν, ἀλλ’8 ἢ διὰ")] == ["8"]
+    assert [n for n, _ in find_markers("τὴν μάθησιν)3, τοῦτο")] == ["3"]
+    assert [n for n, _ in find_markers("Τί γάρ ;7 πᾶσα")] == ["7"]
+
+  def test_marker_glued_to_following_greek(self) -> None:
+    # lookahead accepts a following Greek letter (πονηρὰ10τοῦ)
+    assert [n for n, _ in find_markers("ἀπειθεῖ πονηρὰ10τοῦ")] == ["10"]
+
+  def test_latin_context_numbers_are_not_markers(self) -> None:
+    # punctuation alone never carries a marker: needs Greek nearby
+    assert find_markers("cf. p. 45, et Dial. 66") == []
+
+  def test_detached_marker_needs_lemma_confirmation(self) -> None:
+    from diorthosis.conspectus import Registry, with_builtin_editors
+
+    p = Page(index=264, printed_page="258")
+    p.blocks.append(block(Layer.TEXT, "καὶ τὸ ὄνομα ἐδήλωσέ 4 πᾶσιν."))
+    p.blocks.append(block(Layer.APPARATUS, "4 Ἐδήλωσέ : ἐδήλωσε A"))
+    stats = anchor_page(p, with_builtin_editors(Registry()))
+    assert stats["anchored"] == 1
+    [entry] = p.blocks[1].entries
+    before = p.blocks[0].text[: entry.anchor.char_offset]
+    assert before.rstrip().endswith("ἐδήλωσέ")
+
+
+class TestEntryMonotonicity:
+  def test_locus_reference_does_not_fabricate_an_entry(self) -> None:
+    # "cf. … 136,  2  Marc." inside entry 1 must NOT split into entry 2
+    band = ("1 Τοιγαροῦν : ἐγερῶ edd. (σπερῶ ex LXX et Dial. 136,  "
+            "2  Μαρξ.) : τοιγαροῦν ἐγερῶ codd.")
+    entries = split_entries(band)
+    assert len(entries) == 1
+    assert "136" in entries[0].raw

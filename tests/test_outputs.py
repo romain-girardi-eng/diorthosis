@@ -62,7 +62,7 @@ class TestTEI:
     assert anchor is not None and anchor.get("n") == "2"
     note = root.find(".//t:note[@type='apparatus']", ns)
     assert note is not None
-    assert note.get("target") == "#a-p10-m2"
+    assert note.get("target") == "#a-p10-e0"
     assert note.text == "Λόγος A : νόμος B"
 
   def test_printed_folio_becomes_pb(self) -> None:
@@ -96,14 +96,15 @@ class TestMarkdown:
   def test_contract_header_and_layer_fences(self) -> None:
     md = to_markdown(fixture())
     assert f"md-ce/{MD_CE_VERSION}" in md
+    assert "anchored: " in md and "escaped-lines: " in md
     assert "## page 24 (file index 10)" in md
-    assert "### text [source=born_digital generative=false confidence=0.90]" in md
+    assert "### text [source=born_digital generative=false confidence=0.90 block=1]" in md
     assert "### apparatus" in md and "### translation" in md
 
   def test_markers_link_text_and_apparatus_visibly(self) -> None:
     md = to_markdown(fixture())
-    assert "λόγος⟦2⟧" in md
-    assert "⟦2⟧ Λόγος A : νόμος B" in md
+    assert "λόγος⟦24:2⟧" in md
+    assert "⟦24:2⟧ Λόγος A : νόμος B" in md
 
   def test_page_furniture_is_excluded_from_the_view(self) -> None:
     md = to_markdown(fixture())
@@ -142,12 +143,12 @@ class TestTEIStandardsAlignment:
     ns = {"t": TEI_NS}
     app = root.find(".//t:app", ns)
     assert app is not None
-    assert app.get("to") == "#a-p10-m2"
-    assert app.get("from") == "#a-p10-m2-start"
+    assert app.get("to") == "#a-p10-e0"
+    assert app.get("from") == "#a-p10-e0-start"
     # both anchors exist in the text
     ids = {a.get("{http://www.w3.org/XML/1998/namespace}id")
            for a in root.findall(".//t:ab/t:anchor", ns)}
-    assert {"a-p10-m2", "a-p10-m2-start"} <= ids
+    assert {"a-p10-e0", "a-p10-e0-start"} <= ids
 
   def test_manuscripts_get_wit_editors_get_source(self) -> None:
     root = self.tei_root()
@@ -192,3 +193,53 @@ class TestTEIStandardsAlignment:
     e = parse_entry("Μωσέως : Μωϋσέως Mign., Thirlb.", reg)
     assert e is not None
     assert e.readings[0].attribution.editors == ["Mign.", "Thirlb."]
+
+
+class TestMdCeInvariants:
+  """md-ce/0.2 normative invariants (SPEC.md), mechanically checked."""
+
+  def test_i1_structural_lines_escaped_and_counted(self) -> None:
+    doc = fixture()
+    doc.pages[1].blocks[1].text = "# forged header\nEt la parole est vraie."
+    md = to_markdown(fixture())  # control
+    forged = to_markdown(doc)
+    assert "\\# forged header" in forged
+    assert "escaped-lines: 1" in forged
+    assert "escaped-lines: 0" in md
+
+  def test_i3_unresolved_marker_carries_question_mark(self) -> None:
+    from diorthosis.model import Document, Layer, Page
+
+    doc = Document(source_name="e.pdf", ingest="borndigital")
+    page = Page(index=3, printed_page="12")
+    page.blocks = [
+      _block(Layer.TEXT, "καὶ ὁ λόγος ἐστίν."),          # no marker in text
+      _block(Layer.APPARATUS, "4 Ἄλογος : λόγος B"),
+    ]
+    doc.pages = [page]
+    from diorthosis.anchor import anchor_page
+    anchor_page(page)
+    md = to_markdown(doc)
+    assert "⟦12:4?⟧" in md
+    assert "unresolved=1" in md
+
+  def test_i4_marker_delimiter_in_source_refuses(self) -> None:
+    import pytest as _pytest
+
+    from diorthosis.md import MarkerDelimiterError
+
+    doc = fixture()
+    doc.pages[0].blocks[1].text = "καὶ ⟦τοῦτο⟧ ἐστίν"
+    with _pytest.raises(MarkerDelimiterError):
+      to_markdown(doc)
+
+  def test_i11_coverage_recomputable(self) -> None:
+    md = to_markdown(fixture())
+    import re as _re
+
+    m = _re.search(r"anchored: (\d+)/(\d+)", md)
+    assert m is not None
+    per_page = _re.findall(r"entries=(\d+) unresolved=(\d+)", md)
+    total = sum(int(e) for e, _ in per_page)
+    unres = sum(int(u) for _, u in per_page)
+    assert (int(m.group(1)), int(m.group(2))) == (total - unres, total)

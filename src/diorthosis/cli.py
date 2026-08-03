@@ -11,27 +11,40 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
 from .anchor import anchor_page
 from .conspectus import Registry, find_conspectus_pages, parse_conspectus, with_builtin_editors
-from .ingest import ingest_alto, ingest_pdf
+from .ingest import ingest_alto, ingest_hocr, ingest_pagexml, ingest_pdf
 from .md import to_markdown
 from .tei import to_tei
 
 
 def _parse_pages(spec: str | None) -> list[int] | None:
-  if not spec:
+  if spec is None:
     return None
-  out: list[int] = []
+  if not spec.strip():
+    raise ValueError("--pages given but empty; omit the flag to process all pages")
+  out: set[int] = set()
   for part in spec.split(","):
-    if "-" in part:
-      a, b = part.split("-", 1)
-      out.extend(range(int(a), int(b) + 1))
+    part = part.strip()
+    m = re.fullmatch(r"(\d+)-(\d+)", part)
+    if m:
+      a, b = int(m.group(1)), int(m.group(2))
+      if b < a:
+        raise ValueError(f"--pages range {part!r} is reversed")
+      out.update(range(a, b + 1))
+    elif re.fullmatch(r"\d+", part):
+      out.add(int(part))
     else:
-      out.append(int(part))
-  return out
+      raise ValueError(
+        f"--pages element {part!r} is not a 0-based page number or A-B range")
+  # SORTED is load-bearing: pdfminer yields pages in document order
+  # regardless of the requested order; an unsorted list would silently
+  # cross-label pages (content of one page under another's index)
+  return sorted(out)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -45,6 +58,10 @@ def main(argv: list[str] | None = None) -> int:
   b.add_argument("pdf", nargs="?", default=None, help="born-digital PDF")
   b.add_argument("--alto", nargs="+", default=None, metavar="XML",
                  help="ALTO files, one per page (any OCR engine's export)")
+  b.add_argument("--hocr", nargs="+", default=None, metavar="HTML",
+                 help="hOCR files (any OCR engine's export; may be multi-page)")
+  b.add_argument("--page-xml", nargs="+", default=None, metavar="XML",
+                 help="PAGE-XML files, one per page (kraken/eScriptorium/Transkribus)")
   b.add_argument("--pages", default=None, help="0-based page spec: 290-320 or 1,5,9")
   b.add_argument("-o", "--out", required=True, help="output directory")
   b.add_argument("--title", default=None)
@@ -60,15 +77,22 @@ def main(argv: list[str] | None = None) -> int:
   if args.cmd == "inspect":
     doc = ingest_pdf(args.pdf, pages=[args.page])
     for page in doc.pages:
-      stats = anchor_page(page)
+      stats = anchor_page(page, registry=None)
       print(to_markdown(doc))
       print(f"[anchoring: {stats['anchored']}/{stats['entries']} entries anchored]",
             file=sys.stderr)
     return 0
 
-  if bool(args.pdf) == bool(args.alto):
-    ap.error("build needs exactly one source: a PDF, or --alto files")
-  doc = ingest_alto(args.alto) if args.alto else ingest_pdf(args.pdf, _parse_pages(args.pages))
+  if sum(map(bool, (args.pdf, args.alto, args.hocr, args.page_xml))) != 1:
+    ap.error("build needs exactly one source: a PDF, or --alto/--hocr/--page-xml files")
+  if args.alto:
+    doc = ingest_alto(args.alto)
+  elif args.hocr:
+    doc = ingest_hocr(args.hocr)
+  elif args.page_xml:
+    doc = ingest_pagexml(args.page_xml)
+  else:
+    doc = ingest_pdf(args.pdf, _parse_pages(args.pages))
 
   registry = Registry()
   if args.pdf:
@@ -79,24 +103,38 @@ def main(argv: list[str] | None = None) -> int:
       registry = parse_conspectus(conspectus_text)
       print(f"conspectus: {len(registry.witnesses)} witnesses, "
             f"{len(registry.editors)} editors declared")
+    else:
+      where = (f"page {args.conspectus_page}" if args.conspectus_page is not None
+               else "the front matter")
+      print(f"[!] no conspectus siglorum found in {where}: witnesses will be "
+            "missing from the TEI and manuscript sigla cannot be attributed",
+            file=sys.stderr)
   registry = with_builtin_editors(registry)
 
-  totals = {"entries": 0, "anchored": 0, "unanchored": 0}
+  if not doc.pages:
+    raise ValueError("no pages ingested: the requested pages do not exist "
+                     "in this document")
+  totals = {"entries": 0, "anchored": 0, "unanchored": 0, "ambiguous": 0}
   for page in doc.pages:
-    st = anchor_page(page)
+    st = anchor_page(page, registry)
     for k in totals:
-      totals[k] += st[k]
+      totals[k] += st.get(k, 0)
 
   outdir = Path(args.out)
   outdir.mkdir(parents=True, exist_ok=True)
   stem = Path(doc.source_name).stem[:60] or "edition"
   (outdir / f"{stem}.tei.xml").write_text(
     to_tei(doc, title=args.title, registry=registry), encoding="utf-8")
-  (outdir / f"{stem}.md").write_text(to_markdown(doc, title=args.title), encoding="utf-8")
+  (outdir / f"{stem}.md").write_text(
+    to_markdown(doc, title=args.title, tei_name=f"{stem}.tei.xml"), encoding="utf-8")
   print(f"wrote {outdir / (stem + '.tei.xml')}")
   print(f"wrote {outdir / (stem + '.md')}")
-  print(f"apparatus anchoring: {totals['anchored']}/{totals['entries']} entries anchored"
-        + (f", {totals['unanchored']} unanchored" if totals["unanchored"] else ""))
+  msg = f"apparatus anchoring: {totals['anchored']}/{totals['entries']} entries anchored"
+  if totals["unanchored"]:
+    msg += f", {totals['unanchored']} unanchored"
+  if totals["ambiguous"]:
+    msg += f", {totals['ambiguous']} ambiguous (duplicate markers, unresolved)"
+  print(msg)
   if doc.any_generative:
     print("[!] this document contains OCR-generated blocks (marked generative) — "
           "their text is a recognition model's output, not a decoded stream",
@@ -112,6 +150,9 @@ def run() -> int:
     return 2
   except FileNotFoundError as exc:
     print(f"error: file not found: {getattr(exc, 'filename', exc)}", file=sys.stderr)
+    return 2
+  except Exception as exc:  # noqa: BLE001 — user-facing CLI: never a traceback
+    print(f"error: {type(exc).__name__}: {exc}", file=sys.stderr)
     return 2
 
 

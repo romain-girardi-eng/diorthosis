@@ -91,3 +91,26 @@ class TestHonestRefusal:
     assert e is not None
     assert e.lemma == "Αἱρέσεις"
     assert any(c.startswith("(cf.") for c in e.comments)
+
+
+class TestForeignSeriesRefusal:
+  """Göttingen-style entries (']' separator, numeric minuscule sigla, bare
+  operator keywords) must be REFUSED, never silently misattributed — all
+  four cases below were real misparses before."""
+
+  def test_bracket_separator_refused(self) -> None:
+    assert parse_entry("ἐστιν] εσται 458", registry()) is None
+    assert parse_entry("Ναβαυ] ιωʹ ναβω 86", registry()) is None
+
+  def test_bare_operator_keyword_refused(self) -> None:
+    assert parse_entry("om τῶν 2° 78-569 76", registry()) is None
+    assert parse_entry("om σπεῖρον—σπορίμου 59(c pr m): homoiar",
+                       registry()) is None
+
+  def test_paradosis_entries_still_parse(self) -> None:
+    # the guards must not harm the home series
+    e = parse_entry("Μωσέως : Μωϋσέως Mign., Otto (hic et infra : 45, 3)",
+                    registry())
+    assert e is not None and e.lemma == "Μωσέως"
+    e2 = parse_entry("Ἰακὼβ :   Ἰὼβ Sylb.   [ὅτι] prop. Thirlb.", registry())
+    assert e2 is not None  # balanced editorial brackets are ours

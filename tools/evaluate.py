@@ -71,7 +71,7 @@ def main() -> int:
   fail_lemma: list[tuple[str, str]] = []
 
   for page in doc.pages:
-    anchor_page(page)
+    anchor_page(page, registry)
     for block in page.blocks_of(Layer.APPARATUS):
       for e in block.entries:
         m["entries"] += 1

@@ -73,10 +73,15 @@ page-level work (layer separation, printed-folio extraction):
 ## What P1 does — and does not — do
 
 **Does:** ingest born-digital PDFs (via regreek: 9 legacy Greek encodings,
-validated 98–100 % on held-out texts) and ALTO; separate layers; extract the
-citable printed folio; split apparatus bands into entries; anchor entries to
-their in-text markers (96.5 % of 287 entries on a 51-page sample of the
-reference edition); emit TEI-lite + `md-ce`.
+validated 98–100 % on held-out texts) and any OCR engine's ALTO, hOCR or
+PAGE-XML; separate layers; extract the citable printed folio; split
+apparatus bands into entries; anchor them to their in-text markers with
+lemma discrimination (99.4 % of 2 026 entries over the full reference
+edition); parse them into lemma/readings/attributions with honest refusal
+(98.8 % parse; foreign conventions are refused, never misattributed); emit
+**schema-valid TEI P5** (validated against `tei_all.rng`) and
+**md-ce/0.2** — a normative Markdown format with twelve mechanically
+checkable invariants ([SPEC.md](SPEC.md)).
 
 **Does not (yet):** *interpret* the apparatus. Entries are anchored but kept
 verbatim — turning `Μωσέως : Μωϋσέως Mign., Otto` into

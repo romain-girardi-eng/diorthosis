@@ -24,7 +24,7 @@ _BRACKET_CHARS = "<>[]⟨⟩"
 _INLINE_REF_SPAN = re.compile(r"\[[^\]]*\]")
 _GLUED_VERSE = re.compile(r"\(\d+\)")
 _GLUED_REF_PAREN = re.compile(r"\([^)]*\d[^)]*\)")
-_HYPHEN_JOIN = re.compile(r"(?<=\S)-\s+-?(?=\S)")
+_HYPHEN_JOIN = re.compile(r"(?<=\S)-\s*-?\s*(?=\S)")
 _HYPHEN_EOL = re.compile(r"(?<=\S)-\n\s*")
 
 
@@ -90,7 +90,7 @@ def lemma_matches_before(lemma: str, before: str) -> bool:
     if tw[-1] in lw:
       return True
     return bool(rng and lw[0] in tw[-8:])
-  return lw[0] in tw[-3:]
+  return lw[0] in tw[-8:]
 
 
 def locate_lemma_start(lemma: str, text: str, end_offset: int) -> int | None:
