@@ -20,6 +20,8 @@ from xml.dom import minidom
 
 from . import __version__
 from .anchor import _MARKER
+from .conspectus import Registry
+from .grammar import ParsedEntry, parse_entry
 from .model import Block, Document, Layer, Source
 
 TEI_NS = "http://www.tei-c.org/ns/1.0"
@@ -65,7 +67,47 @@ def _anchored_ab(parent: ET.Element, block: Block, page_index: int) -> None:
     last_node.tail = (last_node.tail or "") + tail
 
 
-def to_tei(doc: Document, title: str | None = None) -> str:
+def _attr_ids(attribution, registry: Registry) -> tuple[str, str]:
+  """(wit, resp) attribute values from an attribution, empty when absent."""
+  wit = " ".join(f"#wit-{registry.xml_id(w)}" for w in attribution.witnesses)
+  resp = " ".join(f"#ed-{registry.xml_id(e)}" for e in attribution.editors)
+  return wit, resp
+
+
+def _emit_app(parent: ET.Element, raw: str, parsed: ParsedEntry,
+              registry: Registry, anchor, target: str | None) -> None:
+  """One structured apparatus entry. The verbatim text always travels with
+  the structure — losing the original wording would be fabrication by
+  omission."""
+  app = ET.SubElement(parent, "app")
+  if anchor is not None:
+    app.set("n", anchor.value)
+  if target:
+    app.set("loc", target)
+  lem = ET.SubElement(app, "lem")
+  lem.text = parsed.lemma
+  wit, resp = _attr_ids(parsed.lemma_attribution, registry)
+  if wit:
+    lem.set("wit", wit)
+  if resp:
+    lem.set("resp", resp)
+  for r in parsed.readings:
+    rdg = ET.SubElement(app, "rdg")
+    rdg.text = r.text
+    wit, resp = _attr_ids(r.attribution, registry)
+    if wit:
+      rdg.set("wit", wit)
+    if resp:
+      rdg.set("resp", resp)
+    if r.attribution.qualifiers:
+      rdg.set("cause", " ".join(r.attribution.qualifiers))
+  for c in parsed.comments:
+    ET.SubElement(app, "note", {"type": "comment"}).text = c
+  ET.SubElement(app, "note", {"type": "verbatim"}).text = raw
+
+
+def to_tei(doc: Document, title: str | None = None,
+           registry: Registry | None = None) -> str:
   tei = ET.Element("TEI", {"xmlns": TEI_NS})
   header = ET.SubElement(tei, "teiHeader")
   fd = ET.SubElement(header, "fileDesc")
@@ -82,6 +124,12 @@ def to_tei(doc: Document, title: str | None = None) -> str:
   )
   sd = ET.SubElement(fd, "sourceDesc")
   ET.SubElement(sd, "p").text = doc.source_name
+  if registry is not None and registry.witnesses:
+    lw = ET.SubElement(sd, "listWit")
+    for siglum, desc in registry.witnesses.items():
+      wit = ET.SubElement(lw, "witness")
+      wit.set("xml:id", f"wit-{registry.xml_id(siglum)}")
+      wit.text = f"{siglum} = {desc}"
 
   text_el = ET.SubElement(tei, "text")
   body = ET.SubElement(text_el, "body")
@@ -103,12 +151,19 @@ def to_tei(doc: Document, title: str | None = None) -> str:
         ET.SubElement(edition, "head").text = block.text
       elif block.layer is Layer.APPARATUS:
         for e in block.entries or []:
-          note = ET.SubElement(edition, "note", {"type": "apparatus"})
-          if e.anchor is not None:
-            note.set("n", e.anchor.value)
-            if e.anchor.block_index is not None:
-              note.set("target", f"#a-p{page.index}-m{e.anchor.value}")
-          note.text = e.raw
+          parsed = parse_entry(e.raw, registry) if registry is not None else None
+          target = (f"#a-p{page.index}-m{e.anchor.value}"
+                    if e.anchor is not None and e.anchor.block_index is not None
+                    else None)
+          if parsed is not None:
+            _emit_app(edition, e.raw, parsed, registry, e.anchor, target)
+          else:
+            note = ET.SubElement(edition, "note", {"type": "apparatus"})
+            if e.anchor is not None:
+              note.set("n", e.anchor.value)
+            if target:
+              note.set("target", target)
+            note.text = e.raw
         if not block.entries:
           note = ET.SubElement(edition, "note", {"type": "apparatus"})
           note.text = block.text

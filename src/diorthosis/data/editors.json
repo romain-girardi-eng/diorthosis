@@ -1,0 +1,186 @@
+{
+ "_doc": "Built-in registry of the major editors of classical and patristic texts, as their names appear in apparatus attributions. Used as FALLBACK vocabulary: an edition's own conspectus siglorum always takes precedence. Each entry: canonical surname -> list of abbreviations found in apparatus (the bare surname always counts). Factual, curated; additions welcome with a source.",
+ "editors": {
+  "Bekker": [
+   "Bekk."
+  ],
+  "Bentley": [
+   "Bentl."
+  ],
+  "Bergk": [],
+  "Blass": [],
+  "Boeckh": [],
+  "Burnet": [],
+  "Buttmann": [
+   "Buttm."
+  ],
+  "Bywater": [
+   "Byw."
+  ],
+  "Casaubon": [
+   "Casaub."
+  ],
+  "Cobet": [],
+  "Diels": [],
+  "Diggle": [],
+  "Dindorf": [
+   "Dind."
+  ],
+  "Dodds": [],
+  "Erasmus": [
+   "Erasm."
+  ],
+  "Fraenkel": [],
+  "Grotius": [
+   "Grot."
+  ],
+  "Haupt": [],
+  "Hermann": [
+   "Herm."
+  ],
+  "Housman": [],
+  "Jacoby": [],
+  "Kaibel": [],
+  "Kassel": [],
+  "Kock": [],
+  "Kranz": [],
+  "Lachmann": [
+   "Lachm."
+  ],
+  "Lobeck": [],
+  "Lobel": [],
+  "Madvig": [
+   "Madv."
+  ],
+  "Maehler": [],
+  "Meineke": [
+   "Mein."
+  ],
+  "Merkelbach": [
+   "Merk."
+  ],
+  "Mommsen": [
+   "Momms."
+  ],
+  "Murray": [],
+  "Nauck": [],
+  "Page": [],
+  "Porson": [
+   "Pors."
+  ],
+  "Reiske": [
+   "Reisk."
+  ],
+  "Ritschl": [],
+  "Ross": [],
+  "Scaliger": [
+   "Scal."
+  ],
+  "Schneidewin": [
+   "Schneidew."
+  ],
+  "Snell": [],
+  "Stephanus": [
+   "Steph.",
+   "Estienne"
+  ],
+  "Turnebus": [
+   "Turn."
+  ],
+  "Usener": [
+   "Usen."
+  ],
+  "Vahlen": [],
+  "West": [],
+  "Wilamowitz": [
+   "Wil.",
+   "Wilam."
+  ],
+  "Wolf": [],
+  "Archambault": [
+   "Arch."
+  ],
+  "Baehrens": [
+   "Baehr."
+  ],
+  "Bardy": [],
+  "Bobichon": [
+   "Bob."
+  ],
+  "Borret": [],
+  "Crouzel": [
+   "Crouz."
+  ],
+  "Doutreleau": [
+   "Doutr."
+  ],
+  "Goodspeed": [
+   "Goodsp."
+  ],
+  "Harnack": [
+   "Harn."
+  ],
+  "Harvey": [],
+  "Hemmerdinger": [
+   "Hemm."
+  ],
+  "Klostermann": [
+   "Klosterm."
+  ],
+  "Koetschau": [
+   "Koetsch."
+  ],
+  "Maran": [
+   "Mar."
+  ],
+  "Marcovich": [
+   "Marc."
+  ],
+  "Marrou": [],
+  "Mercier": [],
+  "Migne": [
+   "Mign."
+  ],
+  "Mondésert": [
+   "Mond."
+  ],
+  "Morel": [
+   "Mor."
+  ],
+  "Munier": [
+   "Mun."
+  ],
+  "Otto": [],
+  "Pearson": [
+   "Pears."
+  ],
+  "Preuschen": [
+   "Preusch."
+  ],
+  "Prigent": [],
+  "Rousseau": [
+   "Rouss."
+  ],
+  "Sagnard": [
+   "Sagn."
+  ],
+  "Simonetti": [
+   "Simon."
+  ],
+  "Sylburg": [
+   "Sylb."
+  ],
+  "Thirlby": [
+   "Thirlb."
+  ],
+  "Trollope": [
+   "Troll."
+  ],
+  "Wartelle": [],
+  "Whittaker": [
+   "Whitt."
+  ],
+  "Credner": [],
+  "Lange": []
+ }
+}

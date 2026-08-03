@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 from .anchor import anchor_page
+from .conspectus import Registry, find_conspectus_pages, parse_conspectus, with_builtin_editors
 from .ingest import ingest_alto, ingest_pdf
 from .md import to_markdown
 from .tei import to_tei
@@ -47,6 +48,8 @@ def main(argv: list[str] | None = None) -> int:
   b.add_argument("--pages", default=None, help="0-based page spec: 290-320 or 1,5,9")
   b.add_argument("-o", "--out", required=True, help="output directory")
   b.add_argument("--title", default=None)
+  b.add_argument("--conspectus-page", type=int, default=None,
+                 help="0-based page of the sigla list (default: search the front matter)")
 
   i = sub.add_parser("inspect", help="show one page's anchored structure")
   i.add_argument("pdf")
@@ -67,6 +70,17 @@ def main(argv: list[str] | None = None) -> int:
     ap.error("build needs exactly one source: a PDF, or --alto files")
   doc = ingest_alto(args.alto) if args.alto else ingest_pdf(args.pdf, _parse_pages(args.pages))
 
+  registry = Registry()
+  if args.pdf:
+    rng = ([args.conspectus_page] if args.conspectus_page is not None
+           else range(0, 200))
+    conspectus_text = find_conspectus_pages(args.pdf, rng)
+    if conspectus_text:
+      registry = parse_conspectus(conspectus_text)
+      print(f"conspectus: {len(registry.witnesses)} witnesses, "
+            f"{len(registry.editors)} editors declared")
+  registry = with_builtin_editors(registry)
+
   totals = {"entries": 0, "anchored": 0, "unanchored": 0}
   for page in doc.pages:
     st = anchor_page(page)
@@ -76,7 +90,8 @@ def main(argv: list[str] | None = None) -> int:
   outdir = Path(args.out)
   outdir.mkdir(parents=True, exist_ok=True)
   stem = Path(doc.source_name).stem[:60] or "edition"
-  (outdir / f"{stem}.tei.xml").write_text(to_tei(doc, title=args.title), encoding="utf-8")
+  (outdir / f"{stem}.tei.xml").write_text(
+    to_tei(doc, title=args.title, registry=registry), encoding="utf-8")
   (outdir / f"{stem}.md").write_text(to_markdown(doc, title=args.title), encoding="utf-8")
   print(f"wrote {outdir / (stem + '.tei.xml')}")
   print(f"wrote {outdir / (stem + '.md')}")
