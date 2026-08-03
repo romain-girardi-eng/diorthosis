@@ -45,6 +45,7 @@ _LEMMA_CAPITAL = (
   "Α-Ω"            # basic capitals, U+0391-03A9
   "Ἀ-ἏἘ-ἝἨ-ἯἸ-Ἷ"
   "Ὀ-ὍὙ-ὟὨ-Ὧ"
+  "ᾈ-ᾏᾘ-ᾟᾨ-ᾯ"  # capitals with prosgegrammeni (ᾝρει, p196: unsplit without them)
   "Ᾰ-ᾼῈ-ῌῘ-ΊῨ-ῬῸ-ῼ"
 )
 _ENTRY_SPLIT = re.compile(
@@ -70,6 +71,11 @@ class _Candidate:
   block_index: int
   offset: int
   detached: bool
+  digit_start: int
+  """Start of the printed digits; for a detached marker this includes the
+  separating space, so consuming the span re-glues the marker to its word."""
+  digit_end: int
+  """End (exclusive) of the printed digits."""
 
 
 def split_entries(apparatus_text: str) -> list[ApparatusEntry]:
@@ -158,9 +164,13 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
   for bi, block in enumerate(page.blocks):
     if block.layer in (Layer.TEXT, Layer.HEADING):
       for num, off in find_markers(block.text):
-        candidates.setdefault(num, []).append(_Candidate(bi, off, False))
+        candidates.setdefault(num, []).append(
+          _Candidate(bi, off, False, off, off + len(num)))
       for num, off in _find_detached(block.text):
-        candidates.setdefault(num, []).append(_Candidate(bi, off, True))
+        # off is the digit position; the span starts one earlier so the
+        # separating space is consumed together with the digits
+        candidates.setdefault(num, []).append(
+          _Candidate(bi, off, True, off - 1, off + len(num)))
 
   stats = {"entries": 0, "anchored": 0, "unanchored": 0,
            "ambiguous": 0, "duplicate_markers": 0}
@@ -191,6 +201,7 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
           stats["ambiguous"] += 1
       if chosen is not None:
         e.anchor.block_index, e.anchor.char_offset = chosen.block_index, chosen.offset
+        e.anchor.digit_start, e.anchor.digit_end = chosen.digit_start, chosen.digit_end
         stats["anchored"] += 1
       else:
         stats["unanchored"] += 1

@@ -32,7 +32,6 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
 from . import __version__
-from .anchor import marker_positions
 from .conspectus import Registry, builtin_editors
 from .grammar import Attribution, ParsedEntry, parse_entry
 from .model import Block, Document, Layer, Page
@@ -61,6 +60,10 @@ class _AnchorPoint:
   offset: int
   xml_id: str
   n: str | None
+  consume_to: int
+  """End of the text span the anchor replaces: the printed marker digits
+  (with a detached marker's separating space) for an end anchor; equal to
+  ``offset`` for a start anchor, which is a pure insertion."""
 
 
 def _witness_ids(attr: Attribution, registry: Registry) -> str:
@@ -90,7 +93,9 @@ def _emit_reading(app: ET.Element, tag: str, text: str, attr: Attribution,
   if attr.sources or attr.references:
     cite = ET.SubElement(el, "note", {"type": "cited-source"})
     cite.text = " ".join([*attr.sources, *attr.references])
-  for q in quals & _PLACEMENT:
+  # sorted: set iteration order varies per process (hash randomization)
+  # and once broke byte-determinism between two identical builds
+  for q in sorted(quals & _PLACEMENT):
     for w in attr.witnesses:
       wd = ET.SubElement(app, "witDetail",
                          {"wit": f"#wit-{registry.xml_id(w)}"})
@@ -118,9 +123,9 @@ def _emit_app(parent: ET.Element, raw: str, parsed: ParsedEntry,
 def _anchored_ab(parent: ET.Element, block: Block,
                  points: list[_AnchorPoint]) -> None:
   """Emit block text as <ab>, inserting the collected anchors in offset
-  order. Superscript marker digits are consumed (they ARE the end anchors,
-  in structured form — the one normalization performed, declared in the
-  header); start anchors are pure insertions."""
+  order. Each end anchor consumes its own printed digit span (carried by
+  the anchor since resolution — the one normalization performed, declared
+  in the header); start anchors are pure insertions."""
   ab = ET.SubElement(parent, "ab")
   lang = _lang(block.text)
   if lang:
@@ -128,7 +133,6 @@ def _anchored_ab(parent: ET.Element, block: Block,
   if block.generative:
     ab.set("subtype", "generative")
 
-  marker_spans = marker_positions(block.text)
   last_node: ET.Element | None = None
 
   def append_text(chunk: str) -> None:
@@ -147,7 +151,7 @@ def _anchored_ab(parent: ET.Element, block: Block,
     last_node.set("xml:id", p.xml_id)
     if p.n:
       last_node.set("n", p.n)
-    pos = marker_spans.get(p.offset, p.offset)
+    pos = p.consume_to
   append_text(block.text[pos:])
 
 
@@ -173,15 +177,19 @@ def _collect_page_apparatus(page: Page, registry: Registry | None):
         # ids are minted per ENTRY, not per marker number: marker numbers
         # restart each printed page and may even repeat within one
         end_id = f"a-p{page.index}-e{ei}"
+        ds = (e.anchor.digit_start if e.anchor.digit_start is not None
+              else e.anchor.char_offset)
+        de = (e.anchor.digit_end if e.anchor.digit_end is not None
+              else e.anchor.char_offset)
         anchors.setdefault(e.anchor.block_index, []).append(
-          _AnchorPoint(e.anchor.char_offset, end_id, e.anchor.value))
+          _AnchorPoint(ds, end_id, e.anchor.value, de))
         if parsed is not None:
           text = page.blocks[e.anchor.block_index].text
           start = locate_lemma_start(parsed.lemma, text, e.anchor.char_offset)
-          if start is not None and start < e.anchor.char_offset:
+          if start is not None and start < ds:
             start_id = f"{end_id}-start"
             anchors.setdefault(e.anchor.block_index, []).append(
-              _AnchorPoint(start, start_id, None))
+              _AnchorPoint(start, start_id, None, start))
       entries_plan.append((e, parsed, start_id, end_id))
     plan.append((block, entries_plan))
   return anchors, plan

@@ -4,6 +4,11 @@ A md-ce file is a UTF-8, NFC-normalised, LF-terminated Markdown document. It is 
 DERIVED, DELIBERATELY LOSSY VIEW of a TEI P5 file produced from the same document
 model. **The TEI is the citable artefact; md-ce is the retrieval surface.**
 
+This spec is executable: `diorthosis validate FILE.md` checks every invariant
+below that is decidable from the file alone (I1-I7, I10-I12; I8/I9 concern the
+relationship to the source and are enforced at emission). Exit 0 = clean,
+exit 1 = violations, one line each.
+
 ## Grammar (every production starts at column 0; SP = U+0020)
 
     file       = title LF LF meta 1*page

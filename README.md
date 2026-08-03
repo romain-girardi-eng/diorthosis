@@ -25,6 +25,9 @@ wrote out/edition.md
 apparatus anchoring: 277/287 entries anchored
 
 $ diorthosis build --alto page1.xml page2.xml -o out/   # any OCR engine
+
+$ diorthosis validate out/edition.md                    # the spec, executable
+OK: md-ce/0.2 invariants hold
 ```
 
 One internal model, two outputs — **a single truth, two views**:
@@ -76,12 +79,13 @@ page-level work (layer separation, printed-folio extraction):
 validated 98–100 % on held-out texts) and any OCR engine's ALTO, hOCR or
 PAGE-XML; separate layers; extract the citable printed folio; split
 apparatus bands into entries; anchor them to their in-text markers with
-lemma discrimination (99.4 % of 2 026 entries over the full reference
+lemma discrimination (99.5 % of 2 031 entries over the full reference
 edition); parse them into lemma/readings/attributions with honest refusal
 (98.8 % parse; foreign conventions are refused, never misattributed); emit
 **schema-valid TEI P5** (validated against `tei_all.rng`) and
 **md-ce/0.2** — a normative Markdown format with twelve mechanically
-checkable invariants ([SPEC.md](SPEC.md)).
+checkable invariants ([SPEC.md](SPEC.md)), enforced by
+`diorthosis validate`.
 
 **Does not (yet):** *interpret* the apparatus. Entries are anchored but kept
 verbatim — turning `Μωσέως : Μωϋσέως Mign., Otto` into
@@ -94,12 +98,13 @@ detected but not yet resolved. Two-column layouts are a known limitation.
 ## Architecture
 
 ```
-ingest/          borndigital (regreek) · alto — one common model out
+ingest/          borndigital (regreek) · alto · hocr · pagexml — one model out
 model.py         Document/Page/Block with Layer + Source + generative flag
 anchor.py        entry splitting + marker anchoring, honest counters
 tei.py           TEI P5 emission (the canonical output)
 md.py            md-ce renderer (a deterministic VIEW of the same model)
-cli.py           diorthosis build / inspect
+mdce_validate.py md-ce invariant checker (SPEC.md, executable)
+cli.py           diorthosis build / inspect / validate
 ```
 
 ## Legal note

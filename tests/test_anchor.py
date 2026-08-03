@@ -42,6 +42,14 @@ class TestSplitEntries:
     entries = split_entries("4 Ἰακὼβ : Ἰὼβ Sylb.   5 Καὶ : ἢ prop. Thirlb.")
     assert [e.anchor.value for e in entries if e.anchor] == ["4", "5"]
 
+  def test_capital_with_prosgegrammeni_opens_an_entry(self) -> None:
+    # ᾝ (U+1F9D) lives in the prosgegrammeni sub-ranges (U+1F88-1FAF),
+    # disjoint from the other Greek Extended capitals — p196 of the
+    # reference edition went unsplit without them.
+    entries = split_entries("1   ᾝρει Sylb. Mor., edd. a Mar. : ἤρει codd.")
+    assert [e.anchor.value for e in entries if e.anchor] == ["1"]
+    assert entries[0].raw.startswith("ᾝρει")
+
   def test_prose_band_stays_single_and_unanchored(self) -> None:
     # apparatus fontium is prose: never forced into the numeric mold
     entries = split_entries("a Cf. Is. 1, 16   b cf. Is. 55, 7 ; Mc. 1, 4")

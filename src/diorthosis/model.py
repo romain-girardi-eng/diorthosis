@@ -52,6 +52,12 @@ class Anchor:
   """Index of the text block the anchor resolves into, when resolved."""
   char_offset: int | None = None
   """Offset within that block's text, when resolvable."""
+  digit_start: int | None = None
+  """Start of the printed marker digits in the block's text — includes the
+  separating space of a detached marker, so consuming [digit_start,
+  digit_end) removes the digits AND re-glues the marker to its word."""
+  digit_end: int | None = None
+  """End (exclusive) of the printed marker digits in the block's text."""
 
 
 @dataclass

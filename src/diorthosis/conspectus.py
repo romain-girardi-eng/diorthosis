@@ -89,7 +89,29 @@ def parse_conspectus(text: str) -> Registry:
   return reg
 
 
-def find_conspectus_pages(pdf_path: str, search_range: range) -> str:
+def bootstrap_registry(
+  pdf_path: str, conspectus_page: int | None = None,
+) -> tuple[Registry, str]:
+  """The one way to build a registry from a PDF, shared by the CLI (build
+  and inspect) and the evaluation harness — the edition's own conspectus,
+  extended with the built-in editors.
+
+  Returns ``(registry, note)`` where ``note`` says what was found: a summary
+  when the conspectus was located, an empty string when it was not (the
+  caller decides how loudly to warn).
+  """
+  registry = Registry()
+  rng = ([conspectus_page] if conspectus_page is not None else range(0, 200))
+  text = find_conspectus_pages(pdf_path, rng)
+  note = ""
+  if text:
+    registry = parse_conspectus(text)
+    note = (f"conspectus: {len(registry.witnesses)} witnesses, "
+            f"{len(registry.editors)} editors declared")
+  return with_builtin_editors(registry), note
+
+
+def find_conspectus_pages(pdf_path: str, search_range: range | list[int]) -> str:
   """Return the raw text of the page(s) declaring sigla and abbreviations.
 
   Located by their own heading (SIGLES / sigla / conspectus / abréviations),

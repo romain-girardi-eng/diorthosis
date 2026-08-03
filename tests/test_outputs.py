@@ -223,6 +223,68 @@ class TestMdCeInvariants:
     assert "⟦12:4?⟧" in md
     assert "unresolved=1" in md
 
+  def test_i3_detached_marker_is_rewritten_in_text_and_tei(self) -> None:
+    """A lemma-confirmed DETACHED marker (``ἐδήλωσέ 4``) must be rewritten
+    in the text exactly like a glued one: ⟦f:n⟧ in text AND apparatus, the
+    printed ``  4`` consumed; in TEI the anchor replaces the digit span.
+    Pre-v0.2.1 both outputs re-scanned find_markers (glued only) and the
+    apparatus showed a resolved marker with no counterpart in the text."""
+    from diorthosis.anchor import anchor_page
+    from diorthosis.conspectus import Registry
+    from diorthosis.model import Document, Layer, Page
+
+    doc = Document(source_name="e.pdf", ingest="borndigital")
+    page = Page(index=5, printed_page="258")
+    page.blocks = [
+      _block(Layer.TEXT, "τοῦτο γὰρ ἐδήλωσέ 4 καὶ εἶπεν."),
+      _block(Layer.APPARATUS, "4 Ἐδήλωσέ A : ἐδήλου B"),
+    ]
+    doc.pages = [page]
+    reg = Registry()
+    reg.witnesses = {"A": "Parisinus", "B": "Musaei Britannici Ms"}
+    stats = anchor_page(page, reg)
+    assert stats["anchored"] == 1
+
+    md = to_markdown(doc)
+    assert "ἐδήλωσέ⟦258:4⟧ καὶ" in md          # digit AND its space consumed
+    assert "⟦258:4⟧ Ἐδήλωσέ A : ἐδήλου B" in md
+    assert md.count("⟦258:4⟧") == 2            # I3: exactly one per side
+    assert " 4 " not in md
+
+    root = ET.fromstring(to_tei(doc, registry=reg))
+    ns = {"t": TEI_NS}
+    ab = root.find(".//t:div[@type='edition']/t:ab", ns)
+    assert ab is not None
+    assert "4" not in "".join(ab.itertext())   # digit consumed, not duplicated
+    anchors = ab.findall("t:anchor", ns)
+    end = next(a for a in anchors if a.get("n") == "4")
+    # the end anchor sits glued to its word (its preceding text ends on the
+    # word, the detachment space consumed) and the text resumes after it
+    idx = list(ab).index(end)
+    before = ab.text if idx == 0 else list(ab)[idx - 1].tail
+    assert (before or "").endswith("ἐδήλωσέ")
+    assert (end.tail or "").startswith(" καὶ")
+
+  def test_i3_digit_without_resolved_entry_stays_verbatim(self) -> None:
+    """A glued digit whose entry did NOT resolve must stay a literal digit:
+    I3 demands ZERO ⟦f:n⟧ in the text for an unresolved entry."""
+    from diorthosis.anchor import anchor_page
+    from diorthosis.model import Document, Layer, Page
+
+    doc = Document(source_name="e.pdf", ingest="borndigital")
+    page = Page(index=7, printed_page="30")
+    page.blocks = [
+      # two glued candidates for "3", no registry → no lemma discrimination
+      _block(Layer.TEXT, "ὁ λόγος3 καὶ ὁ νόμος3 ἐστίν."),
+      _block(Layer.APPARATUS, "3 Λόγος A : νόμος B"),
+    ]
+    doc.pages = [page]
+    anchor_page(page)
+    md = to_markdown(doc)
+    assert "⟦30:3?⟧ Λόγος A : νόμος B" in md
+    assert "λόγος3 καὶ ὁ νόμος3" in md          # digits untouched
+    assert md.count("⟦30:3") == 1               # only the apparatus side
+
   def test_i4_marker_delimiter_in_source_refuses(self) -> None:
     import pytest as _pytest
 

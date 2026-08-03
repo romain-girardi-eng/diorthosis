@@ -6,6 +6,7 @@ Usage::
   diorthosis build --alto p1.xml p2.xml -o out/   # any OCR engine's ALTO
   diorthosis build edition.pdf --pages 290-320 -o out/
   diorthosis inspect edition.pdf --page 300
+  diorthosis validate out/edition.md              # md-ce/0.2 invariants
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ import sys
 from pathlib import Path
 
 from .anchor import anchor_page
-from .conspectus import Registry, find_conspectus_pages, parse_conspectus, with_builtin_editors
+from .conspectus import Registry, bootstrap_registry, with_builtin_editors
 from .ingest import ingest_alto, ingest_hocr, ingest_pagexml, ingest_pdf
 from .md import to_markdown
 from .tei import to_tei
@@ -71,13 +72,36 @@ def main(argv: list[str] | None = None) -> int:
   i = sub.add_parser("inspect", help="show one page's anchored structure")
   i.add_argument("pdf")
   i.add_argument("--page", type=int, required=True)
+  i.add_argument("--conspectus-page", type=int, default=None,
+                 help="0-based page of the sigla list (default: search the front matter)")
+
+  v = sub.add_parser("validate", help="check a md-ce file against SPEC.md's invariants")
+  v.add_argument("file", help="a .md file produced by diorthosis build")
 
   args = ap.parse_args(argv)
 
+  if args.cmd == "validate":
+    from .mdce_validate import validate_file
+
+    violations = validate_file(args.file)
+    for x in violations:
+      print(f"{args.file}: {x}")
+    if violations:
+      print(f"{len(violations)} violation(s)", file=sys.stderr)
+      return 1
+    print("OK: md-ce/0.2 invariants hold")
+    return 0
+
   if args.cmd == "inspect":
+    # same registry bootstrap as build: without it, anchoring cannot
+    # discriminate duplicate markers by lemma and inspect would show a
+    # DIFFERENT structure than the one build emits
+    registry, note = bootstrap_registry(args.pdf, args.conspectus_page)
+    if note:
+      print(note, file=sys.stderr)
     doc = ingest_pdf(args.pdf, pages=[args.page])
     for page in doc.pages:
-      stats = anchor_page(page, registry=None)
+      stats = anchor_page(page, registry)
       print(to_markdown(doc))
       print(f"[anchoring: {stats['anchored']}/{stats['entries']} entries anchored]",
             file=sys.stderr)
@@ -85,6 +109,14 @@ def main(argv: list[str] | None = None) -> int:
 
   if sum(map(bool, (args.pdf, args.alto, args.hocr, args.page_xml))) != 1:
     ap.error("build needs exactly one source: a PDF, or --alto/--hocr/--page-xml files")
+  if not args.pdf:
+    # refuse silently ignored flags: both options only make sense for a PDF
+    if args.pages is not None:
+      ap.error("--pages selects pages of a PDF; with --alto/--hocr/--page-xml, "
+               "pass only the page files you want built")
+    if args.conspectus_page is not None:
+      ap.error("--conspectus-page points into a PDF; OCR page files carry no "
+               "front matter to search")
   if args.alto:
     doc = ingest_alto(args.alto)
   elif args.hocr:
@@ -94,22 +126,18 @@ def main(argv: list[str] | None = None) -> int:
   else:
     doc = ingest_pdf(args.pdf, _parse_pages(args.pages))
 
-  registry = Registry()
   if args.pdf:
-    rng = ([args.conspectus_page] if args.conspectus_page is not None
-           else range(0, 200))
-    conspectus_text = find_conspectus_pages(args.pdf, rng)
-    if conspectus_text:
-      registry = parse_conspectus(conspectus_text)
-      print(f"conspectus: {len(registry.witnesses)} witnesses, "
-            f"{len(registry.editors)} editors declared")
+    registry, note = bootstrap_registry(args.pdf, args.conspectus_page)
+    if note:
+      print(note)
     else:
       where = (f"page {args.conspectus_page}" if args.conspectus_page is not None
                else "the front matter")
       print(f"[!] no conspectus siglorum found in {where}: witnesses will be "
             "missing from the TEI and manuscript sigla cannot be attributed",
             file=sys.stderr)
-  registry = with_builtin_editors(registry)
+  else:
+    registry = with_builtin_editors(Registry())
 
   if not doc.pages:
     raise ValueError("no pages ingested: the requested pages do not exist "

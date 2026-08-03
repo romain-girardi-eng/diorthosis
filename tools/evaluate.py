@@ -23,12 +23,7 @@ import sys
 sys.path.insert(0, "src")
 
 from diorthosis.anchor import anchor_page
-from diorthosis.conspectus import (
-  Registry,
-  find_conspectus_pages,
-  parse_conspectus,
-  with_builtin_editors,
-)
+from diorthosis.conspectus import bootstrap_registry
 from diorthosis.grammar import parse_entry
 from diorthosis.ingest import ingest_pdf
 from diorthosis.match import lemma_matches_before
@@ -54,12 +49,7 @@ def main() -> int:
   a, b = args.pages.split("-")
   pages = list(range(int(a), int(b) + 1))
 
-  registry = Registry()
-  rng = [args.conspectus_page] if args.conspectus_page is not None else range(0, 200)
-  text = find_conspectus_pages(args.pdf, rng)
-  if text:
-    registry = parse_conspectus(text)
-  registry = with_builtin_editors(registry)
+  registry, _ = bootstrap_registry(args.pdf, args.conspectus_page)
   print(f"registry: {len(registry.witnesses)} witnesses, "
         f"{len(registry.editors)} editor tokens")
 

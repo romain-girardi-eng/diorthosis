@@ -118,17 +118,27 @@ def to_markdown(doc: Document, title: str | None = None,
           lines.append(prefix + _escape_body(e.raw, escaped))
       elif block.layer in (Layer.TEXT, Layer.HEADING):
         text = block.text
-        # rewrite each glued marker as its page-scoped form
-        resolved_ns = {
-          e.anchor.value for e in entries
-          if e.anchor is not None and e.anchor.block_index is not None
-        }
+        # Rewrite markers from the page's RESOLVED anchors — the single
+        # source of truth. Re-scanning find_markers here (the pre-v0.2.1
+        # behaviour) saw only glued markers and missed lemma-confirmed
+        # detached ones, so the apparatus showed a resolved ⟦f:n⟧ with no
+        # counterpart in the text: a real I3 violation. Digits without a
+        # resolved entry stay verbatim (I3: an unresolved entry has ZERO
+        # ⟦f:n⟧ in the text).
+        spans = sorted(
+          (e.anchor.digit_start, e.anchor.digit_end, e.anchor.value)
+          for e in entries
+          if e.anchor is not None and e.anchor.block_index == bi
+          and e.anchor.digit_start is not None and e.anchor.digit_end is not None
+        )
         pos = 0
         parts: list[str] = []
-        for n, off in find_markers(text):
-          parts.append(text[pos:off])
-          parts.append(_marker(folio, n, n in resolved_ns))
-          pos = off + len(n)
+        for ds, de, n in spans:
+          if ds < pos:
+            continue
+          parts.append(text[pos:ds])
+          parts.append(_marker(folio, n, True))
+          pos = de
         parts.append(text[pos:])
         lines.append(_escape_body("".join(parts), escaped))
       else:
