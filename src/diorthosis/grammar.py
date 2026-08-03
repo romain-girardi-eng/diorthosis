@@ -30,12 +30,32 @@ from .conspectus import Registry
 
 # The technical lexicon of the apparatus latinity — series-independent core.
 # Multi-word qualifiers must be matched before their prefixes.
+# Core follows Maurer's list ("Commonest Abbreviations… Used in the
+# Apparatus to a Classical Text", U. Dallas) and the LDLT witness-state
+# vocabulary; series-local items (e.g. "prop.", Paradosis) are kept and
+# marked in the series grammar docs. Multi-word entries match before their
+# prefixes. First-person forms (scripsi, conieci…) denote the CURRENT
+# editor — SC and Budé reserve them systematically for the edition's own
+# interventions.
 QUALIFIERS = (
-  "a. corr.", "p. corr.", "ex corr.", "sup. l.", "in marg.", "in textu",
-  "in semicirculis", "ut vid.", "ad calcem", "prima manu", "secunda manu",
-  "add.", "coni.", "corr.", "del.", "om.", "prop.", "secl.", "transp.",
-  "transponendum", "iter.", "codd.", "cod.", "edd.", "ed.", "cett.", "al.",
-  "sic", "vel", "et", "ego", "scripsit", "scripserunt", "legit",
+  # placement / witness state
+  "a. corr.", "p. corr.", "ex corr.", "a.c.", "p.c.", "in ras.", "a.r.",
+  "p.r.", "in lit.", "sup. l.", "s.l.", "s.s.", "sscr.", "interl.",
+  "in marg.", "i.m.", "mg.", "in textu", "in semicirculis", "ad calcem",
+  "prima manu", "secunda manu", "m.1", "m.2", "ed. pr.",
+  # editorial actions (third person)
+  "add.", "coni.", "ci.", "cj.", "conj.", "corr.", "del.", "em.", "om.",
+  "prop.", "secl.", "suppl.", "transp.", "transponendum", "iter.", "exp.",
+  "dist.", "damn.", "susp.", "trai.", "praem.",
+  # editorial actions (first person = the current editor)
+  "scripsi", "scripsimus", "conieci", "correxi", "seclusi", "addidi",
+  "delevi", "deleui", "supplevi", "ego", "nos",
+  # collectives and states
+  "codd.", "cod.", "edd.", "ed.", "cett.", "rell.", "al.", "recc.", "dett.",
+  "vett.", "vulg.", "lac.", "deest", "desunt", "v.l.", "vv.ll.",
+  # discourse
+  "sic", "vel", "et", "cf.", "ut vid.", "fort.", "vel sim.",
+  "scripsit", "scripserunt", "legit",
 )
 
 # Latin connectors inside attribution runs ("edd. ab Otto", "coni. Marc. ex
@@ -137,11 +157,11 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
       words.pop()
       consumed_something()
     elif (w := lookup(tail, registry.is_witness)) is not None:
-      attr.witnesses.insert(0, w)
+      attr.witnesses.insert(0, w.rstrip(",;"))
       words.pop()
       consumed_something()
     elif (ed := lookup(tail, registry.is_editor)) is not None:
-      attr.editors.insert(0, ed)
+      attr.editors.insert(0, ed.rstrip(",;"))
       words.pop()
       consumed_something()
     elif tail_clean in CONNECTORS:

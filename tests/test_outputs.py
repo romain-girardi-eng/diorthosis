@@ -111,3 +111,84 @@ class TestMarkdown:
 
   def test_deterministic(self) -> None:
     assert to_markdown(fixture()) == to_markdown(fixture())
+
+
+class TestTEIStandardsAlignment:
+  """TEI P5 ch. 13 conformity, locked by tests (Guidelines v4.12)."""
+
+  def doc_with_registry(self):
+    from diorthosis.conspectus import Registry, with_builtin_editors
+
+    reg = Registry()
+    reg.witnesses = {"A": "Parisinus graecus 450"}
+    reg.editors = {"Mign.": "Migne", "Thirlb.": "Thirlby"}
+    doc = fixture()
+    return doc, with_builtin_editors(reg)
+
+  def tei_root(self):
+    doc, reg = self.doc_with_registry()
+    return ET.fromstring(to_tei(doc, registry=reg))
+
+  def test_variant_encoding_present_when_apps_emitted(self) -> None:
+    root = self.tei_root()
+    ns = {"t": TEI_NS}
+    ve = root.find(".//t:encodingDesc/t:variantEncoding", ns)
+    assert ve is not None
+    assert ve.get("method") == "double-end-point"
+    assert ve.get("location") == "internal"
+
+  def test_double_end_point_anchors(self) -> None:
+    root = self.tei_root()
+    ns = {"t": TEI_NS}
+    app = root.find(".//t:app", ns)
+    assert app is not None
+    assert app.get("to") == "#a-p10-m2"
+    assert app.get("from") == "#a-p10-m2-start"
+    # both anchors exist in the text
+    ids = {a.get("{http://www.w3.org/XML/1998/namespace}id")
+           for a in root.findall(".//t:ab/t:anchor", ns)}
+    assert {"a-p10-m2", "a-p10-m2-start"} <= ids
+
+  def test_manuscripts_get_wit_editors_get_source(self) -> None:
+    root = self.tei_root()
+    ns = {"t": TEI_NS}
+    rdg = root.find(".//t:app/t:rdg", ns)
+    assert rdg is not None
+    # fixture apparatus: "2 Λόγος A : νόμος B" — B undeclared here, A declared
+    lem = root.find(".//t:app/t:lem", ns)
+    assert lem is not None and lem.get("wit") == "#wit-A"
+    assert lem.get("resp") is None  # @resp would claim the ENCODER's agency
+
+  def test_verbatim_note_always_present(self) -> None:
+    root = self.tei_root()
+    ns = {"t": TEI_NS}
+    note = root.find(".//t:app/t:note[@type='verbatim']", ns)
+    assert note is not None and "Λόγος A" in note.text
+
+  def test_omission_is_an_empty_rdg(self) -> None:
+    from diorthosis.anchor import anchor_page
+    from diorthosis.model import Document, Layer, Page
+
+    doc = Document(source_name="e.pdf", ingest="borndigital")
+    page = Page(index=1, printed_page="10")
+    page.blocks = [
+      _block(Layer.TEXT, "καὶ ὁ λόγος7 ἐστίν."),
+      _block(Layer.APPARATUS, "7 Λόγος A : om. B"),
+    ]
+    doc.pages = [page]
+    anchor_page(page)
+    _, reg = self.doc_with_registry()
+    reg.witnesses["B"] = "Musaei Britannici Ms"
+    root = ET.fromstring(to_tei(doc, registry=reg))
+    ns = {"t": TEI_NS}
+    rdgs = root.findall(".//t:app/t:rdg", ns)
+    empty = [r for r in rdgs if not (r.text or "").strip()]
+    assert empty and empty[0].get("wit") == "#wit-B"
+
+  def test_editor_tokens_are_clean(self) -> None:
+    from diorthosis.grammar import parse_entry
+
+    _, reg = self.doc_with_registry()
+    e = parse_entry("Μωσέως : Μωϋσέως Mign., Thirlb.", reg)
+    assert e is not None
+    assert e.readings[0].attribution.editors == ["Mign.", "Thirlb."]

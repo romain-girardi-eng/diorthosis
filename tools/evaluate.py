@@ -18,9 +18,7 @@ Run:  python3 tools/evaluate.py <pdf> --pages 290-340 [--conspectus-page N]
 from __future__ import annotations
 
 import argparse
-import re
 import sys
-import unicodedata
 
 sys.path.insert(0, "src")
 
@@ -33,80 +31,16 @@ from diorthosis.conspectus import (
 )
 from diorthosis.grammar import parse_entry
 from diorthosis.ingest import ingest_pdf
+from diorthosis.match import lemma_matches_before
 from diorthosis.model import Layer
 
 
-def fold(s: str) -> str:
-  """Accent-, case- and sigma-form-insensitive comparison form.
-
-  ς→σ matters: removing editorial brackets can strand a final sigma
-  mid-word (Ὥς<τε> → Ὥςτε), which must still equal Ὥστε.
-  """
-  d = unicodedata.normalize("NFD", s)
-  return "".join(
-    c for c in d if not unicodedata.combining(c)
-  ).lower().replace("ς", "σ")
-
-
 def lemma_matches_anchor(lemma: str, page, anchor) -> bool | None:
-  """Does the parsed lemma equal the text just before its marker?
-
-  None = not checkable (unresolved anchor). The lemma may span several
-  words (``Δικαιοσύνῃ δηλονότι σωθήσεται, ὅτι``): compare its folded form
-  against the same number of folded words preceding the marker.
-  """
+  """None = unresolvable anchor; else delegate to the shared conventions."""
   if anchor is None or anchor.block_index is None or anchor.char_offset is None:
     return None
   text = page.blocks[anchor.block_index].text
-  before = text[: anchor.char_offset]
-  # Editorial conventions observed in the reference edition, normalized on
-  # BOTH sides before comparison (each with its motivating example):
-  # - editorial bracket characters mark insertions in text or expansions in
-  #   the apparatus: < τοῦ >, γεγέν<ν>ηται, Χ[ριστο]ῦ — drop the brackets,
-  #   keep their content;
-  # - parenthesized verse numbers sit glued to words in scripture
-  #   quotations: (11)Αἴτησον — drop them from the text side.
-  def norm_lemma(s: str) -> str:
-    # bracket chars mark expansions (Χ[ριστο]ῦ) and insertions: drop the
-    # brackets, keep content; a glued ellipsis (Ὅτι ...σωθήσεσθαι) is a
-    # range separator, not part of the word
-    s = s.replace("...", " ").replace("…", " ")
-    return s.translate(str.maketrans("", "", "<>[]⟨⟩()"))
-
-  def norm_text(s: str) -> str:
-    # the text side carries inline witness references ([fol. 97 v° : A])
-    # and glued verse numbers ((11)Αἴτησον): remove them as SPANS; editorial
-    # angle brackets mark insertions: drop the chars, keep content
-    s = re.sub(r"\[[^\]]*\]", " ", s)
-    s = re.sub(r"\(\d+\)", " ", s)
-    # words hyphenated around an inline reference or a line break rejoin:
-    # ζη-[p. 153 : B]-τουμένων → (span removed) → ζη- -τουμένων → ζητουμένων
-    s = re.sub(r"(?<=\S)-\s+-?(?=\S)", "", s)
-    s = re.sub(r"(?<=\S)-\n\s*", "", s)
-    return s.translate(str.maketrans("", "", "<>⟨⟩"))
-
-  lemma_words = [w for w in fold(norm_lemma(lemma)).replace(",", " ").split() if w]
-  if not lemma_words:
-    return None
-  tail_words = [w.strip(".,·;:!»«()-") for w in fold(norm_text(before)).split()]
-  tail_words = [w for w in tail_words if w]
-  if not tail_words:
-    return False
-  # full-sequence match: the words before the marker ARE the lemma
-  if tail_words[-len(lemma_words):] == lemma_words:
-    return True
-  is_range = bool(re.search(r"\.\.\.|…|[−–]", lemma))
-  if len(lemma_words) > 1 or is_range:
-    # multi-word / range lemmas: the printed marker may follow ANY word of
-    # the quoted span (observed: first, middle and last positions)
-    if tail_words[-1] in lemma_words:
-      return True
-    # a range (Ὃν − ἀνάγκη) quotes only its endpoints; the marker may sit
-    # on an unquoted word INSIDE the span, shortly after its start
-    return bool(is_range and lemma_words[0] in tail_words[-8:])
-  # single-word lemma: the marker may trail the clause by a word or two
-  # (observed: "τὸν ἀριθμὸν ὄντας12" annotating ἀριθμόν)
-  return lemma_words[0] in tail_words[-3:]
+  return lemma_matches_before(lemma, text[: anchor.char_offset])
 
 
 def main() -> int:
