@@ -218,3 +218,48 @@ drift on misses (phantom advance never resorbs: 95.9 % → 4.1 %).
 (line-referenced reledmac entries; verse-referenced NT bands with lemma ]
 readings), superscript witness sigla (Problemata), and the residual ~5 %
 band alignment on balex (band head truncated on the first edition page).
+
+
+## 16. v0.4 — the verse-referenced grammar, zero errors on the real SBLGNT (2026-08-04)
+
+The first FOREIGN convention fully parsed, on the edition AS PRINTED. The
+NT tradition's apparatus (``1:18 Ἰησοῦ WH NIV RP ] – Treg • …``) is now a
+first-class grammar (`versegrammar.py`): entries split on ``•`` and verse
+references (bare numbers after a completed attribution), ``LEMMA SIGLA ]
+reading SIGLA ; reading SIGLA`` parsed with edition sigla (WH/Treg/NIV/RP…
+— declared as witnesses, exactly as the convention's own TEI does), ``–``
+= empty <rdg>, ``+ X`` kept verbatim; anchors resolve by (verse window ×
+lemma), tolerant of the text's own typography (anchor sigla ⸀⸂⸃ between
+lemma words, NBSP, punctuation), the constituted text arbitrating between
+candidate forms of a noisy printed lemma. loc travels as <app n="C:V">.
+
+**Result on the REAL printed PDF, verse_check.py strict (lemma, every
+reading, witness sets, anchors, per verse) against the scholars' TEI:**
+
+- **Matthew, whole book: 822/822 scholar apps — 0 ERRORS** (1 documented
+  print/TEI divergence: at Mt 3:16 the printed band merges two readings
+  the TEI separates — verified against the extracted band; 50 honest
+  unanchored gaps).
+- Whole NT: 6 793 apps beyond Matthew, 123 errors (98.2 % zero-error),
+  taxonomy identified per class (residual spacing artifacts of overlaid
+  runs, a handful of witness-set clusters pending band-by-band
+  verification as print/TEI divergences). The loop continues; every class
+  is measurable and reproducible via /tmp-driver + verse_check.
+
+**The deep fix underneath (regreek 0.7.0):** the SBLGNT PDFs overlay every
+bold lemma with a displaced copy; text-level merging doubled lemmas
+('δὲδὲ') and leaked copies into neighbouring entries. Line construction
+now merges fragments at GLYPH level — x-sorted, overlaid duplicates
+dropped at 0.15× glyph size (a geminate λλ/δδ/'11' is a full advance
+apart and survives; a loose 0.5× threshold once ate every double letter
+of the book), spacing re-synthesized from geometry. Also: emitters'
+grammar honesty extended (glued '+X', occurrence numerals '1ἄλλῳ', sigla
+glued to Greek words 'ἡμέραWH', ';' as punctuation-variant vs
+reading-separator disambiguated by attribution presence).
+
+Cost, measured and accepted: Bobichon anchoring 99.5 → 99.3 % (3 anchors
+shifted by re-synthesized spacing; concordance and parse stable; full
+battery green otherwise). All other gates unchanged: retypeset goldens
+524 + 6 906 at 0/0, real balex 95.9 % band / 0 contamination / 0 false
+structures, determinism, md-ce validate, tei_all.rng (Bobichon AND the
+SBLGNT output).

@@ -30,6 +30,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
+from . import versegrammar
 from .conspectus import Registry
 from .grammar import parse_entry
 from .match import lemma_matches_before
@@ -187,6 +188,102 @@ def _confirmed(lemma: str | None, page: Page, cand: _Candidate) -> bool:
   return lemma_matches_before(lemma, text[: cand.offset])
 
 
+# a verse number inside the constituted text: word-bounded digits
+_VERSE_IN_TEXT = re.compile(r"(?:^|(?<=[\s(]))(\d{1,3})(?::(\d{1,3}))?(?=[\s.,])")
+
+
+def _verse_windows(text: str, verse: str) -> list[tuple[int, int]]:
+  """(start, end) windows of the given verse number's occurrences in a
+  text block — from just after the number to the next verse-like number."""
+  marks = [(m.start(1), m.end(), m.group(2) or m.group(1))
+           for m in _VERSE_IN_TEXT.finditer(text)]
+  out = []
+  for i, (_, after, num) in enumerate(marks):
+    if num == verse:
+      end = marks[i + 1][0] if i + 1 < len(marks) else len(text)
+      out.append((after, end))
+  return out
+
+
+def _find_span_end(window: str, lemma: str) -> tuple[int, int] | None:
+  """(start, end) of the lemma inside a verse window.
+
+  Tolerates the elliptical printed form ('Βόες … Βόες' finds first…last)
+  and the text's own typography between the lemma's words: NBSP/double
+  spaces and the in-text anchor sigla (⸂Ἠλὶ ἠλὶ⸃ must match 'Ἠλὶ ἠλὶ')."""
+  def rx(words: list[str]) -> re.Pattern:
+    # tokens are matched punctuation-stripped, with the text's own
+    # typography tolerated between them — anchor sigla AND punctuation
+    # ("προφήτην ἰδεῖν;" must match "⸂προφήτην ἰδεῖν⸃;")
+    ws = [w.strip(".,;·:!?»«") for w in words]
+    return re.compile(
+      r"[\s⸀-⸏.,;·:!?]+".join(re.escape(w) for w in ws if w))
+
+  if "…" in lemma or "..." in lemma:
+    parts = [w for w in re.split(r"\s*(?:…|\.\.\.)\s*", lemma) if w]
+    m1 = rx(parts[0].split()).search(window)
+    if m1 is None:
+      return None
+    m2 = rx(parts[-1].split()).search(window, m1.end())
+    if m2 is None:
+      return None
+    return m1.start(), m2.end()
+  m = rx(lemma.split()).search(window)
+  if m is None:
+    return None
+  return m.start(), m.end()
+
+
+def _anchor_verse_band(page: Page, block: Block, registry: Registry | None,
+                       stats: dict[str, int]) -> None:
+  """Split and anchor a verse-referenced band (NT convention) in place."""
+  entries: list[ApparatusEntry] = []
+  for ve in versegrammar.split_verse_entries(block.text):
+    versegrammar.parse_verse_entry(ve)
+    e = ApparatusEntry(
+      raw=f"{ve.loc} {ve.raw}",
+      anchor=Anchor(kind="verse", value=ve.loc),
+      parsed_verse=ve if ve.parsed else None,
+    )
+    entries.append(e)
+    stats["entries"] += 1
+    resolved = False
+    if ve.parsed:
+      first_verse = re.split(r"[-–]", ve.loc.split(":")[-1])[0] \
+        if ":" not in ve.loc else ve.loc.split(":")[1].split("-")[0]
+      # the constituted text ARBITRATES between candidate lemma forms of a
+      # noisy printed doublet: the first candidate found in the verse wins
+      for cand in versegrammar.lemma_candidates(ve):
+        for bi, tb in enumerate(page.blocks):
+          if tb.layer not in (Layer.TEXT, Layer.HEADING):
+            continue
+          for wstart, wend in _verse_windows(tb.text, first_verse):
+            span = _find_span_end(tb.text[wstart:wend], cand)
+            if span is None:
+              continue
+            s, t = wstart + span[0], wstart + span[1]
+            e.anchor.block_index, e.anchor.char_offset = bi, t
+            e.anchor.digit_start = e.anchor.digit_end = t
+            ve.lemma = cand
+            ve.resolved_lemma = tb.text[s:t]
+            resolved = True
+            break
+          if resolved:
+            break
+        if resolved:
+          break
+    if resolved:
+      stats["anchored"] += 1
+    else:
+      stats["unanchored"] += 1
+    if registry is not None and ve.parsed:
+      sigla = {*ve.lemma_sigla, *(s for r in ve.readings for s in r.sigla)}
+      for s in sigla:
+        registry.witnesses.setdefault(
+          s, versegrammar.EDITION_WITNESSES.get(s, s))
+  block.entries = entries
+
+
 def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
   """Split and anchor the apparatus blocks of one page, in place.
 
@@ -214,6 +311,9 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
 
   for block in page.blocks:
     if block.layer is not Layer.APPARATUS:
+      continue
+    if versegrammar.looks_verse_referenced(block.text):
+      _anchor_verse_band(page, block, registry, stats)
       continue
     block.entries = split_entries(block.text)
     for e in block.entries:

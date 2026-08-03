@@ -1,7 +1,7 @@
 """diorthosis: compile published critical editions into TEI P5 + AI-ready
 Markdown, with anchored apparatus and block-level provenance."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .anchor import anchor_page, detect_marginal_line_numbers, split_entries
 from .md import to_markdown

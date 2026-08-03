@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "diorthosis"
-version = "0.3.0"
+version = "0.4.0"
 description = "Compile published critical editions (PDF or OCR output) into TEI P5 with anchored apparatus, plus a deterministic AI-ready Markdown view"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,7 +24,7 @@ classifiers = [
   "Topic :: Text Processing :: Linguistic",
 ]
 dependencies = [
-  "regreek>=0.6.0",
+  "regreek>=0.7.0",
   "pdfminer.six>=20231228",
 ]
 

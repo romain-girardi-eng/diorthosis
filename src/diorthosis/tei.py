@@ -34,7 +34,7 @@ from dataclasses import dataclass
 
 from . import __version__
 from .conspectus import Registry, builtin_editors
-from .grammar import Attribution, ParsedEntry, parse_entry
+from .grammar import Attribution, ParsedEntry, Reading, parse_entry
 from .model import Block, Document, Layer, Page
 
 TEI_NS = "http://www.tei-c.org/ns/1.0"
@@ -160,6 +160,20 @@ def _anchored_ab(parent: ET.Element, block: Block,
   append_text(block.text[pos:])
 
 
+def _verse_to_parsed(ve) -> ParsedEntry:
+  """A verse-referenced entry in the shared emission shape: edition sigla
+  are witnesses (the scholarly TEI of the convention declares them so)."""
+  return ParsedEntry(
+    lemma=ve.resolved_lemma or ve.lemma,
+    lemma_attribution=Attribution(witnesses=list(ve.lemma_sigla)),
+    readings=[
+      Reading(text=r.text, attribution=Attribution(witnesses=list(r.sigla)))
+      for r in ve.readings
+    ],
+    comments=[],
+  )
+
+
 def _collect_page_apparatus(page: Page, registry: Registry | None):
   """First pass: parse apparatus entries and compute both anchor points.
 
@@ -175,7 +189,10 @@ def _collect_page_apparatus(page: Page, registry: Registry | None):
       continue
     entries_plan: list[tuple] = []
     for ei, e in enumerate(block.entries or []):
-      parsed = parse_entry(e.raw, registry) if registry is not None else None
+      if e.parsed_verse is not None and registry is not None:
+        parsed = _verse_to_parsed(e.parsed_verse)
+      else:
+        parsed = parse_entry(e.raw, registry) if registry is not None else None
       start_id = end_id = None
       if (e.anchor is not None and e.anchor.block_index is not None
           and e.anchor.char_offset is not None):

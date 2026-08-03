@@ -76,9 +76,15 @@ def to_markdown(doc: Document, title: str | None = None,
     )
     entries = [e for b in body_blocks if b.layer is Layer.APPARATUS
                for e in (b.entries or [])]
+    # md-ce markers are the NUMERIC page-scoped kind (I3); entries anchored
+    # by other means (verse references — the anchor lives in the TEI) carry
+    # no ⟦⟧ marker and count as unresolved AT THE MD LEVEL, keeping the
+    # in-file coverage numbers recomputable by a validator that only sees
+    # the file (I11)
     unresolved = sum(
       1 for e in entries
       if e.anchor is None or e.anchor.block_index is None
+      or e.anchor.kind != "marker"
     )
     entries_total += len(entries)
     anchored_total += len(entries) - unresolved
@@ -110,11 +116,11 @@ def to_markdown(doc: Document, title: str | None = None,
       lines.append("")
       if block.layer is Layer.APPARATUS and block.entries:
         for e in block.entries:
-          if e.anchor is not None:
+          if e.anchor is not None and e.anchor.kind == "marker":
             resolved = e.anchor.block_index is not None
             prefix = _marker(folio, e.anchor.value, resolved) + " "
           else:
-            prefix = ""
+            prefix = ""  # verse-referenced: the reference is in the raw
           lines.append(prefix + _escape_body(e.raw, escaped))
       elif block.layer in (Layer.TEXT, Layer.HEADING):
         text = block.text
@@ -128,7 +134,8 @@ def to_markdown(doc: Document, title: str | None = None,
         spans = sorted(
           (e.anchor.digit_start, e.anchor.digit_end, e.anchor.value)
           for e in entries
-          if e.anchor is not None and e.anchor.block_index == bi
+          if e.anchor is not None and e.anchor.kind == "marker"
+          and e.anchor.block_index == bi
           and e.anchor.digit_start is not None and e.anchor.digit_end is not None
         )
         pos = 0
