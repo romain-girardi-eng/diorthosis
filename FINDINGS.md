@@ -172,3 +172,49 @@ gain): 2 031 entries, anchoring 99.5 %, parse 98.9 %, lemma concordance
 "attribution" was a misfiled trailing numeral or discourse word no longer
 count — the previous figure was inflated), byte-identical two-process
 build, md-ce validate clean, tei_all.rng valid.
+
+
+## 15. Real-PDF ground truth — the printed page, as printed (2026-08-04)
+
+§14's harness typeset the scholars' apparatus into OUR layout; Romain's
+objection was exact: the real-world failures come from the printed layout
+itself. Both §14 corpora exist as REAL printed PDFs of the same critical
+text: the DLL's own born-digital `ldlt-balex.pdf` (reledmac: marginal line
+numbers, ∥-separated entries, |-separated readings, glued sigla MUSTV,
+one-line printer's footer on every page) and the official SBLGNT PDFs
+(sblgnt.com: verse-referenced band, in-text anchor sigla ⸀⸂⸃, bold lemma
+re-set in roman, "]" separator, • between entries).
+
+`tools/golden/real_check.py` aligns diorthosis' reading of the REAL page
+against the scholars' TEI by CONTENT (windowed in-order alignment; folded;
+elliptical span lemmas "Βόες … Βόες" and glued bold-lemma doublets "δεδε"
+handled as key variants):
+
+| | text coverage | band coverage | contamination | false structures |
+|---|---|---|---|---|
+| balex-dll (88 pp.) | 93.0 % | 95.9 % | **0** | **0** |
+| SBLGNT Matthew (66 pp.) | 97.0 % | **100.0 %** | 3 (word-order variants recurring near their locus — measurement noise) | **0** |
+
+The honesty contract HOLDS on real layouts: both conventions are foreign
+to P1's numeric-marker grammar, and not one wrong `<app>` was emitted —
+everything stays verbatim `<note type="apparatus">`. The apparatus band is
+cleanly separated from the text (zero rejected readings leak into the TEXT
+layer), which is the precondition for everything else.
+
+One REAL layout defect was found and fixed (regreek 0.6.1): a one-line
+printer's footer below the apparatus claimed the last-candidate cut and
+left the WHOLE apparatus fused into the text (52 contaminated readings,
+band coverage 0.9 %). The cut now prefers the last candidate with a
+substantial foot (≥3 lines), falling back to a small one only when
+nothing else fires. Baseline before/after: contamination 52 → 0, band
+coverage 0.9 % → 95.9 %.
+
+Also learned, at the harness level (measurement, not product): greedy
+content alignment must be WINDOWED (one frequent function-word match far
+ahead cascade-fails everything: 92.6 % → 2.3 %), and never given blind
+drift on misses (phantom advance never resorbs: 95.9 % → 4.1 %).
+
+**v0.4 frontier, now measurable:** parsing the two real conventions
+(line-referenced reledmac entries; verse-referenced NT bands with lemma ]
+readings), superscript witness sigla (Problemata), and the residual ~5 %
+band alignment on balex (band head truncated on the first edition page).

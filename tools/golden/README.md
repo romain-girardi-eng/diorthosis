@@ -47,3 +47,17 @@ witness sigla (Eᵃ/Pˣ/Vᵐ) are flattened by the adapter; frontier for v0.3 |
 The `data/` directory is gitignored: diorthosis ships no edition content;
 the corpus is reproducible from `fetch_sources.sh` (CC BY / CC BY-SA
 sources).
+
+## Real-PDF ground truth (`real_check.py`)
+
+The typeset harness controls the layout; `real_check.py` does not: it runs
+diorthosis on the edition **as actually printed** (the DLL's own
+`ldlt-balex.pdf`, the official SBLGNT PDFs) and aligns the result against
+the scholars' TEI by content. Measured (2026-08-04): balex 93.0 % text /
+95.9 % band, SBLGNT Matthew 97.0 % / 100.0 % — with **zero** apparatus
+readings leaking into the text layer and **zero** false structures on both
+(their conventions are foreign to the numeric-marker grammar, and
+everything stays verbatim: the honesty contract holding on real layouts).
+
+    python3 real_check.py data/balex.xml balex-dll.pdf --pages 84-171 --text-lang la
+    python3 real_check.py data/sblgnt.xml 61-SBLGNT-Matthew.pdf --max-apps 770
