@@ -1,0 +1,49 @@
+# The golden harness — scholar-encoded ground truth, zero apparatus errors
+
+The strongest test diorthosis has: apparatus entries **encoded by scholars**
+(TEI editions with real `<app>/<lem>/<rdg>`) are re-typeset into a
+born-digital critical-edition PDF, diorthosis compiles that PDF back, and
+the output TEI must reproduce the scholars' apparatus **exactly** — every
+lemma, reading, witness, editor, verbatim string and anchor.
+
+    scholar TEI ──tei_to_edition.py──▶ edition JSON
+    edition JSON ──typeset_golden.py──▶ paginated .tex + golden.json
+    tectonic ──▶ born-digital PDF (conspectus page + text + numbered band)
+    diorthosis build ──▶ TEI + md
+    check_golden.py: TEI vs golden.json ──▶ 0 errors or FAIL
+
+Run everything with one command:
+
+    ./fetch_sources.sh                       # once: download the TEI sources
+    python3 run_golden.py data/balex.xml  work/balex  --text-lang la --rng tei_all.rng
+    python3 run_golden.py data/sblgnt.xml work/sblgnt --rng tei_all.rng
+
+The bar is asymmetric, matching the tool's honesty contract: a **wrong**
+structure (phantom entry, wrong lemma/reading/witness/editor, misplaced
+anchor, altered verbatim, dangling IDREF) fails the run; a **missing but
+honest** structure (entry kept as a verbatim note, entry left unanchored)
+is a reported gap, never a failure.
+
+Ground-truth integrity rules:
+
+- the apparatus CONTENT flows unchanged from the scholars' TEI; only the
+  serialization to a printed convention (numeric superscript markers,
+  ``N Lemma : reading SIGLA`` band, conspectus siglorum page) is ours;
+- every `<app>` the adapter cannot represent faithfully is SKIPPED AND
+  COUNTED (nested apps, rdgGrp, discontinuous span lemmas,
+  punctuation-variant lemmas) — the golden never contains a guess;
+- pagination is composed deterministically (never left to TeX) and a page
+  count guard fails the run if the typeset ever overflows.
+
+Corpus status (2026-08-03):
+
+| edition | language | entries | result |
+|---|---|---|---|
+| Bellum Alexandrinum (LDLT, Damon) | Latin | 524 | **0 errors, 0 gaps** |
+| SBLGNT (Holmes 2010, TEI re-encoding) | Greek | 6 906 | **0 errors, 0 gaps** |
+| Problemata XIX (LDLT, Mutch) | Medieval Latin | 5 524 | open — superscript
+witness sigla (Eᵃ/Pˣ/Vᵐ) are flattened by the adapter; frontier for v0.3 |
+
+The `data/` directory is gitignored: diorthosis ships no edition content;
+the corpus is reproducible from `fetch_sources.sh` (CC BY / CC BY-SA
+sources).

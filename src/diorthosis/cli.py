@@ -68,6 +68,10 @@ def main(argv: list[str] | None = None) -> int:
   b.add_argument("--title", default=None)
   b.add_argument("--conspectus-page", type=int, default=None,
                  help="0-based page of the sigla list (default: search the front matter)")
+  b.add_argument("--text-lang", choices=("grc", "la"), default="grc",
+                 help="language of the CONSTITUTED TEXT (PDF source only): "
+                      "'la' treats the Latin-script main band as the text and "
+                      "its foot band as the apparatus")
 
   i = sub.add_parser("inspect", help="show one page's anchored structure")
   i.add_argument("pdf")
@@ -124,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
   elif args.page_xml:
     doc = ingest_pagexml(args.page_xml)
   else:
-    doc = ingest_pdf(args.pdf, _parse_pages(args.pages))
+    doc = ingest_pdf(args.pdf, _parse_pages(args.pages), text_lang=args.text_lang)
 
   if args.pdf:
     registry, note = bootstrap_registry(args.pdf, args.conspectus_page)

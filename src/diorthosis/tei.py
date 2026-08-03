@@ -27,6 +27,7 @@ Provenance survives everywhere: OCR-generated blocks carry
 
 from __future__ import annotations
 
+import re
 import unicodedata
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -37,6 +38,10 @@ from .grammar import Attribution, ParsedEntry, parse_entry
 from .model import Block, Document, Layer, Page
 
 TEI_NS = "http://www.tei-c.org/ns/1.0"
+
+# codepoints XML 1.0 forbids in content (controls except \t\n\r; the
+# FFFE/FFFF non-characters; surrogates are unrepresentable in str already)
+_XML_INVALID = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f￾￿]")
 
 # qualifiers that place a reading in the witness (13.1.4.1 <witDetail>)
 _PLACEMENT = {"sup. l.", "s.l.", "in marg.", "i.m.", "in ras.", "a. corr.",
@@ -331,6 +336,11 @@ def to_tei(doc: Document, title: str | None = None,
   # so <ab> stays byte-verbatim — minidom's pretty-printer corrupted it
   ET.indent(tei, space="  ")
   raw = ET.tostring(tei, encoding="unicode", xml_declaration=True)
+  # A PDF text layer can carry XML-invalid codepoints (a degenerate
+  # ToUnicode maps missing glyphs to U+FFFF — observed). They are replaced
+  # with U+FFFD so the document stays well-formed; the replacement is
+  # visible, never silent.
+  raw = _XML_INVALID.sub("�", raw)
   return unicodedata.normalize("NFC", raw) + "\n"
 
 

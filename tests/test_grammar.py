@@ -68,11 +68,30 @@ class TestEditorialActions:
     assert any(q.startswith("post ") for q in e.lemma_attribution.qualifiers)
 
   def test_midword_parentheses_kept(self) -> None:
-    # Κατα(να)θεματίζοντας: editorial letters inside the word, not commentary
+    # Κατα(να)θεματίζοντας: editorial letters inside the word stay VERBATIM
+    # in the structured lemma (they are printed text, not commentary);
+    # comparison-side folding strips the paren characters where needed
     e = parse_entry("Κατα(να)θεματίζοντας − ὅπως Sylb., Marc. : καταθεματίζοντας A",
                     registry())
     assert e is not None
-    assert e.lemma.startswith("Καταναθεματίζοντας")
+    assert e.lemma.startswith("Κατα(να)θεματίζοντας")
+
+  def test_slash_alternative_parentheses_stay_in_reading(self) -> None:
+    # orthographic alternatives "(t/c)" and single letters "(a)" are text
+    e = parse_entry("Cappadociae : cappado(t/c)i(a)e A B", registry())
+    assert e is not None
+    assert e.readings[0].text == "cappado(t/c)i(a)e"
+
+  def test_discourse_word_is_text_when_not_between_attributions(self) -> None:
+    e = parse_entry("Habebat : habebat et A B", registry())
+    assert e is not None
+    assert e.readings[0].text == "habebat et"
+
+  def test_trailing_numeral_is_text_after_plain_word(self) -> None:
+    e = parse_entry("Cohortibus XXII : cohortibus XXX A B", registry())
+    assert e is not None
+    assert e.lemma == "Cohortibus XXII"
+    assert e.readings[0].text == "cohortibus XXX"
 
 
 class TestHonestRefusal:

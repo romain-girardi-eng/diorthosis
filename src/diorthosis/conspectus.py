@@ -21,9 +21,17 @@ from functools import lru_cache
 from importlib import resources
 
 # "A = Parisinus graecus 450" / "Marc. = Marcovich" / "A1, B1 = A, B prima manu"
-_DECL = re.compile(r"^\s*([A-Z][A-Za-z0-9., ]{0,12}?)\s*=\s*(.+?)\s*$")
-_SIGLUM = re.compile(r"^[A-Z][0-9]?$")
-_EDITOR = re.compile(r"^[A-Z][a-z]+\.?$")
+# Sigla in the wild also include Greek letters for hyparchetypes and families
+# (π = common source of T and V; ω = the archetype), archaic Greek numerals
+# (ϛ = the consensus of the editiones ueteres in Caesarian editions), and
+# starred/numbered states of a witness (M*, M2) — all standard conventions.
+_TOKEN_CHR = "A-Za-zÀ-ÖØ-öø-ÿĀ-ŽΑ-Ωα-ωϘ-ϡ"
+_DECL = re.compile(
+  r"^\s*([" + _TOKEN_CHR + r"][" + _TOKEN_CHR + r"0-9*.,\- ]{0,24}?)\s*=\s*(.+?)\s*$")
+_SIGLUM = re.compile(r"^[A-ZΑ-Ωα-ωϘ-ϡ][0-9]?\*?$")
+# editor names include compounds (Gaertner-Hausburg) and disambiguating
+# initials written solid (DSimons, JSimons)
+_EDITOR = re.compile(r"^[A-ZÀ-ÞĀ-Ž][A-Za-zà-öø-ÿā-žÀ-ÞĀ-Ž-]+\.?$")
 
 
 @dataclass
@@ -42,8 +50,18 @@ class Registry:
     return token in self.editors or token.rstrip(",") in self.editors
 
   def xml_id(self, token: str) -> str:
-    """A stable xml:id for a siglum or editor abbreviation."""
-    return re.sub(r"[^A-Za-z0-9]", "", token)
+    """A stable, INJECTIVE xml:id fragment for a siglum or editor token.
+
+    ASCII alphanumerics pass through; every other character becomes
+    ``u<hex>`` so distinct tokens can never collide (stripping once mapped
+    both π and ω to the empty string, folding M* into M — duplicate
+    xml:ids that made the TEI unparseable). Hex-escaping is applied to ALL
+    non-ASCII because libxml2 validates NCNames against the old XML 1.0
+    4th-edition letter table, which lacks characters like ϛ (stigma).
+    """
+    return "".join(
+      c if c.isascii() and c.isalnum() else f"u{ord(c):x}" for c in token
+    )
 
 
 @lru_cache(maxsize=1)
@@ -115,7 +133,10 @@ def find_conspectus_pages(pdf_path: str, search_range: range | list[int]) -> str
   """Return the raw text of the page(s) declaring sigla and abbreviations.
 
   Located by their own heading (SIGLES / sigla / conspectus / abréviations),
-  the one page-level convention that is universal across series.
+  the one page-level convention that is universal across series. A sigla
+  list often runs over SEVERAL pages: once the opening page is found, the
+  following pages are appended for as long as a majority of their non-empty
+  lines are still ``token = description`` declarations.
   """
   from pdfminer.high_level import extract_text
 
@@ -125,5 +146,14 @@ def find_conspectus_pages(pdf_path: str, search_range: range | list[int]) -> str
     if head.search(text.split("\n", 3)[0] if text else "") or (
       head.search(text[:200]) and "=" in text
     ):
+      for cont in range(page + 1, page + 9):
+        more = extract_text(pdf_path, page_numbers=[cont]) or ""
+        lines = [ln for ln in more.splitlines() if ln.strip()]
+        if not lines:
+          break
+        decls = sum(1 for ln in lines if _DECL.match(ln))
+        if decls < 0.5 * len(lines):
+          break
+        text += "\n" + more
       return text
   return ""

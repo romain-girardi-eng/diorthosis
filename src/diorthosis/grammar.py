@@ -54,9 +54,13 @@ QUALIFIERS = (
   "codd.", "cod.", "edd.", "ed.", "cett.", "rell.", "al.", "recc.", "dett.",
   "vett.", "vulg.", "lac.", "deest", "desunt", "v.l.", "vv.ll.",
   # discourse
-  "sic", "vel", "et", "cf.", "ut vid.", "fort.", "vel sim.",
+  "sic", "vel", "et", "cf.", "Cf.", "ut vid.", "fort.", "vel sim.",
   "scripsit", "scripserunt", "legit",
 )
+
+# Discourse words are glue inside attributions but TEXT when nothing else
+# would remain: an edition can perfectly well add the single word "et".
+_DISCOURSE = frozenset({"sic", "vel", "et"})
 
 # Latin connectors inside attribution runs ("edd. ab Otto", "coni. Marc. ex
 # LXX"): consumable between known tokens, never meaningful alone.
@@ -118,6 +122,21 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
   words = segment.split()
   pending_connectors: list[str] = []
 
+  def known_attribution(token: str) -> bool:
+    """Is this token itself attribution material? Used to decide whether a
+    discourse word / trailing numeral is glue between attributions or the
+    tail of the reading's own text."""
+    if token in _STRAY_PUNCT:
+      return True     # "Dial. 66, 3 ; 77, 2" — the ';' sits between loci
+    bare = token.rstrip(",.;:")
+    return bool(
+      bare in CONNECTORS
+      or any(v in QUALIFIERS or v in SOURCES for v in (token, bare, bare + "."))
+      or registry.is_witness(bare) or registry.is_editor(bare)
+      or registry.is_editor(bare + ".")
+      or _REF_TOKEN.match(token.rstrip(",")) or _REF_TOKEN.match(bare)
+    )
+
   def variants(token: str) -> tuple[str, ...]:
     """Matching forms of a raw token: as-is, stripped of trailing
     punctuation, and re-dotted (abbreviations keep their dot in the
@@ -145,6 +164,12 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
       del words[-2:]
       consumed_something()
     elif (q := lookup(tail, lambda v: v in QUALIFIERS)) is not None:
+      # a discourse word is glue only BETWEEN attribution tokens; adjacent
+      # to plain text it is the reading's own tail ("regnum et M U" reads
+      # "regnum et", it is not qualified by "et")
+      if q in _DISCOURSE and (
+          len(words) == 1 or not known_attribution(words[-2])):
+        break
       attr.qualifiers.insert(0, q)
       words.pop()
       consumed_something()
@@ -153,10 +178,23 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
       words.pop()
       consumed_something()
     elif _REF_TOKEN.match(tail_clean) and not registry.is_witness(tail_clean):
+      # a PURE numeral after plain text is the reading's own tail
+      # ("cohortibus XXX", "legioni XXXVIII" — the edition supplies the
+      # number); after a work token it is a locus ("Dial. 66, 2"). Work
+      # abbreviations themselves (letters) are always references.
+      numeric_only = re.fullmatch(r"[IVXLCDM]+|\d+[,.:]?", tail_clean)
+      if numeric_only and (len(words) == 1
+                           or not known_attribution(words[-2])):
+        break
       attr.references.insert(0, tail_clean)
       words.pop()
       consumed_something()
     elif (w := lookup(tail, registry.is_witness)) is not None:
+      # a Roman-numeral siglum as the LAST remaining word is the text
+      # itself, not a witness: in "V M U S T V" the head V is the numeral
+      # the edition prints (five), attested by the five manuscripts
+      if len(words) == 1 and re.fullmatch(r"[IVXLCDM]+", tail.rstrip(",.;:")):
+        break
       attr.witnesses.insert(0, w.rstrip(",;"))
       words.pop()
       consumed_something()
@@ -214,11 +252,38 @@ def parse_entry(raw: str, registry: Registry) -> ParsedEntry | None:
   segment that empties after attribution peeling, or any sign of a FOREIGN
   series' conventions — a wrong structure is worse than no structure.
   """
-  # mid-word parentheses hold editorial letters — Κατα(να)θεματίζοντας —
-  # and belong to the word; only space-preceded parentheticals are commentary
-  raw = re.sub(r"(?<=\S)\((\S+?)\)", r"\1", raw)
-  comments = _PAREN.findall(raw)
-  flat = _PAREN.sub(" ", raw)
+  # printed line-break hyphenation inside the band ("An- drieu") is a
+  # typographic artifact, rejoined before parsing (the verbatim note keeps
+  # the printed form untouched)
+  raw = re.sub(r"(?<=\w)-\s+(?=[a-zà-öø-ÿα-ω])", "", raw)
+  comments: list[str] = []
+
+  def _classify_paren(m: re.Match) -> str:
+    # A parenthetical is COMMENTARY when it carries technical apparatus
+    # material — digits (loci), an equivalence ("= …"), a cited source, an
+    # editor, an operator or placement qualifier, a leading Latin connector
+    # ("ex …" = derivation), or a segment separator. A plain-prose
+    # parenthetical ("(uel ex)", "(sc. Alexandrini)", "(t/c)") is part of
+    # the reading and stays in the text.
+    content = m.group(0)[1:-1].strip()
+    if re.search(r"\d", content) or " : " in content or content.startswith("="):
+      comments.append(m.group(0))
+      return " "
+    toks = content.split()
+    if len(toks) >= 2 and toks[0].rstrip(".,;:·") in CONNECTORS:
+      comments.append(m.group(0))
+      return " "
+    if any(q in content for q in QUALIFIERS if " " in q):
+      comments.append(m.group(0))
+      return " "
+    for tok in (t.strip(".,;:·") for t in toks):
+      if (tok in SOURCES or registry.is_editor(tok) or registry.is_editor(tok + ".")
+          or (tok + ".") in QUALIFIERS or tok in ("om", "add", "del", "cf")):
+        comments.append(m.group(0))
+        return " "
+    return m.group(0)
+
+  flat = _PAREN.sub(_classify_paren, raw)
   # an unclosed parenthesis means the entry was cut at a page boundary:
   # everything from the dangling "(" is commentary, kept verbatim
   m_open = re.search(r"\([^)]*$", flat)

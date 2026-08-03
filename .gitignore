@@ -8,3 +8,8 @@ __pycache__/
 dist/
 build/
 .venv/
+
+# golden harness data: scholar TEI downloads, typeset PDFs, goldens —
+# reproducible via tools/golden/fetch_sources.sh, never shipped
+tools/golden/data/
+tools/golden/work/

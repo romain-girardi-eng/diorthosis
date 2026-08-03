@@ -48,22 +48,34 @@ _LEMMA_CAPITAL = (
   "ᾈ-ᾏᾘ-ᾟᾨ-ᾯ"  # capitals with prosgegrammeni (ᾝρει, p196: unsplit without them)
   "Ᾰ-ᾼῈ-ῌῘ-ΊῨ-ῬῸ-ῼ"
 )
+# an entry may open with an editorial bracket before its capitalized lemma:
+# "3 <Ab> incendio", "2 {Fluminum}" — the bracket is part of the printed text
+_LEMMA_OPEN = r"(?=[<{\[⟨]?[" + _LEMMA_CAPITAL + "])"
 _ENTRY_SPLIT = re.compile(
-  r"(?:(?<=^)|(?<=\s\s))(\d{1,2})\s+(?=[" + _LEMMA_CAPITAL + "])"
+  r"(?:(?<=^)|(?<=\s\s))(\d{1,2})\s+" + _LEMMA_OPEN
+)
+# the same shape, anchored at a former line start (one-entry-per-line bands);
+# the leading space is the flattened line break itself
+_ENTRY_AT = re.compile(
+  r" ?(\d{1,2})\s+" + _LEMMA_OPEN
 )
 
+# The letters a constituted text may be written in: Greek, or Latin script
+# with its accented ranges (a LATIN edition's markers glue to Latin words —
+# ``arcessit1`` — a class the Greek-only ranges once made invisible).
+_TEXT_LETTER = "A-Za-zÀ-ÖØ-öø-ÿĀ-ſͰ-Ͽἀ-῿"
 # Characters that may legitimately close the word a marker is glued to:
-# Greek letters, editorial brackets, closing punctuation, elision apostrophe
+# text letters, editorial brackets, closing punctuation, elision apostrophe
 # (histogram over the full reference edition: ] 16×, ’ 10×, ) 2×, ; 1×).
-_GLUE = "Ͱ-Ͽἀ-῿>\\]\\)’'·;.,"
-_BOUNDARY = " \t\n.,·;:!»)\\]Ͱ-Ͽἀ-῿"
+_GLUE = _TEXT_LETTER + ">}\\]\\)’'·;.,"
+_BOUNDARY = " \t\n.,·;:!»)\\]—–" + _TEXT_LETTER
 _MARKER = re.compile(
   r"(?<=[" + _GLUE + r"])(\d{1,2})(?=[" + _BOUNDARY + r"]|$)"
 )
 _DETACHED = re.compile(
-  r"(?<=[Ͱ-Ͽἀ-῿\]’']) (\d{1,2})(?=[ \t\n.,·;:!»)\]]|$)"
+  r"(?<=[" + _TEXT_LETTER + r"\]’']) (\d{1,2})(?=[ \t\n.,·;:!»)\]—–]|$)"
 )
-_HAS_GREEK_NEAR = re.compile(r"[Ͱ-Ͽἀ-῿]")
+_HAS_LETTER_NEAR = re.compile("[" + _TEXT_LETTER + "]")
 
 
 @dataclass
@@ -84,25 +96,46 @@ def split_entries(apparatus_text: str) -> list[ApparatusEntry]:
   Entry numbers must be strictly increasing within a band; a split point
   whose number does not increase is a locus reference inside the previous
   entry and is merged back.
+
+  Two boundary idioms are accepted, both observed in print:
+  wide in-line gaps (Paradosis: two-plus spaces survive extraction) and
+  one-entry-per-line bands (SC and TeX-set editions: line breaks carry the
+  boundary, and a wrapped continuation line never opens with
+  number-then-capital).
   """
-  flat = " ".join(apparatus_text.split("\n"))
+  lines = apparatus_text.split("\n")
+  flat = " ".join(lines)
+  line_starts: list[int] = []
+  off = 0
+  for ln in lines:
+    line_starts.append(off)
+    off += len(ln) + 1
 
   # candidate split positions, filtered by two structural rules:
   # - never inside parentheses (locus references live there: "(… Dial.
   #   136,  2  Marc.)" once fabricated a phantom entry 2);
   # - entry numbers are strictly increasing within a band.
+  candidates: dict[int, tuple[int, str]] = {}  # start -> (body_start, num)
+  for m in _ENTRY_SPLIT.finditer(flat):
+    candidates[m.start()] = (m.end(), m.group(1))
+  for ls in line_starts:
+    m = _ENTRY_AT.match(flat, ls)
+    if m:
+      candidates.setdefault(m.start(1), (m.end(), m.group(1)))
+
   boundaries: list[tuple[int, int, str]] = []  # (start, body_start, num)
   depth = 0
   prev_num = 0
   scan = 0
-  for m in _ENTRY_SPLIT.finditer(flat):
-    depth += flat.count("(", scan, m.start()) - flat.count(")", scan, m.start())
-    scan = m.start()
-    num = int(m.group(1))
+  for start in sorted(candidates):
+    body_start, num_s = candidates[start]
+    depth += flat.count("(", scan, start) - flat.count(")", scan, start)
+    scan = start
+    num = int(num_s)
     if depth > 0 or num <= prev_num:
       continue
     prev_num = num
-    boundaries.append((m.start(), m.end(), m.group(1)))
+    boundaries.append((start, body_start, num_s))
 
   entries: list[ApparatusEntry] = []
   head = flat[: boundaries[0][0]].strip() if boundaries else flat.strip()
@@ -121,12 +154,13 @@ def split_entries(apparatus_text: str) -> list[ApparatusEntry]:
 def find_markers(text: str) -> list[tuple[str, int]]:
   """(marker number, char offset) for every glued superscript marker.
 
-  A candidate must have a Greek letter within the four preceding characters:
-  punctuation alone (…"p. 45"…) never carries a marker.
+  A candidate must have a text letter (Greek or Latin script) within the
+  four preceding characters: punctuation alone (…"p. 45"…) never carries a
+  marker.
   """
   out: list[tuple[str, int]] = []
   for m in _MARKER.finditer(text):
-    if _HAS_GREEK_NEAR.search(text[max(0, m.start() - 4): m.start()]):
+    if _HAS_LETTER_NEAR.search(text[max(0, m.start() - 4): m.start()]):
       out.append((m.group(1), m.start()))
   return out
 
@@ -134,7 +168,7 @@ def find_markers(text: str) -> list[tuple[str, int]]:
 def _find_detached(text: str) -> list[tuple[str, int]]:
   out: list[tuple[str, int]] = []
   for m in _DETACHED.finditer(text):
-    if _HAS_GREEK_NEAR.search(text[max(0, m.start() - 4): m.start()]):
+    if _HAS_LETTER_NEAR.search(text[max(0, m.start() - 4): m.start()]):
       out.append((m.group(1), m.start() + 1))
   return out
 

@@ -101,3 +101,74 @@ and could also verify every stream-based anchor.
 Full-book gates after this pass: 75 tests; md-ce validate 0 violations;
 TEI valid against ``tei_all.rng``; byte-identical double build; anchoring
 99.5 %, parse 98.8 %, lemma concordance 97.6 %, attribution 91.2 %.
+
+
+## 14. The golden harness — scholar ground truth, zero apparatus errors (2026-08-04)
+
+The strongest verification the project has had: apparatus entries **encoded
+by scholars** (open TEI editions with real `<app>/<lem>/<rdg>`) are
+re-typeset into a born-digital critical-edition PDF (tectonic; conspectus
+siglorum page(s) + text with numeric superscript markers + one-entry-per-
+line band — deterministic pagination, page-count guard), diorthosis
+compiles that PDF back, and `tools/golden/check_golden.py` requires the
+output TEI to reproduce the scholars' apparatus EXACTLY — lemma, readings,
+witnesses, editors, verbatim, anchors, IDREF integrity, RNG validity.
+Wrong structure fails; honest refusal (verbatim note / unanchored) is a
+reported gap, never a failure.
+
+**Results:**
+
+- **Bellum Alexandrinum** (LDLT, ed. Damon et al., CC BY-SA 4.0; Latin,
+  witness families M U S T V + ϛ + Greek-letter hyparchetypes, ~65 named
+  editors): 524 entries — **0 errors, 0 gaps**.
+- **SBLGNT** (Holmes 2010, TEI re-encoding, CC BY 4.0; Greek, the whole
+  NT, edition-sigla witnesses WH/Treg/NIV/RP/NA…): 6 906 entries —
+  **0 errors, 0 gaps**.
+- **Problemata XIX** (LDLT, ed. Mutch; medieval Latin, ~30 witnesses in
+  stemma families): open frontier — its superscript witness sigla
+  (Eᵃ/Pˣ/Vᵐ) are flattened to bare letters by the ADAPTER (three distinct
+  P-states become indistinguishable), so the golden itself degrades before
+  diorthosis runs. v0.3 work: superscript-aware siglum rendering.
+
+**What the campaign forced into existence** (every one driven by a real
+failure against scholar data):
+
+- **Latin editions end to end**: `--text-lang la` (regreek labels a Latin
+  main band "translation" and its foot "notes"); marker detection was
+  GREEK-ONLY (`arcessit1` was invisible) — `_TEXT_LETTER` now spans Greek
+  and Latin script; em/en dashes as marker boundaries; `}` in the glue
+  class.
+- **Sigla of the wild**: Greek-letter sigla (π ω μ ν), archaic ϛ (the
+  editiones-ueteres consensus), starred states (M*), compound and
+  solid-initial editors (Gaertner-Hausburg, DSimons), accented names
+  (Kübler, Wölfflin) — conspectus declaration, xml:id minting (injective
+  hex-escaping; libxml2 still validates NCNames against XML 1.0 4th-ed
+  tables, which lack ϛ) and attribution peeling all extended.
+- **Entry splitting generalized**: one-entry-per-line bands (SC/TeX
+  convention) split on former line starts; entries may open with an
+  editorial bracket (`<Ab> incendio`); hyphenation inside the band
+  ("An- drieu") rejoined before parsing.
+- **Grammar honesty at the edges**: a discourse word or bare numeral
+  adjacent to plain text is the READING'S TEXT, not attribution
+  ("regnum et", "cohortibus XXX", a lemma that IS the numeral V);
+  plain-prose parentheticals ("(uel ex)", "(sc. Alexandrini)", slash
+  alternatives "(t/c)") stay verbatim in the text while technical ones
+  (digits, "= …", leading connector, placement bigrams, editors) remain
+  commentary; ';' between loci no longer stops reference peeling.
+- **regreek layer separation hardened** (v0.6.0): fragments of one
+  physical line re-joined in x-order (superscripts made pdfminer split
+  justified lines and the y-sort displaced them), wide gaps preserved as
+  double spaces (the entry-boundary idiom); the main/foot split takes the
+  LAST size-drop candidate (an early heading gap no longer preempts the
+  real boundary) with the reference register computed above the candidate
+  (apparatus-dominant pages exist); a running head never ends a sentence
+  (a one-line section end above the band was being eaten).
+- **XML safety**: a degenerate ToUnicode can map missing glyphs to U+FFFF
+  — TEI emission now replaces XML-invalid codepoints with U+FFFD, visibly.
+
+Bobichon full-book after all of the above (no regression, slight parse
+gain): 2 031 entries, anchoring 99.5 %, parse 98.9 %, lemma concordance
+97.6 %, attribution 89.7 % (down 1.5 pt from v0.2.1: readings whose only
+"attribution" was a misfiled trailing numeral or discourse word no longer
+count — the previous figure was inflated), byte-identical two-process
+build, md-ce validate clean, tei_all.rng valid.
