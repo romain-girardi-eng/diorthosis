@@ -167,7 +167,9 @@ class TestTEIStandardsAlignment:
     }
     reg.editors = {"Mign.": "Migne", "Thirlb.": "Thirlby"}
     doc = fixture()
-    return doc, with_builtin_editors(reg)
+    reg = with_builtin_editors(reg)
+    anchor_page(doc.pages[0], reg)
+    return doc, reg
 
   def tei_root(self):
     doc, reg = self.doc_with_registry()
@@ -220,9 +222,9 @@ class TestTEIStandardsAlignment:
       _block(Layer.APPARATUS, "7 Λόγος A : om. B"),
     ]
     doc.pages = [page]
-    anchor_page(page)
     _, reg = self.doc_with_registry()
     reg.witnesses["B"] = "Musaei Britannici Ms"
+    anchor_page(page, reg)
     root = ET.fromstring(to_tei(doc, registry=reg))
     ns = {"t": TEI_NS}
     rdgs = root.findall(".//t:app/t:rdg", ns)

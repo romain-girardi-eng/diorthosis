@@ -4,6 +4,7 @@ learned from the DLL Bellum Alexandrinum golden and is locked by it."""
 from diorthosis.conspectus import Registry
 from diorthosis.linegrammar import (
   burst_sigla,
+  gate_line_band,
   parse_line_entry,
   split_line_entries,
 )
@@ -57,6 +58,26 @@ def test_parenthesized_reading_before_number_refuses_ambiguous_boundary():
   assert entries[0].raw == raw.removeprefix("5 ")
   parsed = parse_line_entry(entries[0], reg())
   assert not parsed.parsed
+
+
+def test_positive_whole_band_gate():
+  decision = gate_line_band(
+    "5 alpha M | beta U ∥ 7 gamma S | delta T",
+    reg(),
+  )
+  assert decision.accepted
+  assert not decision.evidence
+
+
+def test_foreign_fontes_band_refuses_with_evidence():
+  decision = gate_line_band(
+    "5 Verg. Aen. 1.1 | Hor. Carm. 1.2 ∥ "
+    "7 Liv. 2.3 | Cic. Off. 1.4",
+    reg(),
+  )
+  assert not decision.accepted
+  assert "line convention gate refused band" in decision.evidence
+  assert "trial parse" in decision.evidence
 
 
 # -- sigla -------------------------------------------------------------

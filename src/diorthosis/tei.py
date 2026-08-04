@@ -189,6 +189,8 @@ def resolve_parsed(e, registry: Registry | None) -> ParsedEntry | None:
     return None
   if e.parsed_override is not None:
     return e.parsed_override
+  if e.refusal_evidence:
+    return None
   if e.parsed_verse is not None and registry is not None:
     return _verse_to_parsed(e.parsed_verse)
   if e.parsed_line is not None and registry is not None:
@@ -213,7 +215,9 @@ def resolve_parsed(e, registry: Registry | None) -> ParsedEntry | None:
       comments=list(pe.comments)
                + [c for r in pe.readings for c in r.comments],
     )
-  return parse_entry(e.raw, registry) if registry is not None else None
+  if e.marker_eligible and registry is not None:
+    return parse_entry(e.raw, registry)
+  return None
 
 
 def _collect_page_apparatus(page: Page, registry: Registry | None):

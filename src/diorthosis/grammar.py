@@ -27,6 +27,7 @@ import re
 from dataclasses import dataclass, field
 
 from .conspectus import Registry
+from .convention import GateDecision, token_count
 
 # The technical lexicon of the apparatus latinity — series-independent core.
 # Multi-word qualifiers must be matched before their prefixes.
@@ -270,6 +271,12 @@ _FOREIGN_OPENER = re.compile(r"^(om|pr|tr|init|fin|hab)\s")
 # ("Fr. 102 Holl", "PG VI, 1580").
 _FOREIGN_WITNESS = re.compile(r"^\d{1,4}-\d{1,4}°?$|^\d+°$")
 
+# A marker band may contain one long narrative refusal among several short,
+# resolved entries.  The token ceiling therefore combines with the 50%
+# entry-consistency floor below.  Above 60%, the unconsumed material is the
+# band, rather than an isolated honest miss, so the convention refuses it.
+MARKER_MAX_UNCONSUMED_TOKEN_RATIO = 0.60
+
 
 def _looks_foreign(flat: str) -> bool:
   if flat.count("]") > flat.count("["):
@@ -283,6 +290,61 @@ def _residual_foreign_tokens(*texts: str) -> bool:
       if _FOREIGN_WITNESS.match(tok.strip(".,;:")):
         return True
   return False
+
+
+def gate_marker_band(entries: list[object], registry: Registry | None,
+                     resolved_markers: int) -> GateDecision:
+  """Whole-band gate for the generic numeric-marker convention.
+
+  ``entries`` are the output of ``anchor.split_entries``.  This function is
+  intentionally unavailable as an entry-local shortcut: a numeric split and
+  at least one resolved in-text marker are mandatory pipeline evidence.
+  """
+  grammar = "marker"
+  marker_entries = [
+    entry for entry in entries
+    if entry.anchor is not None and entry.anchor.kind == "marker"
+  ]
+  if not marker_entries:
+    return GateDecision.refuse(grammar, "numeric-marker entry splitting found no boundary")
+  if resolved_markers < 1:
+    return GateDecision.refuse(
+      grammar, "0 numeric markers resolved against the text layer")
+  band_text = " ".join(str(entry.source_slice) for entry in entries)
+  if "||" in band_text:
+    return GateDecision.refuse(grammar, "foreign separator '||' is not consumed")
+  if "∥" in band_text:
+    return GateDecision.refuse(grammar, "foreign separator '∥' is not consumed")
+  unmatched_closers = max(0, band_text.count("]") - band_text.count("["))
+  if unmatched_closers:
+    return GateDecision.refuse(
+      grammar,
+      f"{unmatched_closers} unmatched ']' lemma separator(s) are not consumed",
+    )
+  if registry is None:
+    return GateDecision.refuse(grammar, "no registry is available for a trial parse")
+  trial = [parse_entry(str(entry.raw), registry) for entry in marker_entries]
+  total_tokens = sum(token_count(str(entry.raw)) for entry in marker_entries)
+  refused_tokens = sum(
+    token_count(str(entry.raw))
+    for entry, parsed in zip(marker_entries, trial, strict=True)
+    if parsed is None
+  )
+  ratio = refused_tokens / max(total_tokens, 1)
+  if ratio > MARKER_MAX_UNCONSUMED_TOKEN_RATIO:
+    return GateDecision.refuse(
+      grammar,
+      f"trial parse left {ratio:.1%} of tokens unconsumed "
+      f"(maximum {MARKER_MAX_UNCONSUMED_TOKEN_RATIO:.0%})",
+    )
+  parsed_count = sum(parsed is not None for parsed in trial)
+  if parsed_count * 2 < len(marker_entries):
+    return GateDecision.refuse(
+      grammar,
+      f"only {parsed_count}/{len(marker_entries)} marker entries parsed in trial "
+      "(minimum 50%)",
+    )
+  return GateDecision.accept(grammar)
 
 
 def parse_entry(raw: str, registry: Registry) -> ParsedEntry | None:

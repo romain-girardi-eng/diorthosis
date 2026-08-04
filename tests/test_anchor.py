@@ -101,6 +101,57 @@ class TestAnchorPage:
     assert entries[2].anchor.block_index is None
 
 
+class TestMarkerConventionGate:
+  def registry(self):
+    from diorthosis.conspectus import Registry
+
+    registry = Registry()
+    registry.witnesses = {"A": "A", "B": "B", "L": "L"}
+    return registry
+
+  def test_resolved_numeric_marker_band_passes(self) -> None:
+    page = Page(index=1, printed_page="1", blocks=[
+      block(Layer.TEXT, "alpha1 beta2"),
+      block(
+        Layer.APPARATUS,
+        "1 Alpha A : gamma B   2 Beta A : delta B",
+      ),
+    ])
+
+    anchor_page(page, self.registry())
+
+    entries = page.blocks[1].entries
+    assert len(entries) == 2
+    assert all(entry.marker_eligible for entry in entries)
+    assert all(not entry.refusal_evidence for entry in entries)
+
+  def test_foreign_bracket_separator_refuses_with_evidence(self) -> None:
+    page = Page(index=1, printed_page="1", blocks=[
+      block(Layer.TEXT, "alpha1"),
+      block(Layer.APPARATUS, "1 Alpha] gamma A"),
+    ])
+
+    anchor_page(page, self.registry())
+
+    [entry] = page.blocks[1].entries
+    assert not entry.marker_eligible
+    assert "marker convention gate refused band" in entry.refusal_evidence
+    assert "unmatched ']'" in entry.refusal_evidence
+
+  def test_bude_band_never_reaches_generic_parser(self) -> None:
+    page = Page(index=1, printed_page="1", blocks=[
+      block(Layer.TEXT, "foreign prose without markers"),
+      block(Layer.APPARATUS, "1.54 ἐς om. L || 61 τούτων ABV"),
+    ])
+
+    anchor_page(page, self.registry())
+
+    [entry] = page.blocks[1].entries
+    assert not entry.marker_eligible
+    assert "numeric-marker entry splitting found no boundary" \
+      in entry.refusal_evidence
+
+
 class TestDuplicateMarkers:
   """Marker numbers may repeat within a page (5 pages of the reference
   edition). The lemma is the discriminator; without a unique confirmation

@@ -106,15 +106,16 @@ OCR input** — every number below is measured on born-digital PDFs.
 The test suite is layered by epistemic strength. Read the labels: they
 are different claims.
 
-**Known limit, measured (2026-08-04):** on nine never-seen editions
-across six languages ([docs/generalization.md](docs/generalization.md)),
-the refusal contract held wholesale on one (100 % verbatim, nothing
-fabricated) but the convention grammars produced plausible-but-false
-structures on foreign apparatus layouts in the eight others — the
-spot-checked failure mode is entries of an unknown convention absorbed
-into a known grammar's shape. Convention gating is the v0.7 workstream;
-until then, treat parsed output from conventions outside the four
-validated families as UNREVIEWED pre-annotation, not as data.
+**Known limit, measured (2026-08-04):** whole-band convention gating now
+fails closed on the same nine never-seen editions
+([before/after table](docs/generalization.md)). Eight foreign layouts are
+100% verbatim-refused; *Insolubilia* parses only 20 locally separator-free
+entries (2.2%, with 5/5 deterministic samples faithful) and refuses every
+band containing the unsupported `|| lemma]` continuation. The gate removes
+the v0.6 plausible-but-false structures without moving the validated Plaoul,
+balex, Matthew, or Bobichon results. This is conservative convention
+recognition, not new grammar coverage: refused layouts still require an
+explicit grammar and human review before they become structured data.
 
 1. **Adversarial backtest** (the printed PDF and the scholarly TEI were
    produced *independently* of each other): the whole SBLGNT New
@@ -143,7 +144,7 @@ validated families as UNREVIEWED pre-annotation, not as data.
 
 4. **Real edition without digital ground truth** (self-validation
    metrics only): Bobichon's Justin Martyr, 2 031 entries — 99.3 %
-   anchoring, 99.0 % parse, 97.5 % lemma concordance, **89.8 %
+   anchoring, 99.0 % parse, 97.5 % lemma concordance, **89.9 %
    attribution**. Read that last number honestly: roughly one entry in
    ten needs a human eye on its attributions. On such editions
    diorthosis is a *pre-annotation* tool, not a replacement for review.

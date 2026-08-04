@@ -90,6 +90,15 @@ class ApparatusEntry:
   Wins over every grammar; the TEI marks it resp="#human-review"."""
   override_action: str = ""
   """'' | 'parse' | 'verbatim' — how review touched this entry."""
+  marker_eligible: bool = False
+  """The WHOLE band passed the numeric-marker convention gate.
+
+  Generic ``grammar.parse_entry`` is a dispatch fallback only for entries
+  produced by that marker pipeline.  Merely having parseable punctuation is
+  never enough.
+  """
+  refusal_evidence: str = ""
+  """Band-level convention-gate refusal, observable in review/accounting."""
 
   def __post_init__(self, source: str | None) -> None:
     object.__setattr__(self, "_source_slice", self.raw if source is None else source)

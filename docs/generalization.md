@@ -1,19 +1,23 @@
-# Out-of-the-box generalization of diorthosis v0.6
+# Out-of-the-box generalization: v0.6 baseline and v0.7 convention gating
 
 ## Scope and method
 
-This is a measurement, not a tuning exercise. It measures diorthosis 0.6.0 at
-Git revision `6102801ccd20811a32120793560b225abb555d7d` on eight reviewer-supplied,
-never-seen born-digital editions and one optional same-toolchain, unseen-content
-case. No grammar, threshold, override, parser source, or test was changed. The
-command-line options are limited to page selection, the shipped `la` or `grc`
+This document reports two measurements, not a tuning exercise. The baseline
+measures diorthosis 0.6.0 at Git revision
+`6102801ccd20811a32120793560b225abb555d7d` on eight reviewer-supplied,
+never-seen born-digital editions and one optional same-toolchain,
+unseen-content case; no grammar, threshold, override, parser source, or test
+was changed for that run. The post-gating run holds every input and option
+fixed and changes only convention dispatch/refusal. The command-line options
+in both runs are limited to page selection, the shipped `la` or `grc`
 text-band model, a printed conspectus page, and sigla transcribed unambiguously
 from front matter. Thus a refusal is a successful application of the
 verbatim-refusal contract: the source slice remains present without invented
 structure.
 
 Page numbers below are zero-based PDF file indices, as expected by the CLI.
-`tools/golden/generalize.py` runs `diorthosis build`, measures its wall time,
+`tools/golden/generalize.py` now runs the v0.7 gated production path, measures
+its wall time,
 runs `validate` and `roundtrip`, then re-ingests the identical pages to count
 layers, entry splitting, grammar selection, and anchors. It prints both tables
 below and a deterministic sample of up to five parsed entries per edition:
@@ -82,6 +86,11 @@ convention.
 
 ## Results
 
+### v0.6 baseline (before convention gating)
+
+This table is intentionally retained unchanged: it is the measured failure
+that motivated the gate, and provides the before side of the comparison.
+
 | Edition | Language | Convention family | PDF pages (0-based) | Pages | Entries | Parsed % (by grammar) | Refused % | Anchored % | Fabrication check | Notes |
 |---|---|---|---|---:|---:|---|---:|---:|---|---|
 | Walter Segrave, *Insolubilia* | Scholastic Latin | paragraph reledmac | `30,32,...,148` | 60 | 923 | 98.5% (paragraph 908, marker 1) | 1.5% | 90.7% | **CRITICAL FAIL: 4/5 false** | `\|\|`-joined later lemmas remain inside readings |
@@ -94,7 +103,106 @@ convention.
 | *Suśrutasaṃhitā* 1.16 | Sanskrit, Devanagari | stacked `lemma]` tiers | `58-67` | 10 | 254 | 76.4% (paragraph 194) | 23.6% | 39.8% | **CRITICAL FAIL: 1/5 false** | four samples faithful; one heading became a reading; roundtrip fails |
 | Petrus Gracilis, b1q1 | Scholastic Latin | LombardPress double reledmac | `0-10` | 11 | 18 | 5.6% (marker 1) | 94.4% | 0.0% | **CRITICAL FAIL: 1/1 false** | sole parse was a fontes paragraph |
 
-### Layer and integrity diagnostics
+### v0.7 post-gating remeasurement
+
+The identical PDFs, page selections, declared sigla, and five-sample protocol
+were rerun after adding whole-band convention gates. No edition-specific
+signal participates in a gate. A refused band retains its exact source slices;
+the paragraph/line/verse split views are retained only to keep the review work
+queue stable, and no refused trial parse is emitted as `<app>` structure.
+
+| Edition | Language | Convention family | PDF pages (0-based) | Pages | Entries | Parsed % (by grammar) | Refused % | Anchored % | Fabrication check | Notes |
+|---|---|---|---|---:|---:|---|---:|---:|---|---|
+| Walter Segrave, *Insolubilia* | Scholastic Latin | paragraph reledmac, `\|\|` variant | `30,32,...,148` | 60 | 923 | 2.2% (paragraph 20) | 97.8% | 2.1% | **PASS: 5/5 faithful** | all 903 entries in bands containing unconsumed `\|\|` refused; only locally separator-free bands parsed |
+| Britannico, Persius commentary | Humanist Latin | two-tier `vv.ll.` / fontes, colon | `160-433` | 274 | 343 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | wholesale verbatim refusal |
+| Herodian, Books I–II | Ancient Greek | Budé locus + colon + `\|\|` | two alternating runs | 56 | 74 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | numeric-marker splitting/resolution signature absent |
+| Iacopone, *Laudario* | Medieval Italian | three-tier negative apparatus | eight runs, `122-266` | 49 | 146 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | closing-lemma density is incompatible with paragraph entries |
+| Blacasset | Occitan | stanza/verse `lemma]`, internal `\|` | `115-262` | 148 | 53 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | no resolved numeric-marker pipeline |
+| Pigna, *Gli Heroici* | 16th-c. Italian | no critical apparatus | `44-127` | 84 | 66 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | explanatory notes stay verbatim |
+| Universal Śaivism | Sanskrit IAST | compact composite-siglum, multi-tier | `72-153` | 82 | 82 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | remains 100% refused |
+| *Suśrutasaṃhitā* 1.16 | Sanskrit, Devanagari | stacked `lemma]` tiers | `58-67` | 10 | 254 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | short tier preambles or unattributed trial segments refuse each band |
+| Petrus Gracilis, b1q1 | Scholastic Latin | LombardPress double reledmac | `0-10` | 11 | 18 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | extracted bands lack a strong complete paragraph or marker signature |
+
+The post-gating integrity checks stayed PASS except for Blacasset's pre-existing
+72 duplicate-folio `I7` violations. Suśruta's post-gating roundtrip is now
+PASS because the foreign tier structure is no longer emitted. Anchoring also
+drops with refusal: a rejected convention is not reused to make a structural
+lemma-to-text claim.
+
+#### Gate designs and thresholds
+
+- **Numeric marker / generic grammar.** A band must contain entries opened by
+  the numeric-marker splitter and at least one of those marker numbers must
+  resolve against the page's text layer. `parse_entry` is dispatched only for
+  those marker-produced entries; a preamble or a band split by another grammar
+  is ineligible. The whole band refuses on `\|\|`, `∥`, an unmatched `]`, more
+  than 60% trial-unconsumed tokens, or fewer than half of marker entries parsing
+  in trial. The 60% ceiling is deliberately the loosest threshold: Bobichon has
+  one structurally consistent five-entry band with four successful entries and
+  one long narrative refusal (57.5% of its tokens), while every measured
+  foreign marker candidate fails the mandatory resolved-marker signal.
+- **Verse-referenced.** Splitting must produce verse entries; `\|\|`, `∥`,
+  and spaced `|` are foreign. Orphan `]` closers beyond the split boundaries
+  are tolerated up to a fifth of the entries (strict bracket-balance equality
+  refused the legitimate Jn 7:52 band, whose pericope-sized reading carries
+  editorial brackets). The unconsumed-token ceiling (10%) only convicts when
+  fewer than 60% of the entries parse — one giant honestly-refused entry must
+  not condemn a band whose other entries parse cleanly (Jn 7:52 again). At
+  least 90% of lemma/reading sides must carry edition sigla. Matthew is
+  stronger than the thresholds: all 827 extracted entries trial-parse and
+  every side is attributed.
+- **DLL line-referenced.** The `∥` entry and spaced `|` reading signature must
+  yield at least two entries. `\|\|` and `•` are foreign; at most 20% of trial
+  tokens may be unconsumed, and at least 60% of parsed sides must carry a
+  witness/editor/qualifier attribution. The real balex band set trial-parses
+  563/563 entries and attributes 1,476/1,486 sides; the lower attribution
+  threshold permits its documented editorial-narrative sides without making
+  bare fontes prose look like variants.
+- **Paragraph reledmac.** A band needs at least two numbered `lemma]`
+  boundaries and no `\|\|`, `∥`, spaced `|`, or `•`. Orphan `]` closers
+  beyond the split boundaries are tolerated up to a fifth of the entries
+  (strict bracket-balance equality refused legitimate Plaoul lectios whose
+  bands carry an editorial `[` or a fontium locus). A short non-numeric preamble is treated as a tier
+  heading rather than a fontes tier. Trial parsing may leave at most 20% of
+  tokens unconsumed and may leave no nonempty reading segment without a
+  witness or operator. In the checked Plaoul lectios every candidate entry
+  trial-parses and no reading is unattributed; the closing-density check
+  separates Iacopone, and the preamble/unattributed checks separate Suśruta.
+
+Each refusal is stored on every affected `ApparatusEntry` as a band-level
+evidence string naming the gate and measured reason. The review UI displays it,
+and `tools/golden/generalize.py` carries it into the refusal counts.
+
+#### Validated-family invariance after the gate change
+
+| Target | Post-gating result |
+|---|---|
+| Plaoul lectio 1 / 5 / 14 / 22 | 235 / 188 / 304 / 271 compared; **0 errors each** |
+| Real DLL balex line grammar | 563 compared; **0 errors, 0 gaps, 17 typed divergences; 563/563 anchored** |
+| Retypeset balex golden | 524 compared; **0 errors, 0 gaps** |
+| Real SBLGNT Matthew verse grammar | 822 compared; **0 errors** |
+| Bobichon marker grammar, pages 188–560 | 2,031 entries; **99.3% anchoring, 99.0% parse, 97.5% concordance, 89.9% attribution** |
+
+#### Post-gating fabrication spot-check
+
+Only *Insolubilia* retained parsed samples. The five deterministic keys were
+checked against both their exact source slices and rendered pages:
+`p40-e1` (`istud] quod add. E8`), `p50-e3` (`mentitur] mentitus E8`),
+`p50-e4` (`probabilius] probabiliter E4`), `p66-e3`
+(`quia] quare E8`), and `p66-e5` (`super hoc] semper E4`) are all faithful in
+lemma, reading segmentation/text, and attribution. Verdict: **5/5 faithful,
+zero fabricated structures**. The other eight editions have zero parsed
+entries, hence no proposed structures to sample and no possible fabrication in
+the parsed-sample population.
+
+**Precise TODO — separate workstream:** add the *Insolubilia* paragraph
+variant in which `\|\|` opens another `lemma]` unit inside the same numbered
+line entry. That extension must consume every separator, split and trial-parse
+every unit, conserve its source slice, and receive its own positive/negative
+corpus certification. Until then, any band containing `\|\|` refuses
+wholesale; this gate must not be weakened to simulate support.
+
+### v0.6 baseline layer and integrity diagnostics
 
 Layer counts are `blocks` and, after the slash, distinct `pages` containing
 that layer. “App. chars” is the extracted apparatus-layer character count.
@@ -119,9 +227,9 @@ also explains duplicated deterministic samples and inflated heading/text block
 counts. Suśruta's roundtrip failure comprises six main-text differences in
 Devanagari spacing or glyph adjacency; its Markdown validation passes.
 
-## What generalized, what refused, and what fabricated
+## What generalized, what refused, and what fabricated in the v0.6 baseline
 
-The four shipped families are generic marker/colon, verse, DLL-style line, and
+The four v0.6 families were generic marker/colon, verse, DLL-style line, and
 paragraph/reledmac. In this sample only the generic marker and paragraph
 grammars fired. The reledmac-like Insolubilia and Devanagari `lemma]` apparatus
 are closest to an implemented family. Insolubilia consequently reaches 98.5%
@@ -151,7 +259,7 @@ with no fabricated structure.
 | Suśruta | The paragraph `lemma]` family exists and handles many entries, but not the stacked tier boundaries. |
 | Gracilis | Paragraph/reledmac exists, but the double fontes/variant foot as extracted is not faithfully covered. |
 
-The fabrication check is therefore a critical finding. It failed in every
+The v0.6 fabrication check was therefore a critical finding. It failed in every
 edition with parsed output. Specifically:
 
 - Insolubilia: four of five samples correctly began with a real first lemma but

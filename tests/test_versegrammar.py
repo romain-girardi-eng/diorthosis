@@ -1,6 +1,27 @@
 """Adversarial refusal tests for the verse-referenced apparatus grammar."""
 
-from diorthosis.versegrammar import parse_verse_entry, split_verse_entries
+from diorthosis.versegrammar import (
+  gate_verse_band,
+  parse_verse_entry,
+  split_verse_entries,
+)
+
+
+def test_positive_whole_band_gate() -> None:
+  decision = gate_verse_band(
+    "1:1 α WH ] β RP • γ WH ] δ Treg",
+  )
+  assert decision.accepted
+  assert not decision.evidence
+
+
+def test_foreign_entry_separator_refuses_with_evidence() -> None:
+  decision = gate_verse_band(
+    "1:1 α WH ] β RP ∥ 2 γ WH ] δ Treg",
+  )
+  assert not decision.accepted
+  assert "verse convention gate refused band" in decision.evidence
+  assert "'∥'" in decision.evidence
 
 
 def test_unattributed_rejected_reading_refuses_structure() -> None:

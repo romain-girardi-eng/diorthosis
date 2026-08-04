@@ -33,7 +33,7 @@ from dataclasses import dataclass
 
 from . import linegrammar, paragraphgrammar, versegrammar
 from .conspectus import Registry
-from .grammar import parse_entry
+from .grammar import gate_marker_band, parse_entry
 from .match import lemma_matches_before
 from .model import Anchor, ApparatusEntry, Block, Layer, Page
 
@@ -310,6 +310,22 @@ def _anchor_verse_band(page: Page, block: Block, registry: Registry | None,
   block.entries = entries
 
 
+def _refuse_verse_band(block: Block, stats: dict[str, int],
+                       evidence: str) -> None:
+  """Keep a verse-shaped foreign band split but wholly verbatim."""
+  entries: list[ApparatusEntry] = []
+  for ve in versegrammar.split_verse_entries(block.text):
+    entries.append(ApparatusEntry(
+      raw=f"{ve.loc} {ve.raw}",
+      source=ve.source_slice,
+      anchor=Anchor(kind="verse", value=ve.loc),
+      refusal_evidence=evidence,
+    ))
+    stats["entries"] += 1
+    stats["unanchored"] += 1
+  block.entries = entries
+
+
 def _hyphen_rx(words: list[str]) -> re.Pattern:
   """Word-sequence pattern tolerating printed LINE-BREAK HYPHENATION inside
   any word ("stipendi- umque" must match "stipendiumque"), MARGINAL LINE
@@ -403,6 +419,23 @@ def _anchor_line_band(page: Page, block: Block, registry: Registry | None,
   block.entries = entries
 
 
+def _refuse_line_band(block: Block, stats: dict[str, int],
+                      evidence: str) -> None:
+  """Keep a line-shaped foreign band split but wholly verbatim."""
+  entries: list[ApparatusEntry] = []
+  for le in linegrammar.split_line_entries(block.text):
+    prefix = f"{le.line} " if le.line else ""
+    entries.append(ApparatusEntry(
+      raw=f"{prefix}{'◊ ' if le.crux else ''}{le.raw}",
+      source=le.source_slice,
+      anchor=Anchor(kind="line", value=le.line),
+      refusal_evidence=evidence,
+    ))
+    stats["entries"] += 1
+    stats["unanchored"] += 1
+  block.entries = entries
+
+
 def _anchor_paragraph_band(page: Page, block: Block, registry: Registry,
                            stats: dict[str, int]) -> None:
   """Split and anchor a paragraphed-reledmac band (juxtaposed entries,
@@ -446,6 +479,30 @@ def _anchor_paragraph_band(page: Page, block: Block, registry: Registry,
   block.entries = entries
 
 
+def _refuse_paragraph_band(block: Block, stats: dict[str, int],
+                           evidence: str) -> None:
+  """Keep paragraph boundaries for review, without claiming structure."""
+  entries: list[ApparatusEntry] = []
+  preamble, pentries = paragraphgrammar.split_paragraph_entries(block.text)
+  if preamble:
+    entries.append(ApparatusEntry(
+      raw=" ".join(preamble.split()), source=preamble,
+      refusal_evidence=evidence,
+    ))
+    stats["entries"] += 1
+    stats["unanchored"] += 1
+  for pe in pentries:
+    entries.append(ApparatusEntry(
+      raw=pe.raw,
+      source=pe.source_slice,
+      anchor=Anchor(kind="line", value=pe.line),
+      refusal_evidence=evidence,
+    ))
+    stats["entries"] += 1
+    stats["unanchored"] += 1
+  block.entries = entries
+
+
 def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
   """Split and anchor the apparatus blocks of one page, in place.
 
@@ -475,14 +532,33 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
     if block.layer is not Layer.APPARATUS:
       continue
     if versegrammar.looks_verse_referenced(block.text):
-      _anchor_verse_band(page, block, registry, stats)
+      decision = versegrammar.gate_verse_band(block.text)
+      if decision.accepted:
+        _anchor_verse_band(page, block, registry, stats)
+      else:
+        _refuse_verse_band(block, stats, decision.evidence)
       continue
     if linegrammar.looks_line_referenced(block.text):
-      _anchor_line_band(page, block, registry, stats)
+      if registry is None:
+        _refuse_line_band(
+          block, stats,
+          "line convention gate refused band: no registry is available "
+          "for a trial parse",
+        )
+      else:
+        decision = linegrammar.gate_line_band(block.text, registry)
+        if decision.accepted:
+          _anchor_line_band(page, block, registry, stats)
+        else:
+          _refuse_line_band(block, stats, decision.evidence)
       continue
     if registry is not None and \
        paragraphgrammar.looks_paragraph_referenced(block.text):
-      _anchor_paragraph_band(page, block, registry, stats)
+      decision = paragraphgrammar.gate_paragraph_band(block.text, registry)
+      if decision.accepted:
+        _anchor_paragraph_band(page, block, registry, stats)
+      else:
+        _refuse_paragraph_band(block, stats, decision.evidence)
       continue
     block.entries = split_entries(block.text)
     for e in block.entries:
@@ -508,6 +584,24 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
         stats["anchored"] += 1
       else:
         stats["unanchored"] += 1
+    resolved_markers = sum(
+      entry.anchor is not None and entry.anchor.kind == "marker"
+      and entry.anchor.block_index is not None
+      for entry in block.entries
+    )
+    decision = gate_marker_band(block.entries, registry, resolved_markers)
+    if decision.accepted:
+      for entry in block.entries:
+        if entry.anchor is not None and entry.anchor.kind == "marker":
+          entry.marker_eligible = True
+        else:
+          entry.refusal_evidence = (
+            "marker convention gate excluded entry: it was not produced by "
+            "a numeric-marker boundary"
+          )
+    else:
+      for entry in block.entries:
+        entry.refusal_evidence = decision.evidence
   return stats
 
 

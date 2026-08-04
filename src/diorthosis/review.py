@@ -219,6 +219,8 @@ def render_review(doc: Document, pdf_path: str, outdir: Path,
                   and e.anchor.char_offset is not None)
       if e.override_action:
         status = "reviewed"
+      elif e.refusal_evidence:
+        status = "refused"
       elif not anchored:
         status = "unanchored"
       elif parsed is None:
@@ -252,7 +254,13 @@ def render_review(doc: Document, pdf_path: str, outdir: Path,
           p_rows.append(f"<div class='rdg att'>note: {html.escape(c)}</div>")
         parse_html = "".join(p_rows)
       else:
-        parse_html = "<em>refused — kept as a verbatim note</em>"
+        reason = (
+          f"<div class='rdg att'>{html.escape(e.refusal_evidence)}</div>"
+          if e.refusal_evidence else ""
+        )
+        parse_html = (
+          "<em>refused — kept as a verbatim note</em>" + reason
+        )
 
       ov = json.dumps(_override_json(parsed), ensure_ascii=False, indent=1)
       folio = html.escape(page.printed_page or "?")

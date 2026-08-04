@@ -4,6 +4,7 @@ apps over lectio1-30) and is locked by it."""
 
 from diorthosis.conspectus import Registry
 from diorthosis.paragraphgrammar import (
+  gate_paragraph_band,
   looks_paragraph_referenced,
   parse_paragraph_entry,
   split_paragraph_entries,
@@ -35,6 +36,35 @@ def test_dll_separators_are_not_this_convention() -> None:
     "18 est ] om. R ∥ 20 in ] om. R SV S")
   assert not looks_paragraph_referenced(
     "5 cotidie operibus USTV | cotidie M : nouis 7 aptantur MUSTV ]")
+
+
+def test_positive_whole_band_gate() -> None:
+  decision = gate_paragraph_band(
+    "18 est] om. R 20 in] om. R SV S 20 Guillelmum] Guillelmi V",
+    reg(),
+  )
+  assert decision.accepted
+  assert not decision.evidence
+
+
+def test_ascii_parallel_entries_refuse_whole_band_with_evidence() -> None:
+  decision = gate_paragraph_band(
+    "18 est] om. R || in] om. V 20 aliud] alterum S",
+    reg(),
+  )
+  assert not decision.accepted
+  assert "paragraph convention gate refused band" in decision.evidence
+  assert "'||'" in decision.evidence
+
+
+def test_foreign_tier_heading_refuses_whole_band() -> None:
+  decision = gate_paragraph_band(
+    "MS variants 18 est] om. R Variants from another tier "
+    "20 in] om. V",
+    reg(),
+  )
+  assert not decision.accepted
+  assert "tier heading" in decision.evidence
 
 
 # -- splitting ---------------------------------------------------------

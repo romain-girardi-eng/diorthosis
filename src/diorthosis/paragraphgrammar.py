@@ -30,6 +30,7 @@ import re
 from dataclasses import dataclass, field
 
 from .conspectus import Registry
+from .convention import GateDecision, unconsumed_token_ratio
 from .grammar import Attribution
 
 _BOUNDARY = re.compile(
@@ -41,6 +42,8 @@ _OPERATORS = ("add. sed del.", "plus lectiones", "corr. ex", "in textu",
               "in marg.", "interl.", "add.", "om.", "iterum")
 
 _FACS = re.compile(r"^\((?:[^()])*\)$")
+
+PARAGRAPH_MAX_UNCONSUMED_TOKEN_RATIO = 0.20
 
 
 @dataclass
@@ -117,6 +120,58 @@ def split_paragraph_entries(band_text: str) -> tuple[str, list[ParagraphEntry]]:
       source_slice=source_slice,
     ))
   return preamble, entries
+
+
+def gate_paragraph_band(band_text: str, registry: Registry) -> GateDecision:
+  """Strong whole-band signature for juxtaposed paragraphed reledmac."""
+  grammar = "paragraph"
+  preamble, trial = split_paragraph_entries(band_text)
+  if len(trial) < 2:
+    return GateDecision.refuse(
+      grammar, f"only {len(trial)} numbered lemma boundary/boundaries found")
+  for separator in ("||", "∥", " | ", "•"):
+    if separator in band_text:
+      return GateDecision.refuse(
+        grammar, f"foreign separator {separator!r} is not consumed")
+  # each boundary hit consumes exactly one ']'; ORPHAN closers beyond
+  # the split are the foreign-structure signal. Strict equality against
+  # the whole-band bracket balance broke on legitimate bands: a single
+  # editorial '[' (supplement bracket) or a fontium locus made the raw
+  # count drift by one and refused whole Plaoul lectios (reviewed: L2
+  # '16 for 17'). Tolerance: a fifth of the entries, at least one.
+  orphan_closers = max(0, band_text.count("]") - len(trial))
+  if orphan_closers > max(1, len(trial) // 5):
+    return GateDecision.refuse(
+      grammar,
+      f"{orphan_closers} orphan ']' closer(s) beyond the {len(trial)} "
+      "split boundaries signal an unconsumed foreign structure",
+    )
+  if preamble and len(preamble.split()) <= 6 \
+     and not any(char.isdigit() for char in preamble):
+    return GateDecision.refuse(
+      grammar,
+      "a short non-locus preamble signals a tier heading, not a fontes tier",
+    )
+  for entry in trial:
+    parse_paragraph_entry(entry, registry)
+  ratio = unconsumed_token_ratio(trial)
+  if ratio > PARAGRAPH_MAX_UNCONSUMED_TOKEN_RATIO:
+    return GateDecision.refuse(
+      grammar,
+      f"trial parse left {ratio:.1%} of tokens unconsumed "
+      f"(maximum {PARAGRAPH_MAX_UNCONSUMED_TOKEN_RATIO:.0%})",
+    )
+  unattributed = [
+    reading for entry in trial if entry.parsed for reading in entry.readings
+    if reading.text and reading.attribution.empty
+  ]
+  if unattributed:
+    return GateDecision.refuse(
+      grammar,
+      f"trial parse left {len(unattributed)} nonempty reading segment(s) "
+      "without a witness or operator",
+    )
+  return GateDecision.accept(grammar)
 
 
 def _is_witness(tok: str, registry: Registry) -> bool:

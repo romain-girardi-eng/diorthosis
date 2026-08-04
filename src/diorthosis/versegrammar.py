@@ -28,6 +28,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from .convention import GateDecision, unconsumed_token_ratio
+
 # The edition sigla of the NT critical tradition, as declared by the
 # SBLGNT's own front matter and its TEI encoding. A registry fallback in
 # the builtin_editors spirit: an edition's own conspectus always wins.
@@ -56,6 +58,9 @@ _VERSE_REF = re.compile(r"^\d{1,3}:\d{1,3}(?:[-–]\d{1,3}(?::\d{1,3})?)?$")
 _BARE_VERSE = re.compile(r"^\d{1,3}(?:[-–]\d{1,3})?$")
 # in-text anchor sigla of the NT convention (U+2E00-2E0F)
 ANCHOR_SIGLA = re.compile(r"[⸀-⸏]")
+
+VERSE_MAX_UNCONSUMED_TOKEN_RATIO = 0.10
+VERSE_MIN_ATTRIBUTED_SIDE_RATIO = 0.90
 
 
 def is_edition_siglum(token: str) -> bool:
@@ -230,6 +235,60 @@ def split_verse_entries(band_text: str) -> list[VerseEntry]:
     prev_was_siglum = is_edition_siglum(tok)
   flush(len(band_text))
   return entries
+
+
+def gate_verse_band(band_text: str) -> GateDecision:
+  """Strong whole-band signature for the NT verse-referenced convention."""
+  grammar = "verse"
+  trial = split_verse_entries(band_text)
+  if not trial:
+    return GateDecision.refuse(grammar, "verse-reference splitting found no entry")
+  for separator in ("||", "∥", " | "):
+    if separator in band_text:
+      return GateDecision.refuse(
+        grammar, f"foreign separator {separator!r} is not consumed")
+  # each split entry consumes one ']' lemma separator; ORPHANS beyond
+  # the split are the foreign-structure signal. Strict bracket-balance
+  # equality refused the legitimate Jn 7:52 band, whose pericope-sized
+  # rdg carries editorial single brackets '[οὐ]' and 〚〛 spans that
+  # drift the raw count (reviewed). Tolerance mirrors the paragraph
+  # gate: a fifth of the entries, at least one.
+  orphan_closers = max(0, band_text.count("]") - len(trial))
+  if orphan_closers > max(1, len(trial) // 5):
+    return GateDecision.refuse(
+      grammar,
+      f"{orphan_closers} orphan ']' closer(s) beyond the {len(trial)} "
+      "split verse entries signal an unconsumed foreign structure",
+    )
+  for entry in trial:
+    parse_verse_entry(entry)
+  ratio = unconsumed_token_ratio(trial)
+  parsed_share = sum(1 for entry in trial if entry.parsed) / len(trial)
+  if ratio > VERSE_MAX_UNCONSUMED_TOKEN_RATIO and parsed_share < 0.6:
+    # the token ratio alone over-weights one giant entry: the Jn 7:52
+    # band carries the pericope adulterae as a single ~150-word rdg —
+    # its honest ENTRY-level refusal must not condemn a band whose
+    # other entries parse cleanly (reviewed). Convention evidence is
+    # the entry majority; the token ratio only convicts when both fail.
+    return GateDecision.refuse(
+      grammar,
+      f"trial parse left {ratio:.1%} of tokens unconsumed and only "
+      f"{parsed_share:.0%} of entries parsed",
+    )
+  sides = [entry.lemma_sigla for entry in trial if entry.parsed] + [
+    reading.sigla for entry in trial if entry.parsed
+    for reading in entry.readings
+  ]
+  attributed = sum(bool(side) for side in sides)
+  attributed_ratio = attributed / max(len(sides), 1)
+  if attributed_ratio < VERSE_MIN_ATTRIBUTED_SIDE_RATIO:
+    return GateDecision.refuse(
+      grammar,
+      f"only {attributed}/{len(sides)} trial sides carry edition sigla "
+      f"({attributed_ratio:.1%}; minimum "
+      f"{VERSE_MIN_ATTRIBUTED_SIDE_RATIO:.0%})",
+    )
+  return GateDecision.accept(grammar)
 
 
 def parse_verse_entry(entry: VerseEntry) -> VerseEntry:

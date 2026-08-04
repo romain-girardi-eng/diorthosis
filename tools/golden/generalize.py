@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure diorthosis v0.6 on unseen born-digital critical editions.
+"""Measure diorthosis v0.7 on unseen born-digital critical editions.
 
 The configured PDFs live outside the repository because they are reviewer-
 supplied inputs.  This driver deliberately performs no tuning: it runs the
@@ -10,7 +10,7 @@ review samples.
 Usage:
   python tools/golden/generalize.py
   python tools/golden/generalize.py --only insolubles --samples 5
-  python tools/golden/generalize.py --workdir /tmp/diorthosis-generalize-v06
+  python tools/golden/generalize.py --workdir /tmp/diorthosis-generalize-v07
 """
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ EDITIONS = (
     convention="paragraphed line + ] (reledmac)",
     conspectus_page=25,
     sigla=("E4", "E8", "O"),
-    fabrication_check="CRITICAL FAIL (4/5 false structure)",
+    fabrication_check="PASS (5/5 faithful; all || bands refused)",
   ),
   Edition(
     slug="britannico",
@@ -83,7 +83,7 @@ EDITIONS = (
     language="Humanist Latin",
     convention="two-tier vv.ll./Fontes; locus lemma : reading",
     sigla=("a", "b", "c"),
-    fabrication_check="CRITICAL FAIL (5/5 false structure)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
   Edition(
     slug="derivas",
@@ -96,7 +96,7 @@ EDITIONS = (
     text_lang="grc",
     conspectus_page=376,
     sigla=("A", "B", "V", "G", "F", "L", "Io"),
-    fabrication_check="CRITICAL FAIL (5/5 false structure)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
   Edition(
     slug="iacopone",
@@ -113,7 +113,7 @@ EDITIONS = (
       "TRES",
     ),
     limitation="Italian is measured through --text-lang la",
-    fabrication_check="CRITICAL FAIL (5/5 false structure)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
   Edition(
     slug="blacasset",
@@ -130,7 +130,7 @@ EDITIONS = (
       "V", "VeAg", "W",
     ),
     limitation="Occitan is measured through --text-lang la",
-    fabrication_check="CRITICAL FAIL (5/5 false structure)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
   Edition(
     slug="pigna",
@@ -141,7 +141,7 @@ EDITIONS = (
     language="16th-century Italian",
     convention="no critical apparatus; explanatory footnotes only",
     limitation="Italian is measured through --text-lang la; copy flag ignored by pdfminer",
-    fabrication_check="CRITICAL FAIL (5/5 false structure)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
   Edition(
     slug="saivism",
@@ -156,7 +156,7 @@ EDITIONS = (
       "P3T2", "P7T2", "EN",
     ),
     limitation="Sanskrit IAST is measured through --text-lang la",
-    fabrication_check="N/A (0 parsed)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
   Edition(
     slug="susruta",
@@ -168,7 +168,7 @@ EDITIONS = (
     convention="stacked MS/Su1938 apparatus; Devanagari locus lemma]",
     sigla=("K", "N", "H", "A"),
     limitation="Sanskrit is measured through --text-lang la; script is Devanagari",
-    fabrication_check="CRITICAL FAIL (1/5 false structure)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
   Edition(
     slug="gracilis",
@@ -179,7 +179,7 @@ EDITIONS = (
     language="Scholastic Latin",
     convention="LombardPress double reledmac apparatus",
     limitation="optional locally typeset case; the PDF prints no conspectus",
-    fabrication_check="CRITICAL FAIL (1/1; all parsed)",
+    fabrication_check="N/A (0 parsed; wholesale refusal)",
   ),
 )
 
@@ -280,6 +280,7 @@ def measure(edition: Edition, workdir: Path, sample_size: int) -> dict:
     layer_chars: Counter[str] = Counter()
     anchor_totals: Counter[str] = Counter()
     parsed_by: Counter[str] = Counter()
+    refusal_evidence: Counter[str] = Counter()
     parsed_entries: list[dict] = []
     for page in doc.pages:
       for block in page.blocks:
@@ -292,6 +293,8 @@ def measure(edition: Edition, workdir: Path, sample_size: int) -> dict:
         parsed = resolve_parsed(entry, registry)
         grammar = _grammar(entry, parsed)
         parsed_by[grammar] += 1
+        if parsed is None and entry.refusal_evidence:
+          refusal_evidence[entry.refusal_evidence] += 1
         if parsed is not None:
           parsed_entries.append({
             "key": key,
@@ -302,7 +305,7 @@ def measure(edition: Edition, workdir: Path, sample_size: int) -> dict:
           })
 
     seed = int.from_bytes(
-      hashlib.sha256(f"diorthosis-v0.6:{edition.slug}".encode()).digest()[:8],
+      hashlib.sha256(f"diorthosis-v0.7:{edition.slug}".encode()).digest()[:8],
       "big",
     )
     rng = random.Random(seed)
@@ -319,6 +322,7 @@ def measure(edition: Edition, workdir: Path, sample_size: int) -> dict:
       "parsed_by": dict(sorted(parsed_by.items())),
       "parsed": len(parsed_entries),
       "refused": parsed_by["refused"],
+      "refusal_evidence": dict(sorted(refusal_evidence.items())),
       "samples": sorted(sample, key=lambda item: (item["page"], item["key"])),
     })
   except Exception as exc:  # noqa: BLE001 - one failed edition must remain visible
@@ -389,6 +393,21 @@ def markdown(results: list[dict]) -> str:
       f"{result['anchored']} / {result['unanchored']} / {result['ambiguous']} | "
       f"{result['validate']} | {result['roundtrip']} | "
       f"{result['build_seconds']:.2f}s |")
+  lines += [
+    "",
+    "| Edition | Observable convention-gate refusal evidence (entries) |",
+    "|---|---|",
+  ]
+  for result in results:
+    edition = result["edition"]
+    if result["error"]:
+      lines.append(f"| {edition.slug} | - |")
+      continue
+    evidence = "; ".join(
+      f"{reason} ({count})"
+      for reason, count in result["refusal_evidence"].items()
+    ) or "none"
+    lines.append(f"| {edition.slug} | {_cell(evidence)} |")
   return "\n".join(lines)
 
 
@@ -434,7 +453,7 @@ def main() -> int:
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument("--only", action="append", default=[], metavar="SLUG")
   parser.add_argument(
-    "--workdir", type=Path, default=Path("/tmp/diorthosis-generalize-v06"))
+    "--workdir", type=Path, default=Path("/tmp/diorthosis-generalize-v07"))
   parser.add_argument("--samples", type=int, default=5)
   args = parser.parse_args()
   if args.samples < 0:

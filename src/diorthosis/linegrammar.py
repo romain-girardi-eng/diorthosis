@@ -28,6 +28,7 @@ import re
 from dataclasses import dataclass, field
 
 from .conspectus import Registry
+from .convention import GateDecision, unconsumed_token_ratio
 from .grammar import QUALIFIERS, Attribution, _split_attribution
 
 _LINE_NUM = re.compile(
@@ -98,6 +99,10 @@ class LineEntry:
   crux: bool = False
   parsed: bool = False
   resolved_lemma: str = ""
+
+
+LINE_MAX_UNCONSUMED_TOKEN_RATIO = 0.20
+LINE_MIN_ATTRIBUTED_SIDE_RATIO = 0.60
 
 
 def looks_line_referenced(band_text: str) -> bool:
@@ -205,6 +210,44 @@ def split_line_entries(band_text: str) -> list[LineEntry]:
       entries.append(LineEntry(
         line=line or current_line, raw=raw, source_slice=chunk, crux=crux))
   return entries
+
+
+def gate_line_band(band_text: str, registry: Registry) -> GateDecision:
+  """Strong whole-band signature for DLL-style ``∥``/``|`` apparatus."""
+  grammar = "line"
+  trial = split_line_entries(band_text)
+  if len(trial) < 2:
+    return GateDecision.refuse(grammar, f"only {len(trial)} entry was split")
+  for separator in ("||", "•"):
+    if separator in band_text:
+      return GateDecision.refuse(
+        grammar, f"foreign separator {separator!r} is not consumed")
+  for entry in trial:
+    parse_line_entry(entry, registry)
+  ratio = unconsumed_token_ratio(trial)
+  if ratio > LINE_MAX_UNCONSUMED_TOKEN_RATIO:
+    return GateDecision.refuse(
+      grammar,
+      f"trial parse left {ratio:.1%} of tokens unconsumed "
+      f"(maximum {LINE_MAX_UNCONSUMED_TOKEN_RATIO:.0%})",
+    )
+  sides = [
+    entry.lemma_attribution for entry in trial
+    if entry.parsed and entry.lemma_attribution is not None
+  ] + [
+    reading.attribution for entry in trial if entry.parsed
+    for reading in entry.readings
+  ]
+  attributed = sum(not side.empty for side in sides)
+  attributed_ratio = attributed / max(len(sides), 1)
+  if attributed_ratio < LINE_MIN_ATTRIBUTED_SIDE_RATIO:
+    return GateDecision.refuse(
+      grammar,
+      f"only {attributed}/{len(sides)} trial sides carry convention "
+      f"attribution ({attributed_ratio:.1%}; minimum "
+      f"{LINE_MIN_ATTRIBUTED_SIDE_RATIO:.0%})",
+    )
+  return GateDecision.accept(grammar)
 
 
 def parse_line_entry(entry: LineEntry, registry: Registry) -> LineEntry:
