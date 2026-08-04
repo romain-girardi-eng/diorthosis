@@ -375,3 +375,60 @@ Every gate green at release: real balex line 563 = 0/0; retypeset balex
 524 = 0/0; retypeset SBLGNT 6 906 = 0/0; real NT 6 800 = 0 errors;
 Problemata 5 524 = 0 errors; Bobichon full battery unchanged at
 99.3 / 99.0 / 97.5 / 89.8 (2 031 entries).
+
+## 19. v0.6 — the paragraphed-reledmac grammar and the double apparatus, to zero (2026-08-04)
+
+Third real-backtesting case: Petrus Plaoul, *Commentary on the Sentences*
+(ed. Jeffrey C. Witt, SCTA), lectio1-30 — **6,293 apparatus entries = 0
+errors** against the scholars' TEI, on the PDF produced by the project's
+own LombardPress/reledmac toolchain (`plaoul_build_pdf.py`,
+byte-deterministic). This is the standard paragraphed reledmac foot
+("N lemma] rdg SIG", juxtaposed, no separators) under a DOUBLE apparatus
+(fontium tier above the variants), with crop marks, a diagonal DRAFT
+watermark, folio marks and marginal line counters interleaved in the
+glyph stream.
+
+New module `paragraphgrammar.py`: entry boundaries are "NUM lemma]" hits
+scanned WITHOUT consumption (fontium narrative must not swallow a genuine
+boundary hiding inside its span), an elliptic lemma is guarded on its
+pre-ellipsis head only, a single numeric token is a valid lemma; readings
+split on witness-run ends; the LombardPress operator vocabulary (om.,
+iterum, in textu, plus lectiones, add., add. sed del., interl., in marg.,
+corr. ex) closes readings — only "plus lectiones" takes its list after
+the operator; corr.-ex pre-correction text and post-witness facsimile
+parens are notes. `--sigla R,V,S,SV` supplies the registry when the PDF
+prints no conspectus.
+
+What the print taught (all verified against the toolchain's XSLT and the
+typeset page, none guessed):
+
+- **The stylesheet is the rendering contract, warts included**: the
+  template silencing `<note>` is COMMENTED OUT in the official
+  critical.xslt, so English editorial notes leak into printed lemmas; the
+  checker models the leak.
+- **Elliptic printed lemmas match on the prefix only**: the printed
+  suffix of a long lemma goes through typesetter transforms the TEI
+  cannot model (a nested app's rdg folded into the last word, leaked
+  notes); global-order alignment already pins the entry.
+- **`@wit` tokens without `#` print verbatim** ("3V", "EV" — source-TEI
+  typos become de-facto sigla on the page).
+- **A duplicated siglum in one witness run is reading text** (Roman
+  numerals collide with sigla): run-initial with nothing else on the
+  reading ("I] V R SV S V") it is THIS reading's text; mid-run
+  ("XIII] VIII R SV S V V") it opens the NEXT reading.
+
+The loop also hardened regreek's layer separation (v0.7.2: corner-only
+crop-mark test, gutter counters dropped, folio at the end of the line
+list, true-band-edge requirement, widest-gap full split) — three
+cross-corpus regressions caught by re-running every harness after each
+change; see regreek's FINDINGS.
+
+Every gate green at release: Plaoul 6,293 = 0 (anchored 94.9 %); real
+balex line 563 = 0/0 at 100 % anchoring; retypeset balex 524 = 0/0;
+retypeset SBLGNT 6,906 = 0/0; real NT 6,800 = 0; Problemata 5,524 = 0
+errors / 47 honest gaps (stable since v0.5); real-PDF coverage balex
+93.7 / 95.9 and Matthew 97.0 / 100.0 with zero contamination and zero
+false structures; Bobichon 2,031 entries at 99.3 / 99.0 / 97.5 / 89.8.
+An end-to-end CLI build of lectio5 (`--text-lang la --sigla R,V,S,SV`)
+emits 188 `<app>` (the scholar count), validates against tei_all.rng,
+and passes `validate` and `roundtrip`.

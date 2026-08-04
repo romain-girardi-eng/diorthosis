@@ -30,7 +30,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from . import linegrammar, versegrammar
+from . import linegrammar, paragraphgrammar, versegrammar
 from .conspectus import Registry
 from .grammar import parse_entry
 from .match import lemma_matches_before
@@ -397,6 +397,48 @@ def _anchor_line_band(page: Page, block: Block, registry: Registry | None,
   block.entries = entries
 
 
+def _anchor_paragraph_band(page: Page, block: Block, registry: Registry,
+                           stats: dict[str, int]) -> None:
+  """Split and anchor a paragraphed-reledmac band (juxtaposed entries,
+  ``NUM lemma] readings``) in place. On a DOUBLE apparatus the fontium
+  tier precedes the first entry boundary and stays one verbatim note."""
+  entries: list[ApparatusEntry] = []
+  cursors: dict[int, int] = {}
+  preamble, pentries = paragraphgrammar.split_paragraph_entries(block.text)
+  if preamble:
+    entries.append(ApparatusEntry(raw=preamble))
+    stats["entries"] += 1
+    stats["unanchored"] += 1
+  for pe in pentries:
+    paragraphgrammar.parse_paragraph_entry(pe, registry)
+    e = ApparatusEntry(
+      raw=pe.raw,
+      anchor=Anchor(kind="line", value=pe.line),
+      parsed_paragraph=pe if pe.parsed else None,
+    )
+    entries.append(e)
+    stats["entries"] += 1
+    resolved = False
+    if pe.parsed and pe.lemma:
+      for bi, tb in enumerate(page.blocks):
+        if tb.layer not in (Layer.TEXT, Layer.HEADING):
+          continue
+        start_at = cursors.get(bi, 0)
+        m = _search_line_lemma(pe.lemma, tb.text, start_at)
+        if m is None:
+          continue
+        e.anchor.block_index, e.anchor.char_offset = bi, m.end()
+        e.anchor.digit_start = e.anchor.digit_end = m.end()
+        cursors[bi] = m.start() + 1
+        resolved = True
+        break
+    if resolved:
+      stats["anchored"] += 1
+    else:
+      stats["unanchored"] += 1
+  block.entries = entries
+
+
 def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
   """Split and anchor the apparatus blocks of one page, in place.
 
@@ -430,6 +472,10 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
       continue
     if linegrammar.looks_line_referenced(block.text):
       _anchor_line_band(page, block, registry, stats)
+      continue
+    if registry is not None and \
+       paragraphgrammar.looks_paragraph_referenced(block.text):
+      _anchor_paragraph_band(page, block, registry, stats)
       continue
     block.entries = split_entries(block.text)
     for e in block.entries:

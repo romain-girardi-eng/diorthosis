@@ -203,6 +203,16 @@ def resolve_parsed(e, registry: Registry | None) -> ParsedEntry | None:
                 for r in le.readings],
       comments=list(le.comments),
     )
+  if e.parsed_paragraph is not None and registry is not None:
+    pe = e.parsed_paragraph
+    return ParsedEntry(
+      lemma=pe.lemma,
+      lemma_attribution=Attribution(),
+      readings=[Reading(text=r.text, attribution=r.attribution)
+                for r in pe.readings],
+      comments=list(pe.comments)
+               + [c for r in pe.readings for c in r.comments],
+    )
   return parse_entry(e.raw, registry) if registry is not None else None
 
 

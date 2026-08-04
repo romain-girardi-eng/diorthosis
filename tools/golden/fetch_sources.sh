@@ -15,4 +15,7 @@ curl -sL -o data/sblgnt.xml \
   https://raw.githubusercontent.com/PatristicTextArchive/sblgnt-tei/master/xml/sblgnt_tei.xml
 curl -sL -o data/problemata.xml \
   https://raw.githubusercontent.com/DigitalLatin/Problemata/master/edition.xml
+# TEI-all RELAX NG schema (validation target for the emitted TEI)
+curl -sL -o tei_all.rng \
+  https://tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng
 ls -la data/

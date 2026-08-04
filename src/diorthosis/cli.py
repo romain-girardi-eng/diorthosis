@@ -97,6 +97,10 @@ def main(argv: list[str] | None = None) -> int:
                  help="per-edition human-review overrides file; every "
                       "applied override is marked resp='#human-review' "
                       "in the TEI")
+  b.add_argument("--sigla", default=None, metavar="S1,S2,…",
+                 help="comma-separated witness sigla (e.g. 'R,V,S,SV') for "
+                      "editions whose PDF prints no conspectus siglorum; "
+                      "merged into whatever the front matter yields")
 
   i = sub.add_parser("inspect", help="show one page's anchored structure")
   i.add_argument("pdf")
@@ -224,6 +228,12 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr)
   else:
     registry = with_builtin_editors(Registry())
+
+  if getattr(args, "sigla", None):
+    for siglum in args.sigla.split(","):
+      siglum = siglum.strip()
+      if siglum and siglum not in registry.witnesses:
+        registry.witnesses[siglum] = "user-supplied siglum (--sigla)"
 
   if not doc.pages:
     raise ValueError("no pages ingested: the requested pages do not exist "

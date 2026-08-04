@@ -13,3 +13,4 @@ build/
 # reproducible via tools/golden/fetch_sources.sh, never shipped
 tools/golden/data/
 tools/golden/work/
+tools/golden/tei_all.rng

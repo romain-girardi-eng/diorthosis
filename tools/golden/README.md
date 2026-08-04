@@ -35,14 +35,15 @@ Ground-truth integrity rules:
 - pagination is composed deterministically (never left to TeX) and a page
   count guard fails the run if the typeset ever overflows.
 
-Corpus status (2026-08-03):
+Corpus status (2026-08-04, v0.6):
 
 | edition | language | entries | result |
 |---|---|---|---|
 | Bellum Alexandrinum (LDLT, Damon) | Latin | 524 | **0 errors, 0 gaps** |
 | SBLGNT (Holmes 2010, TEI re-encoding) | Greek | 6 906 | **0 errors, 0 gaps** |
-| Problemata XIX (LDLT, Mutch) | Medieval Latin | 5 524 | open — superscript
-witness sigla (Eᵃ/Pˣ/Vᵐ) are flattened by the adapter; frontier for v0.3 |
+| Problemata XIX (LDLT, Mutch) | Medieval Latin | 5 524 | **0 errors**, 47 gaps
+(honest refusals, stable since v0.5) |
+| Plaoul lectio1-30 (SCTA, Witt) — real toolchain PDF | Medieval Latin | 6 293 | **0 errors** (plaoul_check.py) |
 
 The `data/` directory is gitignored: diorthosis ships no edition content;
 the corpus is reproducible from `fetch_sources.sh` (CC BY / CC BY-SA
@@ -61,6 +62,16 @@ everything stays verbatim: the honesty contract holding on real layouts).
 
     python3 real_check.py data/balex.xml balex-dll.pdf --pages 84-171 --text-lang la
     python3 real_check.py data/sblgnt.xml 61-SBLGNT-Matthew.pdf --max-apps 770
+
+The line-referenced STRUCTURED check on the same real balex PDF (563
+scholar apps = 0 errors, 100 % anchored) — note the canonical page range
+STARTS AT 82 (pages 82-83 carry chapters 1-2) and the conspectus
+siglorum lives on page 54:
+
+    python3 -m diorthosis.cli build ldlt-balex.pdf --pages 82-171 \
+        --conspectus-page 54 --text-lang la -o out/
+    python3 line_check.py data/balex.xml out/ldlt-balex.tei.xml \
+        --known balex_known_divergences.json
 
 ## The third real-backtesting case: Petrus Plaoul (double apparatus)
 
@@ -88,8 +99,14 @@ fetches it at use and never commits or redistributes edition content
 (same fetch-at-use contract as the rest of `data/`); the generated PDF
 stays local. The harness itself (this script) ships no Plaoul text.
 
-Status: case selected and mechanics locked (TEI ✓, official-toolchain
-PDF ✓, deterministic ✓). The paragraphed-reledmac grammar, the
-double-apparatus split and the marginalia-in-flow extraction (line
-numbers and folio marks interleave with the text stream) are the v0.6
-loop-to-zero work.
+Status (2026-08-04, v0.6): **looped to zero — 6,293 apps across all 30
+lectios, 0 errors** (`plaoul_check.py lectioN.xml lectioN.pdf`, per-app
+comparison of lemma, reading count, reading texts and witness sets under
+the project's own critical.xslt rendering contract). Anchoring 5,969/6,293
+(94.9 %). Key contract points learned from the print: leaked English
+editorial notes DO print (the XSLT's note-silencing template is commented
+out); elliptic printed lemmas match on the pre-ellipsis prefix only (the
+suffix goes through typesetter transforms the TEI cannot model);
+`@wit` tokens without `#` ("3V", "EV") print verbatim as de-facto sigla;
+a duplicated siglum in a witness run is reading text, run-initial =
+same reading, mid-run = next reading.

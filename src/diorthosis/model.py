@@ -77,6 +77,9 @@ class ApparatusEntry:
   parsed_line: object | None = None
   """A linegrammar.LineEntry when the band follows the line-referenced
   convention and this entry parsed; None otherwise."""
+  parsed_paragraph: object | None = None
+  """A paragraphgrammar.ParagraphEntry when the band follows the
+  paragraphed-reledmac convention and this entry parsed; None otherwise."""
   parsed_override: object | None = None
   """A grammar.ParsedEntry supplied by HUMAN REVIEW (overrides file).
   Wins over every grammar; the TEI marks it resp="#human-review"."""
