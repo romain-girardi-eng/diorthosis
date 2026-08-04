@@ -70,6 +70,19 @@ exit 1 = violations, one line each.
     I12 Determinism. Byte-identical input + version ⇒ byte-identical output. No dict
         iteration, wall-clock, path or locale enters the emission. Output is NFC.
 
+## Round-trip guarantee
+
+md-ce and TEI P5 are projections of the same internal document model. For every
+build, `diorthosis roundtrip EDITION.md EDITION.tei.xml` mechanically verifies
+that both outputs carry the same projected content. Exit 0 means:
+
+- the same page folios occur in the same order;
+- each page has the same normalised text after md-ce markers and TEI anchors are
+  removed;
+- each page has the same verbatim apparatus entries, including rejected entries,
+  with the same multiplicities; and
+- each page has the same normalised `translation` and `notes` layers.
+
 ## Chunking contract for retrieval
 
     C1  A chunk is one `### ` section. Chunkers MUST NOT split on blank lines: body

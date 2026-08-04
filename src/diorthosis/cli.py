@@ -7,6 +7,7 @@ Usage::
   diorthosis build edition.pdf --pages 290-320 -o out/
   diorthosis inspect edition.pdf --page 300
   diorthosis validate out/edition.md              # md-ce/0.2 invariants
+  diorthosis roundtrip out/edition.md out/edition.tei.xml
 """
 
 from __future__ import annotations
@@ -106,6 +107,11 @@ def main(argv: list[str] | None = None) -> int:
   v = sub.add_parser("validate", help="check a md-ce file against SPEC.md's invariants")
   v.add_argument("file", help="a .md file produced by diorthosis build")
 
+  rt = sub.add_parser(
+    "roundtrip", help="check that md-ce and TEI carry the same content")
+  rt.add_argument("md", help="a .md file produced by diorthosis build")
+  rt.add_argument("tei", help="the matching .tei.xml file")
+
   r = sub.add_parser(
     "review",
     help="generate the human-review page: image snippet per apparatus "
@@ -131,6 +137,18 @@ def main(argv: list[str] | None = None) -> int:
       print(f"{len(violations)} violation(s)", file=sys.stderr)
       return 1
     print("OK: md-ce/0.2 invariants hold")
+    return 0
+
+  if args.cmd == "roundtrip":
+    from .roundtrip import check_roundtrip
+
+    violations = check_roundtrip(args.md, args.tei)
+    for violation in violations:
+      print(f"{args.md} <> {args.tei}: {violation}")
+    if violations:
+      print(f"{len(violations)} violation(s)", file=sys.stderr)
+      return 1
+    print("OK: md-ce and TEI carry the same content")
     return 0
 
   if args.cmd == "inspect":
