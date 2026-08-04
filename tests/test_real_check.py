@@ -5,8 +5,11 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools" / "golden"))
 
+pytest.importorskip("lxml", reason="the golden harness needs lxml")
 from real_check import exact_in, lemma_window  # noqa: E402
 
 
