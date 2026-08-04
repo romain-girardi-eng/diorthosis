@@ -106,6 +106,16 @@ OCR input** — every number below is measured on born-digital PDFs.
 The test suite is layered by epistemic strength. Read the labels: they
 are different claims.
 
+**Known limit, measured (2026-08-04):** on nine never-seen editions
+across six languages ([docs/generalization.md](docs/generalization.md)),
+the refusal contract held wholesale on one (100 % verbatim, nothing
+fabricated) but the convention grammars produced plausible-but-false
+structures on foreign apparatus layouts in the eight others — the
+spot-checked failure mode is entries of an unknown convention absorbed
+into a known grammar's shape. Convention gating is the v0.7 workstream;
+until then, treat parsed output from conventions outside the four
+validated families as UNREVIEWED pre-annotation, not as data.
+
 1. **Adversarial backtest** (the printed PDF and the scholarly TEI were
    produced *independently* of each other): the whole SBLGNT New
    Testament — the official published PDF against the PTA's TEI
