@@ -9,6 +9,7 @@ from diorthosis.anchor import (
   find_markers,
   split_entries,
 )
+from diorthosis.match import locate_lemma_start
 from diorthosis.model import Block, Layer, Page, Source
 
 
@@ -156,7 +157,9 @@ class TestMarkerTypography:
     p = Page(index=264, printed_page="258")
     p.blocks.append(block(Layer.TEXT, "καὶ τὸ ὄνομα ἐδήλωσέ 4 πᾶσιν."))
     p.blocks.append(block(Layer.APPARATUS, "4 Ἐδήλωσέ : ἐδήλωσε A"))
-    stats = anchor_page(p, with_builtin_editors(Registry()))
+    registry = with_builtin_editors(Registry())
+    registry.witnesses["A"] = "A"
+    stats = anchor_page(p, registry)
     assert stats["anchored"] == 1
     [entry] = p.blocks[1].entries
     before = p.blocks[0].text[: entry.anchor.char_offset]
@@ -171,3 +174,22 @@ class TestEntryMonotonicity:
     entries = split_entries(band)
     assert len(entries) == 1
     assert "136" in entries[0].raw
+
+
+class TestLemmaStart:
+  def test_repeated_words_keep_the_full_lemma_span(self) -> None:
+    text = "ante Βόες ἐκ τῆς Ῥαχάβ, Βόες post"
+    end = text.index(" post")
+    assert locate_lemma_start("Βόες ἐκ τῆς Ῥαχάβ, Βόες", text, end) == 5
+
+  def test_punctuation_boundary_and_line_break_hyphenation(self) -> None:
+    glued = "diuersa mutatione similiter.Et"
+    assert locate_lemma_start("Et", glued, len(glued)) == glued.rindex("Et")
+
+    broken = "naturam verum preter nat-\n\nuram existentis"
+    start = broken.index("nat-\n\nuram")
+    assert locate_lemma_start("Naturam existentis", broken, len(broken)) == start
+
+  def test_missing_full_sequence_refuses_short_start(self) -> None:
+    text = "Alterius rei, deinde alterius"
+    assert locate_lemma_start("Alterius rei copiam, alterius", text, len(text)) is None

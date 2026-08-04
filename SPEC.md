@@ -28,7 +28,8 @@ exit 1 = violations, one line each.
     refs       = "*refs: " ref *(", " ref) "*"  ; verbatim printed witness refs
     body       = *(line LF)                     ; ends at the next "### "/"## "/EOF
     marker     = "⟦" folio ":" int ["?"] "⟧"    ; "?" = anchor unresolved
-    app-entry  = [marker SP] verbatim-entry      ; apparatus body: ONE entry per line
+    app-entry  = [marker SP] source-entry        ; apparatus body: ONE entry per line
+    source-entry = exact source slice with each CRLF/LF/CR replaced by one SP
 
 ## Invariants (normative; each is mechanically checkable)
 
@@ -57,7 +58,10 @@ exit 1 = violations, one line each.
         ascending MUST be normalised before emission, never emitted permuted.
     I8  Order preservation. Within a page, blocks appear in printed order; within
         an apparatus block, entries appear in printed order; nothing is merged,
-        reordered, corrected or de-hyphenated.
+        reordered, corrected or de-hyphenated. Because md-ce requires one entry
+        per physical line, entry-internal source line breaks are the sole
+        apparatus transform: each CRLF, LF or CR becomes one U+0020. The TEI
+        note[@type='verbatim'] retains the exact line breaks and whitespace.
     I9  Declared lossiness. md-ce OMITS running heads, page numbers, the conspectus
         siglorum and the parsed lemma/reading structure. Those live in the TEI named
         by meta `tei:`. Omission of anything else is a defect.
@@ -79,8 +83,9 @@ that both outputs carry the same projected content. Exit 0 means:
 - the same page folios occur in the same order;
 - each page has the same normalised text after md-ce markers and TEI anchors are
   removed;
-- each page has the same verbatim apparatus entries, including rejected entries,
-  with the same multiplicities; and
+- each page has the same source-slice apparatus entries, including rejected
+  entries, with the same multiplicities after md-ce's declared line unwrapping;
+  and
 - each page has the same normalised `translation` and `notes` layers.
 
 ## Chunking contract for retrieval

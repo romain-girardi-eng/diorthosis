@@ -88,7 +88,9 @@ class LineEntry:
   line: str
   """Marginal line number as printed ('5', '11–12'); '' when inherited."""
   raw: str
-  """The printed entry, verbatim (without the leading number)."""
+  """Whitespace-normalized parsing view, without the leading number."""
+  source_slice: str = ""
+  """Exact substring of the source band, including any leading line number."""
   lemma: str = ""
   lemma_attribution: Attribution | None = None
   readings: list[LineReading] = field(default_factory=list)
@@ -155,7 +157,23 @@ def _split_unseparated(chunk: str) -> list[str]:
   start = 0
   for m in _UNSEPARATED.finditer(chunk):
     depth = chunk[:m.end(1)].count("(") - chunk[:m.end(1)].count(")")
-    if depth == 0:
+    boundary_ok = True
+    if m.group(1).startswith(")"):
+      open_paren = chunk.rfind("(", start, m.end(1))
+      side_start = max(chunk.rfind("|", start, open_paren), start - 1) + 1
+      prefix = chunk[side_start:open_paren].strip()
+      following = chunk[m.end():]
+      next_entry_shape = re.match(
+        r"\d{1,3}(?:[-–]\d{1,3})?\s+.{1,120}?(?:\]|\s\|\s)",
+        following,
+        flags=re.DOTALL,
+      )
+      # A closing parenthesis at the START of a reading is not evidence for
+      # an omitted entry separator: ``| (ut dicitur) 12 milia U |`` admits
+      # both a numeric reading and a line-12 entry. Refuse that ambiguity in
+      # parse_line_entry; do not fabricate the second locus here.
+      boundary_ok = bool(prefix and next_entry_shape)
+    if depth == 0 and boundary_ok:
       parts.append(chunk[start:m.end(1)])
       start = m.end()
   parts.append(chunk[start:])
@@ -163,11 +181,10 @@ def _split_unseparated(chunk: str) -> list[str]:
 
 
 def split_line_entries(band_text: str) -> list[LineEntry]:
-  """Split a line-referenced band into entries, verbatim."""
-  flat = " ".join(band_text.split())
+  """Split a line-referenced band into parsing views plus source slices."""
   entries: list[LineEntry] = []
   current_line = ""
-  for chunk in (p for c in flat.split("∥") for p in _split_unseparated(c)):
+  for chunk in (p for c in band_text.split("∥") for p in _split_unseparated(c)):
     chunk = chunk.strip()
     if not chunk:
       continue
@@ -186,7 +203,7 @@ def split_line_entries(band_text: str) -> list[LineEntry]:
     raw = " ".join(words)
     if raw:
       entries.append(LineEntry(
-        line=line or current_line, raw=raw, crux=crux))
+        line=line or current_line, raw=raw, source_slice=chunk, crux=crux))
   return entries
 
 
@@ -196,6 +213,14 @@ def parse_line_entry(entry: LineEntry, registry: Registry) -> LineEntry:
   Refusal (``parsed`` stays False) when the first segment dissolves into
   attribution with no text, or a middle segment is empty."""
   comments: list[str] = []
+  if re.search(
+      r"(?:^|\s\|\s)\s*\([^)]*\)\??\s+"
+      r"\d{1,3}(?:[-–]\d{1,3})?\s+\S",
+      entry.raw,
+  ):
+    # The number can be reading text or an unseparated line locus; neither
+    # interpretation has enough evidence, so preserve the entire entry raw.
+    return entry
   # split on SPACED pipes only: "in|directam" is a typographic division
   # mark inside a reading, not a separator
   segments = [s.strip()

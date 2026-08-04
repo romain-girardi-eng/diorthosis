@@ -74,7 +74,9 @@ class VerseEntry:
   loc: str
   """Chapter:verse reference ('1:18', '1:7-8')."""
   raw: str
-  """The printed entry, verbatim (without the leading reference)."""
+  """Normalized parsing view, without the leading reference."""
+  source_slice: str = ""
+  """Exact substring of the source band; ``raw`` is the parsing view."""
   lemma: str = ""
   """The accepted form as printed (doublet reduced), possibly elliptical."""
   lemma_sigla: list[str] = field(default_factory=list)
@@ -159,54 +161,74 @@ def _peel_sigla(words: list[str]) -> tuple[list[str], list[str]]:
 
 
 def split_verse_entries(band_text: str) -> list[VerseEntry]:
-  """Split a verse-referenced band into entries, verbatim.
+  """Split a verse-referenced band into parsing views plus source slices.
 
   Boundaries: ``•`` always; a verse reference (C:V, or a bare number after
   a completed attribution) opens a new entry and updates the running
   chapter. The reference tokens are consumed into ``loc``; everything else
-  is preserved verbatim in ``raw``.
+  is retained exactly in ``source_slice``; ``raw`` is normalized for parsing.
   """
-  flat = band_text.replace("•", " • ")
-  # WH's double-bracketed spuria siglum, and an omission dash glued to the
-  # following siglum ("〚WH〛", "–RP")
-  flat = re.sub(r"〚\s*WH\s*〛", " WHspur ", flat)
-  flat = re.sub(r"–(?=[A-Z])", "– ", flat)
-  flat = " ".join(flat.split())
-  tokens = flat.split(" ")
+  # Semantic tokens retain source offsets. The parsing view normalizes WH's
+  # double-bracketed spuria siglum and an omission dash glued to its siglum;
+  # ``source_slice`` below retains the exact original codepoints and spacing.
+  tokens: list[tuple[str, int, int]] = []
+  for match in re.finditer(r"〚\s*WH\s*〛|•|[^\s•]+", band_text):
+    token = match.group(0)
+    if re.fullmatch(r"〚\s*WH\s*〛", token):
+      tokens.append(("WHspur", match.start(), match.end()))
+      continue
+    parts = re.split(r"(?<=–)(?=[A-Z])", token)
+    offset = match.start()
+    for part in parts:
+      tokens.append((part, offset, offset + len(part)))
+      offset += len(part)
   entries: list[VerseEntry] = []
   chapter = ""
   loc = ""
   cur: list[str] = []
+  source_start: int | None = None
 
-  def flush() -> None:
-    nonlocal cur
+  def flush(source_end: int) -> None:
+    nonlocal cur, source_start
     raw = " ".join(cur).strip()
-    if raw and loc:
-      entries.append(VerseEntry(loc=loc, raw=raw))
+    if raw and loc and source_start is not None:
+      start, end = source_start, source_end
+      while start < end and band_text[start].isspace():
+        start += 1
+      while end > start and band_text[end - 1].isspace():
+        end -= 1
+      entries.append(VerseEntry(
+        loc=loc, raw=raw, source_slice=band_text[start:end]))
     cur = []
+    source_start = None
 
   prev_was_siglum = False
-  for tok in tokens:
+  for tok, tok_start, tok_end in tokens:
     if _VERSE_REF.match(tok):
-      flush()
+      flush(tok_start)
       chapter = tok.split(":")[0]
       loc = tok
+      source_start = tok_start
       prev_was_siglum = False
       continue
     if tok == "•":
-      flush()
+      flush(tok_start)
+      source_start = tok_end
       prev_was_siglum = False
       continue
     # a bare verse number right after a completed attribution opens the
     # next verse's entry ("… γὰρ RP 19 δειγματίσαι …")
     if prev_was_siglum and _BARE_VERSE.match(tok) and chapter:
-      flush()
+      flush(tok_start)
       loc = f"{chapter}:{tok}"
+      source_start = tok_start
       prev_was_siglum = False
       continue
+    if source_start is None:
+      source_start = tok_start
     cur.append(tok)
     prev_was_siglum = is_edition_siglum(tok)
-  flush()
+  flush(len(band_text))
   return entries
 
 
@@ -272,6 +294,10 @@ def parse_verse_entry(entry: VerseEntry) -> VerseEntry:
   if spuria_transfer:
     lsigla = [*lsigla, "WHspur"]
   if not readings and not spuria_transfer:
+    return entry
+  if readings and not any(reading.sigla for reading in readings):
+    # A bare rejected form is not convention evidence. Even attributed lemma
+    # text (``α WH ] β``) cannot establish that β is an apparatus reading.
     return entry
   entry.lemma = " ".join(lwords)
   entry.lemma_sigla = lsigla

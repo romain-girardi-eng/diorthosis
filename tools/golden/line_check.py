@@ -50,14 +50,6 @@ def canon_attr(name: str) -> str:
   return re.sub(r"(?<=\w)[\s.'-]+(?=\w)", "", out)
 
 
-# first-person editorial verbs the golden TEI declares as sources
-# ("scripsimus" = the present editors); our grammar records them as
-# qualifiers of the reading, which this checker cannot see — not an
-# attribution defect
-_FIRST_PERSON = {"scripsimus", "scripsi", "coniecimus", "conieci",
-                 "correximus", "correxi", "seclusimus", "seclusi"}
-
-
 def content_text(el) -> str:
   """The printed form of a lem/rdg: notes excluded, a NESTED app rendered
   as its own lem (the constituted reading), a lost gap as ``* * *``."""
@@ -104,8 +96,7 @@ def scholar_apps(path: Path) -> list[dict]:
       eds = [e.removeprefix("#") for e in (el.get("source") or "").split()]
       return {
         "text": fold(content_text(el)),
-        "attr": sorted(c for a in wits + eds
-                       if (c := canon_attr(a)) not in _FIRST_PERSON),
+        "attr": sorted(canon_attr(a) for a in wits + eds),
       }
 
     loc = ""

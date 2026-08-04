@@ -22,7 +22,8 @@ Anchoring is evidence-driven and never guesses:
   does not increase is a locus reference inside the previous entry, not a
   new entry (this exact confusion fabricated phantom entries before).
 
-Entries are split, never rewritten: raw text is preserved verbatim.
+Entries retain both an exact immutable source slice and a normalized parsing
+view; normalization never supplies citable verbatim output.
 """
 
 from __future__ import annotations
@@ -105,7 +106,6 @@ def split_entries(apparatus_text: str) -> list[ApparatusEntry]:
   number-then-capital).
   """
   lines = apparatus_text.split("\n")
-  flat = " ".join(lines)
   line_starts: list[int] = []
   off = 0
   for ln in lines:
@@ -117,10 +117,10 @@ def split_entries(apparatus_text: str) -> list[ApparatusEntry]:
   #   136,  2  Marc.)" once fabricated a phantom entry 2);
   # - entry numbers are strictly increasing within a band.
   candidates: dict[int, tuple[int, str]] = {}  # start -> (body_start, num)
-  for m in _ENTRY_SPLIT.finditer(flat):
+  for m in _ENTRY_SPLIT.finditer(apparatus_text):
     candidates[m.start()] = (m.end(), m.group(1))
   for ls in line_starts:
-    m = _ENTRY_AT.match(flat, ls)
+    m = _ENTRY_AT.match(apparatus_text, ls)
     if m:
       candidates.setdefault(m.start(1), (m.end(), m.group(1)))
 
@@ -130,7 +130,8 @@ def split_entries(apparatus_text: str) -> list[ApparatusEntry]:
   scan = 0
   for start in sorted(candidates):
     body_start, num_s = candidates[start]
-    depth += flat.count("(", scan, start) - flat.count(")", scan, start)
+    depth += (apparatus_text.count("(", scan, start)
+              - apparatus_text.count(")", scan, start))
     scan = start
     num = int(num_s)
     if depth > 0 or num <= prev_num:
@@ -139,15 +140,18 @@ def split_entries(apparatus_text: str) -> list[ApparatusEntry]:
     boundaries.append((start, body_start, num_s))
 
   entries: list[ApparatusEntry] = []
-  head = flat[: boundaries[0][0]].strip() if boundaries else flat.strip()
+  head = (apparatus_text[: boundaries[0][0]].strip()
+          if boundaries else apparatus_text.strip())
   if head:
-    entries.append(ApparatusEntry(raw=head))
+    entries.append(ApparatusEntry(raw=head.replace("\n", " "), source=head))
   for i, (_, body_start, num) in enumerate(boundaries):
-    end = boundaries[i + 1][0] if i + 1 < len(boundaries) else len(flat)
-    body = flat[body_start: end].strip()
-    if body:
+    end = (boundaries[i + 1][0]
+           if i + 1 < len(boundaries) else len(apparatus_text))
+    source_slice = apparatus_text[body_start:end].strip()
+    if source_slice:
       entries.append(ApparatusEntry(
-        raw=body, anchor=Anchor(kind="marker", value=num),
+        raw=source_slice.replace("\n", " "), source=source_slice,
+        anchor=Anchor(kind="marker", value=num),
       ))
   return entries
 
@@ -261,6 +265,7 @@ def _anchor_verse_band(page: Page, block: Block, registry: Registry | None,
     versegrammar.parse_verse_entry(ve)
     e = ApparatusEntry(
       raw=f"{ve.loc} {ve.raw}",
+      source=ve.source_slice,
       anchor=Anchor(kind="verse", value=ve.loc),
       parsed_verse=ve if ve.parsed else None,
     )
@@ -370,6 +375,7 @@ def _anchor_line_band(page: Page, block: Block, registry: Registry | None,
     prefix = f"{le.line} " if le.line else ""
     e = ApparatusEntry(
       raw=f"{prefix}{'◊ ' if le.crux else ''}{le.raw}",
+      source=le.source_slice,
       anchor=Anchor(kind="line", value=le.line),
       parsed_line=le if le.parsed else None,
     )
@@ -406,13 +412,14 @@ def _anchor_paragraph_band(page: Page, block: Block, registry: Registry,
   cursors: dict[int, int] = {}
   preamble, pentries = paragraphgrammar.split_paragraph_entries(block.text)
   if preamble:
-    entries.append(ApparatusEntry(raw=preamble))
+    entries.append(ApparatusEntry(raw=" ".join(preamble.split()), source=preamble))
     stats["entries"] += 1
     stats["unanchored"] += 1
   for pe in pentries:
     paragraphgrammar.parse_paragraph_entry(pe, registry)
     e = ApparatusEntry(
       raw=pe.raw,
+      source=pe.source_slice,
       anchor=Anchor(kind="line", value=pe.line),
       parsed_paragraph=pe if pe.parsed else None,
     )

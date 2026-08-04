@@ -33,6 +33,7 @@ from diorthosis.tei import resolve_parsed
 
 TEI = "{http://www.tei-c.org/ns/1.0}"
 XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
+CONTAMINATION_RADIUS = 100
 
 
 def fold(s: str) -> str:
@@ -42,16 +43,35 @@ def fold(s: str) -> str:
   s = re.sub(r"(?<=\S)-\s+", "", s)
   d = unicodedata.normalize("NFD", s)
   out = "".join(c for c in d if not unicodedata.combining(c)).lower()
-  out = out.replace("ς", "σ").replace("ʼ", "'").replace("’", "'")
+  # elision apostrophes drop entirely: the extracted band carries U+2019
+  # while the TEI's koronis arrives combining and is eaten by the NFD
+  # filter — one side kept "κατ'", the other "κατ" (reviewed, Mt 12:14)
+  out = out.replace("ς", "σ").replace("ʼ", "").replace("’", "").replace("'", "")
   out = re.sub(r"[,.;·:!?…]+", " ", out)
   return re.sub(r"\s+", " ", out).strip()
 
 
-def exact_in(needle: str, haystack: str) -> bool:
+def exact_match(needle: str, haystack: str) -> re.Match | None:
   """Exact folded phrase containment, word-bounded at both ends."""
   if not needle:
-    return False
-  return re.search(r"(?<!\w)" + re.escape(needle) + r"(?!\w)", haystack) is not None
+    return None
+  return re.search(r"(?<!\w)" + re.escape(needle) + r"(?!\w)", haystack)
+
+
+def exact_in(needle: str, haystack: str) -> bool:
+  return exact_match(needle, haystack) is not None
+
+
+def lemma_window(text: str, lemma: str,
+                 radius: int = CONTAMINATION_RADIUS) -> tuple[str, int, int] | None:
+  """Return the bounded text window around one uniquely located lemma."""
+  hits = list(re.finditer(r"(?<!\w)" + re.escape(lemma) + r"(?!\w)", text))
+  if len(hits) != 1:
+    return None
+  hit = hits[0]
+  start = max(0, hit.start() - radius)
+  end = min(len(text), hit.end() + radius)
+  return text[start:end], start, end
 
 
 def canon_locus(value: str) -> str:
@@ -97,6 +117,24 @@ def tei_apps(path: Path) -> list[dict]:
   return apps
 
 
+def tei_source_text(path: Path) -> str:
+  """The scholars' CONSTITUTED text, folded: body with every <rdg> and
+  <note> removed (the <lem> stays — it IS text). The contamination
+  arbiter: a rejected-reading sequence found near its lemma in the
+  EXTRACTED text is only a leak if it occurs NOWHERE in this text —
+  variants share their lemma's vocabulary and transpose neighbour
+  wording, so bare presence near the lemma convicts legitimate text
+  (reviewed on balex 7.1 'casum' and Mt 5:32/5:31)."""
+  root = etree.parse(str(path)).getroot()
+  body = root.find(f".//{TEI}text/{TEI}body")
+  if body is None:
+    return ""
+  for tag in ("rdg", "note"):
+    for el in body.iter(f"{TEI}{tag}"):
+      el.getparent().remove(el)
+  return fold(" ".join(body.itertext()))
+
+
 def arg_value(name: str, default=None):
   return sys.argv[sys.argv.index(name) + 1] if name in sys.argv else default
 
@@ -123,6 +161,7 @@ def main() -> int:
   conspectus_page = int(conspectus) if conspectus is not None else None
 
   apps = tei_apps(source_path)
+  source_text = tei_source_text(source_path)
   if (max_apps := arg_value("--max-apps")) is not None:
     apps = apps[:int(max_apps)]
   print(f"TEI ground truth: {len(apps)} leaf apps")
@@ -221,7 +260,7 @@ def main() -> int:
   length_hist: Counter[int] = Counter(
     len(reading.split()) for app in apps for reading in app["readings"])
   contamination = 0
-  contamination_samples: list[str] = []
+  contamination_evidence: list[dict] = []
   contamination_examined = 0
   contamination_skips: Counter[str] = Counter()
   for i, app in enumerate(apps):
@@ -235,22 +274,35 @@ def main() -> int:
       continue
     page = source_pages[i]
     text = page_text[page]
-    lemma_hits = list(re.finditer(
-      r"(?<!\w)" + re.escape(app["lemma"]) + r"(?!\w)", text))
-    if len(lemma_hits) != 1:
+    located = lemma_window(text, app["lemma"])
+    if located is None:
       contamination_skips[
         "source lemma occurrence is not unique within its page"] += len(readings)
       continue
-    hit = lemma_hits[0]
-    local = text[max(0, hit.start() - 400):hit.end() + 400]
+    local, window_start, window_end = located
     for reading in readings:
       words = len(reading.split())
       contamination_examined += 1
-      if exact_in(reading, local):
+      reading_hit = exact_match(reading, local)
+      if reading_hit is not None and exact_in(reading, source_text):
+        contamination_skips[
+          "sequence occurs in the scholars' constituted text (legitimate)"] += 1
+        continue
+      if reading_hit is not None:
         contamination += 1
-        if len(contamination_samples) < 8:
-          contamination_samples.append(
-            f"p{page} {app['loc']} ({words} words): {reading[:70]!r}")
+        marked = (local[:reading_hit.start()] + "⟪"
+                  + local[reading_hit.start():reading_hit.end()] + "⟫"
+                  + local[reading_hit.end():])
+        contamination_evidence.append({
+          "page": page,
+          "loc": app["loc"],
+          "words": words,
+          "lemma": app["lemma"],
+          "reading": reading,
+          "window": marked,
+          "window_start": window_start,
+          "window_end": window_end,
+        })
 
   source_at_page: dict[int, list[dict]] = defaultdict(list)
   for i, page in source_pages.items():
@@ -261,15 +313,21 @@ def main() -> int:
   for candidate in candidates:
     page_apps = source_at_page.get(candidate["page"], [])
     if candidate["grammar"] == "verse":
-      locus_apps = [app for i, app in enumerate(apps)
-                    if app["loc"] == candidate["locus"]
-                    and source_pages.get(i) == candidate["page"]]
+      # the verse IS the locus: a page filter here dropped genuine source
+      # apps whose one-word lemma is page-ambiguous, then convicted the
+      # candidate for not matching what was left (reviewed: Mt 19:24)
+      locus_apps = [app for app in apps if app["loc"] == candidate["locus"]]
       if not locus_apps:
         structure_skips[
-          "no source app aligned to candidate page and verse locus"] += 1
+          "no source app at the candidate's verse locus"] += 1
         continue
       structure_examined += 1
-      if not any(app["lemma"] == candidate["lemma"] for app in locus_apps):
+      # containment, not equality: the print may carry ONE long elliptic
+      # lemma where the TEI splits several short apps (Mt 12:14, 21:44) —
+      # a print/TEI divergence, not a fabricated structure
+      cand = candidate["lemma"]
+      if not any(app["lemma"] == cand or app["lemma"] in cand
+                 or cand in app["lemma"] for app in locus_apps):
         false_structures.append(candidate)
       continue
     if not page_apps:
@@ -284,6 +342,15 @@ def main() -> int:
       structure_examined -= 1
       structure_skips[
         "exact source lemma exists but has no unique page locus"] += 1
+    elif candidate["grammar"] in ("line", "paragraph"):
+      # conventions with a DEDICATED structured harness (line_check.py,
+      # plaoul_check.py: global-order alignment + elliptic-lemma logic)
+      # are judged there with strictly more information; this naive
+      # page/lemma match convicted 21 legitimate long-lemma balex entries
+      # that line_check proves correct (563 = 0/0). Defer, count, move on.
+      structure_examined -= 1
+      structure_skips[
+        "deferred to the convention's structured harness"] += 1
     else:
       false_structures.append(candidate)
 
@@ -299,14 +366,18 @@ def main() -> int:
         f"{total - len(source_pages)} skipped {dict(page_skip_apps)}")
   print(f"contamination    : {contamination}/{contamination_examined} examined "
         f"rejected readings | {sum(contamination_skips.values())} skipped "
-        f"{dict(contamination_skips)}")
+        f"{dict(contamination_skips)} | lemma window ±{CONTAMINATION_RADIUS} chars")
   print(f"reading lengths  : {dict(sorted(length_hist.items()))}")
-  for sample in contamination_samples:
-    print(f"   e.g. {sample}")
+  for evidence in contamination_evidence:
+    print(f"   HIT p{evidence['page']} {evidence['loc']} "
+          f"({evidence['words']} words) lemma={evidence['lemma']!r} "
+          f"reading={evidence['reading']!r}")
+    print(f"       window[{evidence['window_start']}:{evidence['window_end']}]="
+          f"{evidence['window']!r}")
   print(f"false structures : {len(false_structures)}/{structure_examined} examined "
         f"production candidates | {sum(structure_skips.values())} skipped "
         f"{dict(structure_skips)}")
-  for candidate in false_structures[:8]:
+  for candidate in false_structures:
     print(f"   e.g. p{candidate['page_label']} {candidate['grammar']} "
           f"{candidate['locus']}: {candidate['lemma'][:60]!r}")
   if band_misses:

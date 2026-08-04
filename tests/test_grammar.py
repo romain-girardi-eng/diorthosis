@@ -49,6 +49,13 @@ class TestLemmaReading:
 
 
 class TestEditorialActions:
+  def test_first_person_action_is_current_editor_attribution(self) -> None:
+    e = parse_entry("Obiectis scripsimus : obiectis A B", registry())
+    assert e is not None
+    assert e.lemma == "Obiectis"
+    assert e.lemma_attribution.editors == ["scripsimus"]
+    assert e.lemma_attribution.qualifiers == []
+
   def test_no_variant_action(self) -> None:
     # a word added above the line by the first hand: no variant reading
     e = parse_entry("Τοὺς add. sup. l. A1.", registry())
@@ -95,6 +102,14 @@ class TestEditorialActions:
 
 
 class TestHonestRefusal:
+  def test_unattributed_reading_parses_in_marker_convention(self) -> None:
+    # single-witness editions print manuscript readings bare (Bobichon's
+    # codex A); the anchored marker is the structural evidence here, so
+    # the generic grammar keeps them — the attribution-based refusals
+    # belong to the verse/line/paragraph grammars (review adjudication)
+    e = parse_entry("alpha : beta", registry())
+    assert e is not None and [r.text for r in e.readings] == ["beta"]
+
   def test_latin_prose_entry_refused(self) -> None:
     # a prose observation is not a LEMMA : READING entry; the caller keeps
     # it verbatim — refusing is the correct output

@@ -57,6 +57,12 @@ def _marker(folio: str, n: str, resolved: bool) -> str:
   return f"⟦{folio}:{n}⟧" if resolved else f"⟦{folio}:{n}?⟧"
 
 
+def _line_unwrap_source(text: str) -> str:
+  """md-ce keeps one apparatus entry per line; only source line breaks are
+  unwrapped to U+0020. All source tokens, including hyphens, remain intact."""
+  return text.replace("\r\n", "\n").replace("\r", "\n").replace("\n", " ")
+
+
 def to_markdown(doc: Document, title: str | None = None,
                 tei_name: str = "") -> str:
   pages_out: list[str] = []
@@ -121,7 +127,8 @@ def to_markdown(doc: Document, title: str | None = None,
             prefix = _marker(folio, e.anchor.value, resolved) + " "
           else:
             prefix = ""  # verse-referenced: the reference is in the raw
-          lines.append(prefix + _escape_body(e.raw, escaped))
+          lines.append(prefix + _escape_body(
+            _line_unwrap_source(e.source_slice), escaped))
       elif block.layer in (Layer.TEXT, Layer.HEADING):
         text = block.text
         # Rewrite markers from the page's RESOLVED anchors — the single

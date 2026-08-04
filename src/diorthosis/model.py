@@ -14,7 +14,7 @@ Design rules, inherited from the regreek zero-fabrication contract:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from enum import Enum
 
 
@@ -64,12 +64,17 @@ class Anchor:
 class ApparatusEntry:
   """One entry of the apparatus band, split but NOT interpreted.
 
-  P1 deliberately stops at anchoring: the entry text is preserved verbatim
-  (lemma, readings, sigla and editors unparsed). Interpreting it into
-  <app>/<lem>/<rdg> is the phase-2 per-series grammar problem.
+  ``raw`` is the whitespace/convention-normalized parsing view. The immutable
+  ``source_slice`` separately retains the exact substring of the apparatus
+  block, including whitespace; citable verbatim output always uses that slice.
   """
 
   raw: str
+  source: InitVar[str | None] = None
+  _source_slice: str = field(init=False, repr=False)
+  """Immutable exact substring of the apparatus block that produced this
+  entry. ``raw`` is the normalized parsing view; emitters use this slice for
+  verbatim source wording."""
   anchor: Anchor | None = None
   parsed_verse: object | None = None
   """A versegrammar.VerseEntry when the band follows the verse-referenced
@@ -85,6 +90,18 @@ class ApparatusEntry:
   Wins over every grammar; the TEI marks it resp="#human-review"."""
   override_action: str = ""
   """'' | 'parse' | 'verbatim' — how review touched this entry."""
+
+  def __post_init__(self, source: str | None) -> None:
+    object.__setattr__(self, "_source_slice", self.raw if source is None else source)
+
+  def __setattr__(self, name: str, value: object) -> None:
+    if name == "_source_slice" and hasattr(self, "_source_slice"):
+      raise AttributeError("an apparatus entry's source slice is immutable")
+    super().__setattr__(name, value)
+
+  @property
+  def source_slice(self) -> str:
+    return self._source_slice
 
 
 @dataclass

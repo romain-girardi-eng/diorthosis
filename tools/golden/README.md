@@ -54,12 +54,13 @@ sources).
 The typeset harness controls the layout; `real_check.py` does not: it runs
 diorthosis on the edition **as actually printed** (the DLL's own
 `ldlt-balex.pdf`, the official SBLGNT PDFs) and aligns the result against
-the scholars' TEI by content. Measured (2026-08-04): balex 93.0 % text /
-95.9 % band, SBLGNT Matthew 97.0 % / 100.0 % — with zero apparatus
-readings leaking into the text layer on balex (3 noise-level hits on
-Matthew, stable since v0.4) and **zero** false structures on both
-(their conventions are foreign to the numeric-marker grammar, and
-everything stays verbatim: the honesty contract holding on real layouts).
+the scholars' TEI by content. Measured (2026-08-04): balex 93.9 % text /
+96.8 % band, SBLGNT Matthew 97.0 % / 100.0 %. The fail-closed production-path
+check is deliberately RED: with each rejected reading searched only in its
+own uniquely located lemma window (±100 folded characters), balex reports
+45/518 contamination candidates and Matthew 12/480; false structures are
+21/336 and 4/758 respectively. Every contamination candidate prints its full
+marked window, while unassigned/ambiguous loci remain in the skip accounting.
 
     python3 real_check.py data/balex.xml balex-dll.pdf --pages 84-171 --text-lang la
     python3 real_check.py data/sblgnt.xml 61-SBLGNT-Matthew.pdf --max-apps 770

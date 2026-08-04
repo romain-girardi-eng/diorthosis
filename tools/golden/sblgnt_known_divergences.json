@@ -1,666 +1,666 @@
 {
-  "B01:3:16[2]": {
-    "band_evidence": "3:16 ἠνεῴχθησαν WH NIV ] + αὐτῷ Treg RP NA",
-    "book": "B01",
-    "error_kinds": [
-      "READING_COUNT"
-    ],
-    "locus": "3:16",
-    "print_form": "ηνεωχθησαν",
-    "reason": "Mt 3:16 ἠνεῴχθησαν: the PRINTED 2010 band reads '+ αὐτῷ Treg RP NA' (one reading), while the TEI re-encoding separates rdg2 '+ αὐτῷ' (Treg NA) from rdg3 'ἀνεῴχθησαν αὐτῷ' (RP, resp JJM). diorthosis follows the printed page; verified against the extracted band on 2026-08-04.",
-    "tei_form": "lemma=ηνεωχθησαν; readings=['ηνεωχθησαν', '+ αυτω', 'ανεωχθησαν αυτω']"
-  },
-  "B02:10:4[0]": {
-    "band_evidence": "10:4 Ἐπέτρεψεν Μωϋσῆς WH Treg NIV ] Μωϋσῆς ἐπέτρεψεν RP",
-    "book": "B02",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "10:4",
-    "print_form": "επετρεψεν μωυσησ",
-    "reason": "B02 10:4[0]: the PRINTED band reads 'μωυσησ επετρεψεν' where the TEI re-encoding reads 'μωσησ επετρεψεν' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=επετρεψεν μωυσησ; readings=['επετρεψεν μωυσησ', 'μωσησ επετρεψεν']"
-  },
-  "B02:1:13[1]": {
-    "band_evidence": "1:13 τεσσεράκοντα ἡμέρας WH Treg NIV ] ἡμέρας τεσσεράκοντα RP",
-    "book": "B02",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "1:13",
-    "print_form": "τεσσερακοντα ημερασ",
-    "reason": "B02 1:13[1]: the PRINTED band reads 'ημερασ τεσσερακοντα' where the TEI re-encoding reads 'ημερασ τεσσαρακοντα' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=τεσσερακοντα ημερασ; readings=['τεσσερακοντα ημερασ', 'ημερασ τεσσαρακοντα']"
-  },
-  "B02:3:20[0]": {
-    "band_evidence": "3:20 ἔρχεται WH NIV RP ] ἔρχονται Treg",
-    "book": "B02",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_WITNESSES"
-    ],
-    "locus": "3:20",
-    "print_form": "ερχεται",
-    "reason": "B02 3:20[0] LEMWITS: the PRINTED band attributes lemma 'ερχεται' as ours=['niv', 'rp', 'wh'] where the TEI reads ['niv', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ερχεται; readings=['ερχεται', 'ερχονται']"
-  },
-  "B02:4:37[2]": {
-    "band_evidence": "4:37 ἤδη γεμίζεσθαι τὸ πλοῖον WH Treg NIV ] αὐτὸ ἤδη γεμίζεσθα RP",
-    "book": "B02",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "4:37",
-    "print_form": "ηδη γεμιζεσθαι το πλοιον",
-    "reason": "B02 4:37[2]: the PRINTED band reads 'αυτο ηδη γεμιζεσθα' where the TEI re-encoding reads 'αυτο ηδη γεμιζεσθαι' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ηδη γεμιζεσθαι το πλοιον; readings=['ηδη γεμιζεσθαι το πλοιον', 'αυτο ηδη γεμιζεσθαι']"
-  },
-  "B02:8:35[3]": {
-    "band_evidence": "8:35 ⸄ψυχὴν αὐτοῦ⸅ WH NIV ] ἑαυτοῦ ψυχὴν Treg RP",
-    "book": "B02",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_WITNESSES"
-    ],
-    "locus": "8:35",
-    "print_form": "ψυχην αυτου",
-    "reason": "B02 8:35[3] LEMWITS: the PRINTED band attributes lemma 'ψυχην αυτου' as ours=['niv', 'wh'] where the TEI reads ['niv', 'rp', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ψυχην αυτου; readings=['ψυχην αυτου', 'εαυτου ψυχην']"
-  },
-  "B03:18:13[2]": {
-    "band_evidence": "18:13 ἔτυπτε WH Treg NIV ] + εἰς RP",
-    "book": "B03",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "18:13",
-    "print_form": "ετυπτε",
-    "reason": "B03 18:13[2]: the PRINTED band reads '+ εισ' where the TEI re-encoding reads 'ετυπτεν εισ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ετυπτε; readings=['ετυπτε', 'ετυπτεν εισ']"
-  },
-  "B03:19:16[0]": {
-    "band_evidence": "19:16 δέκα προσηργάσατο WH Treg NIV ] προσηργάσατο δέκα RP",
-    "book": "B03",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "19:16",
-    "print_form": "δεκα προσηργασατο",
-    "reason": "B03 19:16[0]: the PRINTED band reads 'προσηργασατο δεκα' where the TEI re-encoding reads 'προσειργασατο δεκα' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=δεκα προσηργασατο; readings=['δεκα προσηργασατο', 'προσειργασατο δεκα']"
-  },
-  "B03:19:35[0]": {
-    "band_evidence": "19:35 αὐτῶν WH Treg NIV ] – RP",
-    "book": "B03",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "19:35",
-    "print_form": "αυτων",
-    "reason": "Lk 19:35 αὐτῶν/ἑαυτῶν: the TEI carries an <app> (rdg ἑαυτῶν RP, resp=#JJM) that the PRINTED band does not contain at 19:35 (band prints only 'δὲ Treg NIV RP ] – WH') — encoder addition, band-verified 2026-08-04.",
-    "tei_form": "lemma=αυτων; readings=['αυτων', 'εαυτων']"
-  },
-  "B03:19:38[0]": {
-    "band_evidence": "19:38 βασιλεὺς Treg RP ] ὁ βασιλεὺς WH NIV",
-    "book": "B03",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_WITNESSES"
-    ],
-    "locus": "19:38",
-    "print_form": "βασιλευσ",
-    "reason": "B03 19:38[0] LEMWITS: the PRINTED band attributes lemma 'βασιλευσ' as ours=['rp', 'treg'] where the TEI reads ['niv', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=βασιλευσ; readings=['βασιλευσ', 'ο βασιλευσ']"
-  },
-  "B03:21:19[0]": {
-    "band_evidence": "21:19 κτήσασθε NIV RP ] κτήσεσθε WH Treg",
-    "book": "B03",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_WITNESSES"
-    ],
-    "locus": "21:19",
-    "print_form": "κτησασθε",
-    "reason": "B03 21:19[0] LEMWITS: the PRINTED band attributes lemma 'κτησασθε' as ours=['niv', 'rp'] where the TEI reads ['niv', 'rp', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=κτησασθε; readings=['κτησασθε', 'κτησεσθε']"
-  },
-  "B03:22:49[0]": {
-    "band_evidence": "22:49 εἶπαν WH Treg NIV ] + αὐτῷ RP",
-    "book": "B03",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "22:49",
-    "print_form": "ειπαν",
-    "reason": "B03 22:49[0]: the PRINTED band reads '+ αυτω' where the TEI re-encoding reads 'ειπον αυτω' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ειπαν; readings=['ειπαν', 'ειπον αυτω']"
-  },
-  "B03:24:12": {
-    "band_evidence": "24:12 Ὁ δὲ … τὸ γεγονός Treg NIV RP ] WHspur | 24:12 ὀθόνια WHspur Treg NIV ] + κείμενα RP | 24:12 αὑτὸν WHspur ] αὐτὸν Treg; ἑαυτὸν NIV RP",
-    "book": "B03",
-    "error_kinds": [
-      "PHANTOM"
-    ],
-    "locus": "24:12",
-    "print_form": "24:12 Ὁ δὲ … τὸ γεγονός Treg NIV RP ] WHspur | 24:12 ὀθόνια WHspur Treg NIV ] + κείμενα RP | 24:12 αὑτὸν WHspur ] αὐτὸν Treg; ἑαυτὸν NIV RP",
-    "reason": "B03 24:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 12 τὸτὸ Treg NIV RP ] – WH • καὶ WH Treg NIV ] – RP 13 οὐρανίου WH NIV RP ] οὐρανοῦ Treg 14 εὐδοκίας WH Treg NIV ] εὐδοκία RP 15 οἱ WH NIV ] καὶ οἱ ἄ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "2 source apps at locus; emitted 3"
-  },
-  "B03:24:12[0]": {
-    "band_evidence": "24:12 Ὁ δὲ … τὸ γεγονός Treg NIV RP ] WHspur",
-    "book": "B03",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "24:12",
-    "print_form": "24:12 Ὁ δὲ … τὸ γεγονός Treg NIV RP ] WHspur",
-    "reason": "B03 24:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 12 τὸτὸ Treg NIV RP ] – WH • καὶ WH Treg NIV ] – RP 13 οὐρανίου WH NIV RP ] οὐρανοῦ Treg 14 εὐδοκίας WH Treg NIV ] εὐδοκία RP 15 οἱ WH NIV ] καὶ οἱ ἄ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=οθονια; readings=['οθονια', '+ κειμενα']"
-  },
-  "B03:24:12[1]": {
-    "band_evidence": "24:12 ὀθόνια WHspur Treg NIV ] + κείμενα RP",
-    "book": "B03",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "24:12",
-    "print_form": "οθονια",
-    "reason": "B03 24:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 12 τὸτὸ Treg NIV RP ] – WH • καὶ WH Treg NIV ] – RP 13 οὐρανίου WH NIV RP ] οὐρανοῦ Treg 14 εὐδοκίας WH Treg NIV ] εὐδοκία RP 15 οἱ WH NIV ] καὶ οἱ ἄ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=αυτον; readings=['αυτον', 'αυτον', 'εαυτον']"
-  },
-  "B03:24:40": {
-    "band_evidence": "24:40 καὶ τοῦτο … τοὺς πόδας Treg NIV RP ] WHspur | 24:40 ἔδειξεν WHspur Treg NIV ] ἐπέδειξεν RP",
-    "book": "B03",
-    "error_kinds": [
-      "PHANTOM"
-    ],
-    "locus": "24:40",
-    "print_form": "24:40 καὶ τοῦτο … τοὺς πόδας Treg NIV RP ] WHspur | 24:40 ἔδειξεν WHspur Treg NIV ] ἐπέδειξεν RP",
-    "reason": "B03 24:40: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 40 πληρούμενον σοφίᾳ WH Treg NIV ] πνεύματι πληρούμενον σοφίας RP 42 ἀναβαινόντων WH Treg NIV ] ἀναβάντων RP • αὐτῶν WH NIV ] + εἰς Ἱεροσόλυμα Treg R'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "1 source apps at locus; emitted 2"
-  },
-  "B03:24:40[0]": {
-    "band_evidence": "24:40 καὶ τοῦτο … τοὺς πόδας Treg NIV RP ] WHspur",
-    "book": "B03",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "24:40",
-    "print_form": "24:40 καὶ τοῦτο … τοὺς πόδας Treg NIV RP ] WHspur",
-    "reason": "B03 24:40: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 40 πληρούμενον σοφίᾳ WH Treg NIV ] πνεύματι πληρούμενον σοφίας RP 42 ἀναβαινόντων WH Treg NIV ] ἀναβάντων RP • αὐτῶν WH NIV ] + εἰς Ἱεροσόλυμα Treg R'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=εδειξεν; readings=['εδειξεν', 'επεδειξεν']"
-  },
-  "B03:6:2[0]": {
-    "band_evidence": "6:2 εἶπαν WH Treg NIV ] +αὐτοῖς RP",
-    "book": "B03",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "6:2",
-    "print_form": "ειπαν",
-    "reason": "B03 6:2[0]: the PRINTED band reads '+ αυτοισ' where the TEI re-encoding reads 'ειπον αυτοισ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ειπαν; readings=['ειπαν', 'ειπον αυτοισ']"
-  },
-  "B03:6:5[1]": {
-    "band_evidence": "6:5 τοῦ σαββάτου ὁ υἱὸς τοῦ ἀνθρώπου WH NIV ] ὁ υἱὸς τοῦ ἀνθρώπου τοῦ σαββάτου Treg RP",
-    "book": "B03",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "6:5",
-    "print_form": "του σαββατου ο υιοσ του ανθρωπου",
-    "reason": "B03 6:5[1]: the PRINTED band reads 'ο υιοσ του ανθρωπου του σαββατου' where the TEI re-encoding reads 'ο υιοσ του ανθρωπου και του σαββατου' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=του σαββατου ο υιοσ του ανθρωπου; readings=['του σαββατου ο υιοσ του ανθρωπου', 'ο υιοσ του ανθρωπου και του σαββατου']"
-  },
-  "B03:9:9[1]": {
-    "band_evidence": "9:9 ὁ WH RP ] – Treg NIV",
-    "book": "B03",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_WITNESSES"
-    ],
-    "locus": "9:9",
-    "print_form": "ο",
-    "reason": "B03 9:9[1] LEMWITS: the PRINTED band attributes lemma 'ο' as ours=['rp', 'wh'] where the TEI reads ['wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ο; readings=['ο', '']"
-  },
-  "B04:10:32[2]": {
-    "band_evidence": "10:32 ἐμὲ λιθάζετε WH Treg NIV ] λιθάζετε ἐμὲ RP",
-    "book": "B04",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "10:32",
-    "print_form": "εμε λιθαζετε",
-    "reason": "B04 10:32[2]: the PRINTED band reads 'λιθαζετε εμε' where the TEI re-encoding reads 'λιθαζετε με' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=εμε λιθαζετε; readings=['εμε λιθαζετε', 'λιθαζετε με']"
-  },
-  "B04:13:2": {
-    "band_evidence": "13:2 γινομένου WH Treg NIV ] γενομένου RP | 13:2 ἵνα παραδοῖ αὐτὸν Ἰούδας Σίμωνος Ἰσκ. WH Treg NIV] Ἰούδα Σίμωνος Ἰσκ. ἵνα αὐτὸν παραδῷ RP | 13:2 Ἰσκαριώτου NIV RP ] Ἰσκαριώτης WH Treg",
-    "book": "B04",
-    "error_kinds": [
-      "PHANTOM"
-    ],
-    "locus": "13:2",
-    "print_form": "γινομενου",
-    "reason": "B04 13:2: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 2 Βηθεσδά Treg NIV RP ] Βηθζαθά WH NA 3 πλῆθος WH Treg NIV ] + πολὺ RP • ξηρῶν WH Treg NIV ] + ἐκδεχομένων τὴν τοῦ ὕδατος κίνησιν. 4 ἄγγελος γὰρ κατὰ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "2 source apps at locus; emitted 3"
-  },
-  "B04:13:2[1]": {
-    "band_evidence": "13:2 ἵνα παραδοῖ αὐτὸν Ἰούδας Σίμωνος Ἰσκ. WH Treg NIV] Ἰούδα Σίμωνος Ἰσκ. ἵνα αὐτὸν παραδῷ RP",
-    "book": "B04",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "13:2",
-    "print_form": "ινα παραδοι αυτον ιουδασ σιμωνοσ ισκ",
-    "reason": "B04 13:2: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 2 Βηθεσδά Treg NIV RP ] Βηθζαθά WH NA 3 πλῆθος WH Treg NIV ] + πολὺ RP • ξηρῶν WH Treg NIV ] + ἐκδεχομένων τὴν τοῦ ὕδατος κίνησιν. 4 ἄγγελος γὰρ κατὰ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=ισκαριωτου; readings=['ισκαριωτου', 'ισκαριωτησ']"
-  },
-  "B04:1:39[0]": {
-    "band_evidence": "1:39 ὄψεσθε. ἦλθαν οὖν WH Treg NIV ] ἴδετε. ἦλθαν RP",
-    "book": "B04",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "1:39",
-    "print_form": "οψεσθε ηλθαν ουν",
-    "reason": "B04 1:39[0]: the PRINTED band reads 'ιδετε ηλθαν' where the TEI re-encoding reads 'ιδετε ηλθον' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=οψεσθε ηλθαν ουν; readings=['οψεσθε ηλθαν ουν', 'ιδετε ηλθον']"
-  },
-  "B04:4:21[0]": {
-    "band_evidence": "4:21 Πίστευέ μοι, γύναι WH Treg NIV ] Γύναι, πίστευέ μοι RP",
-    "book": "B04",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "4:21",
-    "print_form": "πιστευε μοι γυναι",
-    "reason": "B04 4:21[0]: the PRINTED band reads 'γυναι πιστευε μοι' where the TEI re-encoding reads 'γυναι πιστευσον μοι' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=πιστευε μοι γυναι; readings=['πιστευε μοι γυναι', 'γυναι πιστευσον μοι']"
-  },
-  "B04:5:10[1]": {
-    "band_evidence": "5:10 κράβαττον WH Treg RP ] + σου NIV",
-    "book": "B04",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_COUNT"
-    ],
-    "locus": "5:10",
-    "print_form": "κραβαττον",
-    "reason": "B04 5:10[1] LEMWITS: the PRINTED band attributes lemma 'κραβαττον' as ours=['rp', 'treg', 'wh'] where the TEI reads ['treg', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=κραβαττον; readings=['κραβαττον', 'κραββατον', '+ σου']"
-  },
-  "B04:6:44[0]": {
-    "band_evidence": "6:44 με WH Treg NIV ] ἐμέ RP",
-    "book": "B04",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_WITNESSES"
-    ],
-    "locus": "6:44",
-    "print_form": "με",
-    "reason": "B04 6:44[0] LEMWITS: the PRINTED band attributes lemma 'με' as ours=['niv', 'treg', 'wh'] where the TEI reads ['niv', 'rp', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=με; readings=['με', 'εμε']"
-  },
-  "B04:7:52[1]": {
-    "band_evidence": "7:52 ἐγείρεται WH Treg NIV ] ἐγηγέρται RP; +",
-    "book": "B04",
-    "error_kinds": [
-      "READING_COUNT"
-    ],
-    "locus": "7:52",
-    "print_form": "εγειρεται",
-    "reason": "Jn 7:52 ἐγείρεται: the TEI's rdg2 (RP) embeds the whole Pericope Adulterae ('ἐγηγέρται + 7:53–8:11: …'); the printed band structures this differently — print/TEI structural divergence, band-verified 2026-08-04.",
-    "tei_form": "lemma=εγειρεται; readings=['εγειρεται', 'εγηγερται + 7 53 8 11 53 και επορευθη εκαστοσ εισ τον οικον αυτου 8 1 ιησουσ δε επορευθη εισ το οροσ των ελαιων 2 ορθρου δε παλιν παρεγενετο εισ το ιερον και πασ ο λαοσ ηρχετο και καθισασ εδιδασκεν αυτουσ 3 αγουσιν δε οι γραμματεισ και οι φαρισαιοι προσ αυτον γυναικα εν μοιχεια καταληφθεισαν και στησαντεσ αυτην εν μεσω 4 λεγουσιν αυτω πειραζοντεσ διδασκαλε αυτη η γυνη κατεληφθη επ αυτοφορω μοιχευομενη 5 εν δε τω νομω μωσησ ημιν ενετειλατο τασ τοιαυτασ λιθοβολεισθαι συ ουν τι λεγεισ 6 τουτο δε ελεγον πειραζοντεσ αυτον ινα εχωσιν κατηγορειν αυτου ο δε ιησουσ κατω κυψασ τω δακτυλω εγραφεν εισ την γην μη προσποιουμενοσ 7 ωσ δε επεμενον ερωτωντεσ αυτον ανακυψασ ειπεν προσ αυτουσ ο αναμαρτητοσ υμων πρωτον επ αυτην τον λιθον βαλετω 8 και παλιν κατω κυψασ εγραφεν εισ την γην 9 οι δε ακουσαντεσ και υπο τησ συνειδησεωσ ελεγχομενοι εξηρχοντο εισ καθ εισ αρξαμενοι απο των πρεσβυτερων και κατελειφθη μονοσ ο ιησουσ και η γυνη εν μεσω ουσα 10 ανακυψασ δε ο ιησουσ και μηδενα θεασαμενοσ πλην τησ γυναικοσ ειπεν αυτη που εισιν εκεινοι οι κατηγοροι σου ουδεισ σε κατεκρινεν 11 η δε ειπεν ουδεισ κυριε ειπεν δε ο ιησουσ ουδε εγω σε κρινω πορευου και μηκετι αμαρτανε']"
-  },
-  "B04:8:41[0]": {
-    "band_evidence": "8:41 εἶπαν WH Treg NIV ] + οὖν RP NA",
-    "book": "B04",
-    "error_kinds": [
-      "READING_COUNT"
-    ],
-    "locus": "8:41",
-    "print_form": "ειπαν",
-    "reason": "Jn 8:41 εἶπαν: printed band compacts '+ οὖν RP NA' into one reading; the TEI separates rdg2 '+ οὖν' (NA, resp=#JJM) from rdg3 'εἶπον οὖν' (RP, resp=#JJM) — encoder refinement, band-verified 2026-08-04.",
-    "tei_form": "lemma=ειπαν; readings=['ειπαν', '+ ουν', 'ειπον ουν']"
-  },
-  "B04:9:12": {
-    "band_evidence": "9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP | 9:12 οὖνοὖν WH Treg NIV ] δὲ RP | 9:12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP",
-    "book": "B04",
-    "error_kinds": [
-      "PHANTOM"
-    ],
-    "locus": "9:12",
-    "print_form": "τον",
-    "reason": "B04 9:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖνοὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 ἐν ᾗ ἡμέρᾳ WH Treg NIV ] ὅτε '. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "1 source apps at locus; emitted 3"
-  },
-  "B04:9:12[0]": {
-    "band_evidence": "9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP",
-    "book": "B04",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "9:12",
-    "print_form": "τον",
-    "reason": "B04 9:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖνοὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 ἐν ᾗ ἡμέρᾳ WH Treg NIV ] ὅτε '. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=και ειπαν; readings=['και ειπαν', 'ειπον ουν']"
-  },
-  "B05:15:7[1]": {
-    "band_evidence": "15:7 ἐν ὑμῖν ἐξελέξατο ὁ θεὸς WH Treg NIV ] ὁ θεὸς ἐν ὑμῖν ἐξελέξατο RP",
-    "book": "B05",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "15:7",
-    "print_form": "εν υμιν εξελεξατο ο θεοσ",
-    "reason": "B05 15:7[1]: the PRINTED band reads 'ο θεοσ εν υμιν εξελεξατο' where the TEI re-encoding reads 'ο θεοσ εν ημιν εξελεξατο' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=εν υμιν εξελεξατο ο θεοσ; readings=['εν υμιν εξελεξατο ο θεοσ', 'ο θεοσ εν ημιν εξελεξατο']"
-  },
-  "B05:18:3[0]": {
-    "band_evidence": "18:3 ἠργάζετο Treg NIV RP ] ἠργάζοντο WH",
-    "book": "B05",
-    "error_kinds": [
-      "READING_COUNT"
-    ],
-    "locus": "18:3",
-    "print_form": "ηργαζετο",
-    "reason": "Ac 18:3 ἠργάζετο: the TEI adds rdg3 'εἰργάζετο' (RP, resp=#JJM) absent from the printed band — encoder addition, band-verified 2026-08-04.",
-    "tei_form": "lemma=ηργαζετο; readings=['ηργαζετο', 'ηργαζοντο', 'ειργαζετο']"
-  },
-  "B05:21:13[0]": {
-    "band_evidence": "21:13 τότε ἀπεκρίθη WH Treg NIV ] ἀπεκρίθη τότε RP",
-    "book": "B05",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "21:13",
-    "print_form": "τοτε απεκριθη",
-    "reason": "B05 21:13[0]: the PRINTED band reads 'απεκριθη τοτε' where the TEI re-encoding reads 'απεκριθη τε' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=τοτε απεκριθη; readings=['τοτε απεκριθη', 'απεκριθη τε']"
-  },
-  "B05:22:24[0]": {
-    "band_evidence": "22:24 ὁ χιλίαρχος εἰσάγεσθαι αὐτὸν WH Treg NIV ] αὐτὸν ὁ χιλίαρχος εἰσάγεσθαι RP",
-    "book": "B05",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "22:24",
-    "print_form": "ο χιλιαρχοσ εισαγεσθαι αυτον",
-    "reason": "B05 22:24[0]: the PRINTED band reads 'αυτον ο χιλιαρχοσ εισαγεσθαι' where the TEI re-encoding reads 'αυτον ο χιλιαρχοσ αγεσθαι' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=ο χιλιαρχοσ εισαγεσθαι αυτον; readings=['ο χιλιαρχοσ εισαγεσθαι αυτον', 'αυτον ο χιλιαρχοσ αγεσθαι']"
-  },
-  "B05:23:27[0]": {
-    "band_evidence": "23:27 ἐξειλάμην WH Treg NIV ] + αὐτόν RP",
-    "book": "B05",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "23:27",
-    "print_form": "εξειλαμην",
-    "reason": "B05 23:27[0]: the PRINTED band reads '+ αυτον' where the TEI re-encoding reads 'εξειλομην αυτον' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=εξειλαμην; readings=['εξειλαμην', 'εξειλομην αυτον']"
-  },
-  "B06:10:5": {
-    "band_evidence": "10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP | 10:5 τοῦ NIV RP ] – WH Treg | 10:5 ποιήσας WH ] + αὐτὰ Treg NIV RP | 10:5 αὐτῇ WH Treg ] αὐτοῖς NIV RP",
-    "book": "B06",
-    "error_kinds": [
-      "PHANTOM"
-    ],
-    "locus": "10:5",
-    "print_form": "10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP | 10:5 τοῦ NIV RP ] – WH Treg | 10:5 ποιήσας WH ] + αὐτὰ Treg NIV RP | 10:5 αὐτῇ WH Treg ] αὐτοῖς NIV RP",
-    "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "3 source apps at locus; emitted 4"
-  },
-  "B06:10:5[0]": {
-    "band_evidence": "10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP",
-    "book": "B06",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "10:5",
-    "print_form": "10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP",
-    "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=του; readings=['του', '']"
-  },
-  "B06:10:5[1]": {
-    "band_evidence": "10:5 τοῦ NIV RP ] – WH Treg",
-    "book": "B06",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "10:5",
-    "print_form": "του",
-    "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=ποιησασ; readings=['ποιησασ', '+ αυτα']"
-  },
-  "B06:10:5[2]": {
-    "band_evidence": "10:5 ποιήσας WH ] + αὐτὰ Treg NIV RP",
-    "book": "B06",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "10:5",
-    "print_form": "ποιησασ",
-    "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=αυτη; readings=['αυτη', 'αυτοισ']"
-  },
-  "B06:9:15[0]": {
-    "band_evidence": "9:15 Μωϋσεῖ γὰρ WH Treg NIV ] γὰρ Μωϋσεῖ RP",
-    "book": "B06",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "9:15",
-    "print_form": "μωυσει γαρ",
-    "reason": "B06 9:15[0]: the PRINTED band reads 'γαρ μωυσει' where the TEI re-encoding reads 'γαρ μωυση' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=μωυσει γαρ; readings=['μωυσει γαρ', 'γαρ μωυση']"
-  },
-  "B07:14:26[1]": {
-    "band_evidence": "14:26 ἀποκάλυψιν ἔχει γλῶσσαν WH Treg NIV ] γλῶσσαν ἀποκάλυψιν ἔχει RP",
-    "book": "B07",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "14:26",
-    "print_form": "αποκαλυψιν εχει γλωσσαν",
-    "reason": "B07 14:26[1]: the PRINTED band reads 'γλωσσαν αποκαλυψιν εχει' where the TEI re-encoding reads 'γλωσσαν εχει αποκαλυψιν' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=αποκαλυψιν εχει γλωσσαν; readings=['αποκαλυψιν εχει γλωσσαν', 'γλωσσαν εχει αποκαλυψιν']"
-  },
-  "B07:16:10[0]": {
-    "band_evidence": "16:10 κἀγώ NIV Treg RP ] ἐγώ WH",
-    "book": "B07",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_COUNT"
-    ],
-    "locus": "16:10",
-    "print_form": "καγω",
-    "reason": "B07 16:10[0] LEMWITS: the PRINTED band attributes lemma 'καγω' as ours=['niv', 'rp', 'treg'] where the TEI reads ['niv', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=καγω; readings=['καγω', 'εγω', 'και εγω']"
-  },
-  "B07:9:2[0]": {
-    "band_evidence": "9:2 μου τῆς WH Treg NIV ] τῆς μου RP",
-    "book": "B07",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "9:2",
-    "print_form": "μου τησ",
-    "reason": "B07 9:2[0]: the PRINTED band reads 'τησ μου' where the TEI re-encoding reads 'τησ εμησ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=μου τησ; readings=['μου τησ', 'τησ εμησ']"
-  },
-  "B08:3:5[1]": {
-    "band_evidence": "3:5 αὑτῶν WH ] αὐτῶν Treg; ἑαυτῶν NIV RP",
-    "book": "B08",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_COUNT"
-    ],
-    "locus": "3:5",
-    "print_form": "αυτων",
-    "reason": "B08 3:5[1] LEMWITS: the PRINTED band attributes lemma 'αυτων' as ours=['wh'] where the TEI reads ['niv', 'treg', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=αυτων; readings=['αυτων', 'εαυτων']"
-  },
-  "B08:7:8[0]": {
-    "band_evidence": "7:8 βλέπω WH Treg ] βλέπων WHapp; βλέπω γὰρ NIV RP",
-    "book": "B08",
-    "error_kinds": [
-      "READING_TEXT",
-      "READING_WITNESSES"
-    ],
-    "locus": "7:8",
-    "print_form": "βλεπω",
-    "reason": "B08 7:8[0]: the PRINTED band reads 'βλεπων' where the TEI re-encoding reads 'βλεπων app' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=βλεπω; readings=['βλεπω', 'βλεπων app', 'βλεπω γαρ']"
-  },
-  "B09:2:14": {
-    "band_evidence": "2:14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP | 2:14 καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP | 2:14 οὐκ WH Treg RP ] οὐχὶ NIV | 2:14 πῶς WH Treg NIV ] τί RP",
-    "book": "B09",
-    "error_kinds": [
-      "PHANTOM"
-    ],
-    "locus": "2:14",
-    "print_form": "κηφα",
-    "reason": "B09 2:14: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP • καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP • οὐκ WH Treg RP ] οὐχὶ NIV • πῶς WH Treg NIV ] τί RP 1'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "3 source apps at locus; emitted 4"
-  },
-  "B09:2:14[1]": {
-    "band_evidence": "2:14 καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP",
-    "book": "B09",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "2:14",
-    "print_form": "2:14 καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP",
-    "reason": "B09 2:14: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP • καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP • οὐκ WH Treg RP ] οὐχὶ NIV • πῶς WH Treg NIV ] τί RP 1'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=ουκ; readings=['ουκ', 'ουχι']"
-  },
-  "B09:2:14[2]": {
-    "band_evidence": "2:14 οὐκ WH Treg RP ] οὐχὶ NIV",
-    "book": "B09",
-    "error_kinds": [
-      "LEMMA"
-    ],
-    "locus": "2:14",
-    "print_form": "ουκ",
-    "reason": "B09 2:14: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP • καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP • οὐκ WH Treg RP ] οὐχὶ NIV • πῶς WH Treg NIV ] τί RP 1'. Verified 2026-08-04; diorthosis follows the printed page.",
-    "tei_form": "lemma=πωσ; readings=['πωσ', 'τι']"
-  },
-  "B14:2:12[0]": {
-    "band_evidence": "2:12 πάντες WH Treg NIV ] ἅπαντες RP",
-    "book": "B14",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_WITNESSES"
-    ],
-    "locus": "2:12",
-    "print_form": "παντεσ",
-    "reason": "B14 2:12[0] LEMWITS: the PRINTED band attributes lemma 'παντεσ' as ours=['niv', 'treg', 'wh'] where the TEI reads ['niv', 'rp', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=παντεσ; readings=['παντεσ', 'απαντεσ']"
-  },
-  "B17:1:10[0]": {
-    "band_evidence": "1:10 καὶ RP NA ] – WH Treg NIV",
-    "book": "B17",
-    "error_kinds": [
-      "LEMMA_WITNESSES"
-    ],
-    "locus": "1:10",
-    "print_form": "και",
-    "reason": "B17 1:10[0] LEMWITS: the PRINTED band attributes lemma 'και' as ours=['na', 'rp'] where the TEI reads ['rp'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=και; readings=['και', '']"
-  },
-  "B19:4:2[0]": {
-    "band_evidence": "4:2 συγκεκερασμένους WH Treg RP NA ] συγκεκερασμένος NIV",
-    "book": "B19",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_COUNT"
-    ],
-    "locus": "4:2",
-    "print_form": "συγκεκερασμενουσ",
-    "reason": "B19 4:2[0] LEMWITS: the PRINTED band attributes lemma 'συγκεκερασμενουσ' as ours=['na', 'rp', 'treg', 'wh'] where the TEI reads ['na', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=συγκεκερασμενουσ; readings=['συγκεκερασμενουσ', 'συνκεκερασμενουσ', 'συγκεκερασμενοσ', 'συγκεκραμενουσ']"
-  },
-  "B21:3:4[0]": {
-    "band_evidence": "3:4 πραέως καὶ ἡσυχίου Treg NIV RP ] ἡσυχίου καὶ πραέως WH",
-    "book": "B21",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_COUNT"
-    ],
-    "locus": "3:4",
-    "print_form": "πραεωσ και ησυχιου",
-    "reason": "B21 3:4[0] LEMWITS: the PRINTED band attributes lemma 'πραεωσ και ησυχιου' as ours=['niv', 'rp', 'treg'] where the TEI reads ['niv', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=πραεωσ και ησυχιου; readings=['πραεωσ και ησυχιου', 'ησυχιου και πραεωσ', 'πραεοσ και ησυχιου']"
-  },
-  "B27:11:2[1]": {
-    "band_evidence": "11:2 τεσσεράκοντα Treg ] + καὶ WH NIV RP",
-    "book": "B27",
-    "error_kinds": [
-      "READING_COUNT"
-    ],
-    "locus": "11:2",
-    "print_form": "τεσσερακοντα",
-    "reason": "Rev 11:2 τεσσεράκοντα: the TEI adds rdg3 'τεσσαράκοντα καὶ' (RP, resp=#JJM) absent from the printed band — encoder addition, band-verified 2026-08-04.",
-    "tei_form": "lemma=τεσσερακοντα; readings=['τεσσερακοντα', '+ και', 'τεσσαρακοντα και']"
-  },
-  "B27:12:3[0]": {
-    "band_evidence": "12:3 μέγας πυρρός WH NIV ] πυρρὸς μέγας Treg RP",
-    "book": "B27",
-    "error_kinds": [
-      "READING_COUNT"
-    ],
-    "locus": "12:3",
-    "print_form": "μεγασ πυρροσ",
-    "reason": "Rev 12:3 μέγας πυρρός: the TEI separates rdg2 'πυρρὸς μέγας' (Treg, resp=#JJM) and rdg3 'πυρὸς μέγας' (RP, resp=#JJM); the printed band compacts 'πυρρὸς μέγας Treg RP' — band-verified 2026-08-04.",
-    "tei_form": "lemma=μεγασ πυρροσ; readings=['μεγασ πυρροσ', 'πυρροσ μεγασ', 'πυροσ μεγασ']"
-  },
-  "B27:13:14[2]": {
-    "band_evidence": "13:14 τῆς μαχαίρης καὶ ἔζησεν WH Treg NIV ] καὶ ἔζησεν ἀπὸ τῆς μαχαίρης RP",
-    "book": "B27",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "13:14",
-    "print_form": "τησ μαχαιρησ και εζησεν",
-    "reason": "B27 13:14[2]: the PRINTED band reads 'και εζησεν απο τησ μαχαιρησ' where the TEI re-encoding reads 'και εζησεν απο τησ μαχαιρασ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=τησ μαχαιρησ και εζησεν; readings=['τησ μαχαιρησ και εζησεν', 'και εζησεν απο τησ μαχαιρασ']"
-  },
-  "B27:13:5[2]": {
-    "band_evidence": "13:5 τεσσεράκοντα Treg RP] + καὶ WH NIV",
-    "book": "B27",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_COUNT"
-    ],
-    "locus": "13:5",
-    "print_form": "τεσσερακοντα",
-    "reason": "B27 13:5[2] LEMWITS: the PRINTED band attributes lemma 'τεσσερακοντα' as ours=['rp', 'treg'] where the TEI reads ['treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=τεσσερακοντα; readings=['τεσσερακοντα', '+ και', 'τεσσαρακοντα']"
-  },
-  "B27:18:3[0]": {
-    "band_evidence": "18:3 πέπτωκαν WH Treg RP ] πέπωκαν NIV",
-    "book": "B27",
-    "error_kinds": [
-      "LEMMA_WITNESSES",
-      "READING_COUNT"
-    ],
-    "locus": "18:3",
-    "print_form": "πεπτωκαν",
-    "reason": "B27 18:3[0] LEMWITS: the PRINTED band attributes lemma 'πεπτωκαν' as ours=['rp', 'treg', 'wh'] where the TEI reads ['treg', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=πεπτωκαν; readings=['πεπτωκαν', 'πεπωκαν', 'πεπτωκασιν']"
-  },
-  "B27:8:12[0]": {
-    "band_evidence": "8:12 ἡ ἡμέρα μὴ φάνῃ τὸ τρίτον αὐτῆς WH Treg NIV ] τὸ τρίτον αὐτῆς ἡ ἡμέρα μὴ φάνῃ RP",
-    "book": "B27",
-    "error_kinds": [
-      "READING_TEXT"
-    ],
-    "locus": "8:12",
-    "print_form": "η ημερα μη φανη το τριτον αυτησ",
-    "reason": "B27 8:12[0]: the PRINTED band reads 'το τριτον αυτησ η ημερα μη φανη' where the TEI re-encoding reads 'το τριτον αυτησ μη φανη η ημερα' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
-    "tei_form": "lemma=η ημερα μη φανη το τριτον αυτησ; readings=['η ημερα μη φανη το τριτον αυτησ', 'το τριτον αυτησ μη φανη η ημερα']"
-  }
+ "B01:3:16[2]": {
+  "band_evidence": "3:16 ἠνεῴχθησαν WH NIV ] + αὐτῷ Treg RP NA",
+  "book": "B01",
+  "error_kinds": [
+   "READING_COUNT"
+  ],
+  "locus": "3:16",
+  "print_form": "ηνεωχθησαν",
+  "reason": "Mt 3:16 ἠνεῴχθησαν: the PRINTED 2010 band reads '+ αὐτῷ Treg RP NA' (one reading), while the TEI re-encoding separates rdg2 '+ αὐτῷ' (Treg NA) from rdg3 'ἀνεῴχθησαν αὐτῷ' (RP, resp JJM). diorthosis follows the printed page; verified against the extracted band on 2026-08-04.",
+  "tei_form": "lemma=ηνεωχθησαν; readings=['ηνεωχθησαν', '+ αυτω', 'ανεωχθησαν αυτω']"
+ },
+ "B02:10:4[0]": {
+  "band_evidence": "10:4 Ἐπέτρεψεν Μωϋσῆς WH Treg NIV ] Μωϋσῆς ἐπέτρεψεν RP",
+  "book": "B02",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "10:4",
+  "print_form": "επετρεψεν μωυσησ",
+  "reason": "B02 10:4[0]: the PRINTED band reads 'μωυσησ επετρεψεν' where the TEI re-encoding reads 'μωσησ επετρεψεν' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=επετρεψεν μωυσησ; readings=['επετρεψεν μωυσησ', 'μωσησ επετρεψεν']"
+ },
+ "B02:1:13[1]": {
+  "band_evidence": "1:13 τεσσεράκοντα ἡμέρας WH Treg NIV ] ἡμέρας τεσσεράκοντα RP",
+  "book": "B02",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "1:13",
+  "print_form": "τεσσερακοντα ημερασ",
+  "reason": "B02 1:13[1]: the PRINTED band reads 'ημερασ τεσσερακοντα' where the TEI re-encoding reads 'ημερασ τεσσαρακοντα' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=τεσσερακοντα ημερασ; readings=['τεσσερακοντα ημερασ', 'ημερασ τεσσαρακοντα']"
+ },
+ "B02:3:20[0]": {
+  "band_evidence": "3:20 ἔρχεται WH NIV RP ] ἔρχονται Treg",
+  "book": "B02",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_WITNESSES"
+  ],
+  "locus": "3:20",
+  "print_form": "ερχεται",
+  "reason": "B02 3:20[0] LEMWITS: the PRINTED band attributes lemma 'ερχεται' as ours=['niv', 'rp', 'wh'] where the TEI reads ['niv', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ερχεται; readings=['ερχεται', 'ερχονται']"
+ },
+ "B02:4:37[2]": {
+  "band_evidence": "4:37 ἤδη γεμίζεσθαι τὸ πλοῖον WH Treg NIV ] αὐτὸ ἤδη γεμίζεσθα RP",
+  "book": "B02",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "4:37",
+  "print_form": "ηδη γεμιζεσθαι το πλοιον",
+  "reason": "B02 4:37[2]: the PRINTED band reads 'αυτο ηδη γεμιζεσθα' where the TEI re-encoding reads 'αυτο ηδη γεμιζεσθαι' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ηδη γεμιζεσθαι το πλοιον; readings=['ηδη γεμιζεσθαι το πλοιον', 'αυτο ηδη γεμιζεσθαι']"
+ },
+ "B02:8:35[3]": {
+  "band_evidence": "8:35 ⸄ψυχὴν αὐτοῦ⸅ WH NIV ] ἑαυτοῦ ψυχὴν Treg RP",
+  "book": "B02",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_WITNESSES"
+  ],
+  "locus": "8:35",
+  "print_form": "ψυχην αυτου",
+  "reason": "B02 8:35[3] LEMWITS: the PRINTED band attributes lemma 'ψυχην αυτου' as ours=['niv', 'wh'] where the TEI reads ['niv', 'rp', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ψυχην αυτου; readings=['ψυχην αυτου', 'εαυτου ψυχην']"
+ },
+ "B03:18:13[2]": {
+  "band_evidence": "18:13 ἔτυπτε WH Treg NIV ] + εἰς RP",
+  "book": "B03",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "18:13",
+  "print_form": "ετυπτε",
+  "reason": "B03 18:13[2]: the PRINTED band reads '+ εισ' where the TEI re-encoding reads 'ετυπτεν εισ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ετυπτε; readings=['ετυπτε', 'ετυπτεν εισ']"
+ },
+ "B03:19:16[0]": {
+  "band_evidence": "19:16 δέκα προσηργάσατο WH Treg NIV ] προσηργάσατο δέκα RP",
+  "book": "B03",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "19:16",
+  "print_form": "δεκα προσηργασατο",
+  "reason": "B03 19:16[0]: the PRINTED band reads 'προσηργασατο δεκα' where the TEI re-encoding reads 'προσειργασατο δεκα' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=δεκα προσηργασατο; readings=['δεκα προσηργασατο', 'προσειργασατο δεκα']"
+ },
+ "B03:19:35[0]": {
+  "band_evidence": "19:35 αὐτῶν WH Treg NIV ] – RP",
+  "book": "B03",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "19:35",
+  "print_form": "αυτων",
+  "reason": "Lk 19:35 αὐτῶν/ἑαυτῶν: the TEI carries an <app> (rdg ἑαυτῶν RP, resp=#JJM) that the PRINTED band does not contain at 19:35 (band prints only 'δὲ Treg NIV RP ] – WH') — encoder addition, band-verified 2026-08-04.",
+  "tei_form": "lemma=αυτων; readings=['αυτων', 'εαυτων']"
+ },
+ "B03:19:38[0]": {
+  "band_evidence": "19:38 βασιλεὺς Treg RP ] ὁ βασιλεὺς WH NIV",
+  "book": "B03",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_WITNESSES"
+  ],
+  "locus": "19:38",
+  "print_form": "βασιλευσ",
+  "reason": "B03 19:38[0] LEMWITS: the PRINTED band attributes lemma 'βασιλευσ' as ours=['rp', 'treg'] where the TEI reads ['niv', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=βασιλευσ; readings=['βασιλευσ', 'ο βασιλευσ']"
+ },
+ "B03:21:19[0]": {
+  "band_evidence": "21:19 κτήσασθε NIV RP ] κτήσεσθε WH Treg",
+  "book": "B03",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_WITNESSES"
+  ],
+  "locus": "21:19",
+  "print_form": "κτησασθε",
+  "reason": "B03 21:19[0] LEMWITS: the PRINTED band attributes lemma 'κτησασθε' as ours=['niv', 'rp'] where the TEI reads ['niv', 'rp', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=κτησασθε; readings=['κτησασθε', 'κτησεσθε']"
+ },
+ "B03:22:49[0]": {
+  "band_evidence": "22:49 εἶπαν WH Treg NIV ] + αὐτῷ RP",
+  "book": "B03",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "22:49",
+  "print_form": "ειπαν",
+  "reason": "B03 22:49[0]: the PRINTED band reads '+ αυτω' where the TEI re-encoding reads 'ειπον αυτω' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ειπαν; readings=['ειπαν', 'ειπον αυτω']"
+ },
+ "B03:24:12": {
+  "band_evidence": "12  Ὁ δὲ … τὸ γεγονός Treg NIV RP ] 〚WH〛",
+  "book": "B03",
+  "error_kinds": [
+   "PHANTOM"
+  ],
+  "locus": "24:12",
+  "print_form": "Ὁ δὲ … τὸ γεγονός Treg NIV RP ] 〚WH〛",
+  "reason": "B03 24:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 12 τὸτὸ Treg NIV RP ] – WH • καὶ WH Treg NIV ] – RP 13 οὐρανίου WH NIV RP ] οὐρανοῦ Treg 14 εὐδοκίας WH Treg NIV ] εὐδοκία RP 15 οἱ WH NIV ] καὶ οἱ ἄ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "2 source apps at locus; emitted 3"
+ },
+ "B03:24:12[0]": {
+  "band_evidence": "12  Ὁ δὲ … τὸ γεγονός Treg NIV RP ] 〚WH〛",
+  "book": "B03",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "24:12",
+  "print_form": "Ὁ δὲ … τὸ γεγονός Treg NIV RP ] 〚WH〛",
+  "reason": "B03 24:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 12 τὸτὸ Treg NIV RP ] – WH • καὶ WH Treg NIV ] – RP 13 οὐρανίου WH NIV RP ] οὐρανοῦ Treg 14 εὐδοκίας WH Treg NIV ] εὐδοκία RP 15 οἱ WH NIV ] καὶ οἱ ἄ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=οθονια; readings=['οθονια', '+ κειμενα']"
+ },
+ "B03:24:12[1]": {
+  "band_evidence": "24:12 ὀθόνια WHspur Treg NIV ] + κείμενα RP",
+  "book": "B03",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "24:12",
+  "print_form": "οθονια",
+  "reason": "B03 24:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 12 τὸτὸ Treg NIV RP ] – WH • καὶ WH Treg NIV ] – RP 13 οὐρανίου WH NIV RP ] οὐρανοῦ Treg 14 εὐδοκίας WH Treg NIV ] εὐδοκία RP 15 οἱ WH NIV ] καὶ οἱ ἄ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=αυτον; readings=['αυτον', 'αυτον', 'εαυτον']"
+ },
+ "B03:24:40": {
+  "band_evidence": "40  καὶ τοῦτο … τοὺς \nπόδας  Treg NIV RP ] 〚WH〛",
+  "book": "B03",
+  "error_kinds": [
+   "PHANTOM"
+  ],
+  "locus": "24:40",
+  "print_form": "καὶ τοῦτο … τοὺς πόδας  Treg NIV RP ] 〚WH〛",
+  "reason": "B03 24:40: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 40 πληρούμενον σοφίᾳ WH Treg NIV ] πνεύματι πληρούμενον σοφίας RP 42 ἀναβαινόντων WH Treg NIV ] ἀναβάντων RP • αὐτῶν WH NIV ] + εἰς Ἱεροσόλυμα Treg R'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "1 source apps at locus; emitted 2"
+ },
+ "B03:24:40[0]": {
+  "band_evidence": "40  καὶ τοῦτο … τοὺς \nπόδας  Treg NIV RP ] 〚WH〛",
+  "book": "B03",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "24:40",
+  "print_form": "καὶ τοῦτο … τοὺς πόδας  Treg NIV RP ] 〚WH〛",
+  "reason": "B03 24:40: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 40 πληρούμενον σοφίᾳ WH Treg NIV ] πνεύματι πληρούμενον σοφίας RP 42 ἀναβαινόντων WH Treg NIV ] ἀναβάντων RP • αὐτῶν WH NIV ] + εἰς Ἱεροσόλυμα Treg R'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=εδειξεν; readings=['εδειξεν', 'επεδειξεν']"
+ },
+ "B03:6:2[0]": {
+  "band_evidence": "6:2 εἶπαν WH Treg NIV ] +αὐτοῖς RP",
+  "book": "B03",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "6:2",
+  "print_form": "ειπαν",
+  "reason": "B03 6:2[0]: the PRINTED band reads '+ αυτοισ' where the TEI re-encoding reads 'ειπον αυτοισ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ειπαν; readings=['ειπαν', 'ειπον αυτοισ']"
+ },
+ "B03:6:5[1]": {
+  "band_evidence": "6:5 τοῦ σαββάτου ὁ υἱὸς τοῦ ἀνθρώπου WH NIV ] ὁ υἱὸς τοῦ ἀνθρώπου τοῦ σαββάτου Treg RP",
+  "book": "B03",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "6:5",
+  "print_form": "του σαββατου ο υιοσ του ανθρωπου",
+  "reason": "B03 6:5[1]: the PRINTED band reads 'ο υιοσ του ανθρωπου του σαββατου' where the TEI re-encoding reads 'ο υιοσ του ανθρωπου και του σαββατου' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=του σαββατου ο υιοσ του ανθρωπου; readings=['του σαββατου ο υιοσ του ανθρωπου', 'ο υιοσ του ανθρωπου και του σαββατου']"
+ },
+ "B03:9:9[1]": {
+  "band_evidence": "9:9 ὁ WH RP ] – Treg NIV",
+  "book": "B03",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_WITNESSES"
+  ],
+  "locus": "9:9",
+  "print_form": "ο",
+  "reason": "B03 9:9[1] LEMWITS: the PRINTED band attributes lemma 'ο' as ours=['rp', 'wh'] where the TEI reads ['wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ο; readings=['ο', '']"
+ },
+ "B04:10:32[2]": {
+  "band_evidence": "10:32 ἐμὲ λιθάζετε WH Treg NIV ] λιθάζετε ἐμὲ RP",
+  "book": "B04",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "10:32",
+  "print_form": "εμε λιθαζετε",
+  "reason": "B04 10:32[2]: the PRINTED band reads 'λιθαζετε εμε' where the TEI re-encoding reads 'λιθαζετε με' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=εμε λιθαζετε; readings=['εμε λιθαζετε', 'λιθαζετε με']"
+ },
+ "B04:13:2": {
+  "band_evidence": "13:2 γινομένου WH Treg NIV ] γενομένου RP | 13:2 ἵνα παραδοῖ αὐτὸν Ἰούδας Σίμωνος Ἰσκ. WH Treg NIV] Ἰούδα Σίμωνος Ἰσκ. ἵνα αὐτὸν παραδῷ RP | 13:2 Ἰσκαριώτου NIV RP ] Ἰσκαριώτης WH Treg",
+  "book": "B04",
+  "error_kinds": [
+   "PHANTOM"
+  ],
+  "locus": "13:2",
+  "print_form": "γινομενου",
+  "reason": "B04 13:2: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 2 Βηθεσδά Treg NIV RP ] Βηθζαθά WH NA 3 πλῆθος WH Treg NIV ] + πολὺ RP • ξηρῶν WH Treg NIV ] + ἐκδεχομένων τὴν τοῦ ὕδατος κίνησιν. 4 ἄγγελος γὰρ κατὰ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "2 source apps at locus; emitted 3"
+ },
+ "B04:13:2[1]": {
+  "band_evidence": "13:2 ἵνα παραδοῖ αὐτὸν Ἰούδας Σίμωνος Ἰσκ. WH Treg NIV] Ἰούδα Σίμωνος Ἰσκ. ἵνα αὐτὸν παραδῷ RP",
+  "book": "B04",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "13:2",
+  "print_form": "ινα παραδοι αυτον ιουδασ σιμωνοσ ισκ",
+  "reason": "B04 13:2: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 2 Βηθεσδά Treg NIV RP ] Βηθζαθά WH NA 3 πλῆθος WH Treg NIV ] + πολὺ RP • ξηρῶν WH Treg NIV ] + ἐκδεχομένων τὴν τοῦ ὕδατος κίνησιν. 4 ἄγγελος γὰρ κατὰ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=ισκαριωτου; readings=['ισκαριωτου', 'ισκαριωτησ']"
+ },
+ "B04:1:39[0]": {
+  "band_evidence": "1:39 ὄψεσθε. ἦλθαν οὖν WH Treg NIV ] ἴδετε. ἦλθαν RP",
+  "book": "B04",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "1:39",
+  "print_form": "οψεσθε ηλθαν ουν",
+  "reason": "B04 1:39[0]: the PRINTED band reads 'ιδετε ηλθαν' where the TEI re-encoding reads 'ιδετε ηλθον' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=οψεσθε ηλθαν ουν; readings=['οψεσθε ηλθαν ουν', 'ιδετε ηλθον']"
+ },
+ "B04:4:21[0]": {
+  "band_evidence": "4:21 Πίστευέ μοι, γύναι WH Treg NIV ] Γύναι, πίστευέ μοι RP",
+  "book": "B04",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "4:21",
+  "print_form": "πιστευε μοι γυναι",
+  "reason": "B04 4:21[0]: the PRINTED band reads 'γυναι πιστευε μοι' where the TEI re-encoding reads 'γυναι πιστευσον μοι' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=πιστευε μοι γυναι; readings=['πιστευε μοι γυναι', 'γυναι πιστευσον μοι']"
+ },
+ "B04:5:10[1]": {
+  "band_evidence": "5:10 κράβαττον WH Treg RP ] + σου NIV",
+  "book": "B04",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_COUNT"
+  ],
+  "locus": "5:10",
+  "print_form": "κραβαττον",
+  "reason": "B04 5:10[1] LEMWITS: the PRINTED band attributes lemma 'κραβαττον' as ours=['rp', 'treg', 'wh'] where the TEI reads ['treg', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=κραβαττον; readings=['κραβαττον', 'κραββατον', '+ σου']"
+ },
+ "B04:6:44[0]": {
+  "band_evidence": "6:44 με WH Treg NIV ] ἐμέ RP",
+  "book": "B04",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_WITNESSES"
+  ],
+  "locus": "6:44",
+  "print_form": "με",
+  "reason": "B04 6:44[0] LEMWITS: the PRINTED band attributes lemma 'με' as ours=['niv', 'treg', 'wh'] where the TEI reads ['niv', 'rp', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=με; readings=['με', 'εμε']"
+ },
+ "B04:7:52[1]": {
+  "band_evidence": "7:52 ἐγείρεται WH Treg NIV ] ἐγηγέρται RP; +",
+  "book": "B04",
+  "error_kinds": [
+   "READING_COUNT"
+  ],
+  "locus": "7:52",
+  "print_form": "εγειρεται",
+  "reason": "Jn 7:52 ἐγείρεται: the TEI's rdg2 (RP) embeds the whole Pericope Adulterae ('ἐγηγέρται + 7:53–8:11: …'); the printed band structures this differently — print/TEI structural divergence, band-verified 2026-08-04.",
+  "tei_form": "lemma=εγειρεται; readings=['εγειρεται', 'εγηγερται + 7 53 8 11 53 και επορευθη εκαστοσ εισ τον οικον αυτου 8 1 ιησουσ δε επορευθη εισ το οροσ των ελαιων 2 ορθρου δε παλιν παρεγενετο εισ το ιερον και πασ ο λαοσ ηρχετο και καθισασ εδιδασκεν αυτουσ 3 αγουσιν δε οι γραμματεισ και οι φαρισαιοι προσ αυτον γυναικα εν μοιχεια καταληφθεισαν και στησαντεσ αυτην εν μεσω 4 λεγουσιν αυτω πειραζοντεσ διδασκαλε αυτη η γυνη κατεληφθη επ αυτοφορω μοιχευομενη 5 εν δε τω νομω μωσησ ημιν ενετειλατο τασ τοιαυτασ λιθοβολεισθαι συ ουν τι λεγεισ 6 τουτο δε ελεγον πειραζοντεσ αυτον ινα εχωσιν κατηγορειν αυτου ο δε ιησουσ κατω κυψασ τω δακτυλω εγραφεν εισ την γην μη προσποιουμενοσ 7 ωσ δε επεμενον ερωτωντεσ αυτον ανακυψασ ειπεν προσ αυτουσ ο αναμαρτητοσ υμων πρωτον επ αυτην τον λιθον βαλετω 8 και παλιν κατω κυψασ εγραφεν εισ την γην 9 οι δε ακουσαντεσ και υπο τησ συνειδησεωσ ελεγχομενοι εξηρχοντο εισ καθ εισ αρξαμενοι απο των πρεσβυτερων και κατελειφθη μονοσ ο ιησουσ και η γυνη εν μεσω ουσα 10 ανακυψασ δε ο ιησουσ και μηδενα θεασαμενοσ πλην τησ γυναικοσ ειπεν αυτη που εισιν εκεινοι οι κατηγοροι σου ουδεισ σε κατεκρινεν 11 η δε ειπεν ουδεισ κυριε ειπεν δε ο ιησουσ ουδε εγω σε κρινω πορευου και μηκετι αμαρτανε']"
+ },
+ "B04:8:41[0]": {
+  "band_evidence": "8:41 εἶπαν WH Treg NIV ] + οὖν RP NA",
+  "book": "B04",
+  "error_kinds": [
+   "READING_COUNT"
+  ],
+  "locus": "8:41",
+  "print_form": "ειπαν",
+  "reason": "Jn 8:41 εἶπαν: printed band compacts '+ οὖν RP NA' into one reading; the TEI separates rdg2 '+ οὖν' (NA, resp=#JJM) from rdg3 'εἶπον οὖν' (RP, resp=#JJM) — encoder refinement, band-verified 2026-08-04.",
+  "tei_form": "lemma=ειπαν; readings=['ειπαν', '+ ουν', 'ειπον ουν']"
+ },
+ "B04:9:12": {
+  "band_evidence": "9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP | 9:12 οὖνοὖν WH Treg NIV ] δὲ RP | 9:12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP",
+  "book": "B04",
+  "error_kinds": [
+   "PHANTOM"
+  ],
+  "locus": "9:12",
+  "print_form": "τον",
+  "reason": "B04 9:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖνοὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 ἐν ᾗ ἡμέρᾳ WH Treg NIV ] ὅτε '. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "1 source apps at locus; emitted 3"
+ },
+ "B04:9:12[0]": {
+  "band_evidence": "9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP",
+  "book": "B04",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "9:12",
+  "print_form": "τον",
+  "reason": "B04 9:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖνοὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 ἐν ᾗ ἡμέρᾳ WH Treg NIV ] ὅτε '. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=και ειπαν; readings=['και ειπαν', 'ειπον ουν']"
+ },
+ "B05:15:7[1]": {
+  "band_evidence": "15:7 ἐν ὑμῖν ἐξελέξατο ὁ θεὸς WH Treg NIV ] ὁ θεὸς ἐν ὑμῖν ἐξελέξατο RP",
+  "book": "B05",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "15:7",
+  "print_form": "εν υμιν εξελεξατο ο θεοσ",
+  "reason": "B05 15:7[1]: the PRINTED band reads 'ο θεοσ εν υμιν εξελεξατο' where the TEI re-encoding reads 'ο θεοσ εν ημιν εξελεξατο' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=εν υμιν εξελεξατο ο θεοσ; readings=['εν υμιν εξελεξατο ο θεοσ', 'ο θεοσ εν ημιν εξελεξατο']"
+ },
+ "B05:18:3[0]": {
+  "band_evidence": "18:3 ἠργάζετο Treg NIV RP ] ἠργάζοντο WH",
+  "book": "B05",
+  "error_kinds": [
+   "READING_COUNT"
+  ],
+  "locus": "18:3",
+  "print_form": "ηργαζετο",
+  "reason": "Ac 18:3 ἠργάζετο: the TEI adds rdg3 'εἰργάζετο' (RP, resp=#JJM) absent from the printed band — encoder addition, band-verified 2026-08-04.",
+  "tei_form": "lemma=ηργαζετο; readings=['ηργαζετο', 'ηργαζοντο', 'ειργαζετο']"
+ },
+ "B05:21:13[0]": {
+  "band_evidence": "21:13 τότε ἀπεκρίθη WH Treg NIV ] ἀπεκρίθη τότε RP",
+  "book": "B05",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "21:13",
+  "print_form": "τοτε απεκριθη",
+  "reason": "B05 21:13[0]: the PRINTED band reads 'απεκριθη τοτε' where the TEI re-encoding reads 'απεκριθη τε' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=τοτε απεκριθη; readings=['τοτε απεκριθη', 'απεκριθη τε']"
+ },
+ "B05:22:24[0]": {
+  "band_evidence": "22:24 ὁ χιλίαρχος εἰσάγεσθαι αὐτὸν WH Treg NIV ] αὐτὸν ὁ χιλίαρχος εἰσάγεσθαι RP",
+  "book": "B05",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "22:24",
+  "print_form": "ο χιλιαρχοσ εισαγεσθαι αυτον",
+  "reason": "B05 22:24[0]: the PRINTED band reads 'αυτον ο χιλιαρχοσ εισαγεσθαι' where the TEI re-encoding reads 'αυτον ο χιλιαρχοσ αγεσθαι' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=ο χιλιαρχοσ εισαγεσθαι αυτον; readings=['ο χιλιαρχοσ εισαγεσθαι αυτον', 'αυτον ο χιλιαρχοσ αγεσθαι']"
+ },
+ "B05:23:27[0]": {
+  "band_evidence": "23:27 ἐξειλάμην WH Treg NIV ] + αὐτόν RP",
+  "book": "B05",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "23:27",
+  "print_form": "εξειλαμην",
+  "reason": "B05 23:27[0]: the PRINTED band reads '+ αυτον' where the TEI re-encoding reads 'εξειλομην αυτον' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=εξειλαμην; readings=['εξειλαμην', 'εξειλομην αυτον']"
+ },
+ "B06:10:5": {
+  "band_evidence": "10:5  ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP",
+  "book": "B06",
+  "error_kinds": [
+   "PHANTOM"
+  ],
+  "locus": "10:5",
+  "print_form": "ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP",
+  "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "3 source apps at locus; emitted 4"
+ },
+ "B06:10:5[0]": {
+  "band_evidence": "10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP",
+  "book": "B06",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "10:5",
+  "print_form": "10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP",
+  "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=του; readings=['του', '']"
+ },
+ "B06:10:5[1]": {
+  "band_evidence": "10:5 τοῦ NIV RP ] – WH Treg",
+  "book": "B06",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "10:5",
+  "print_form": "του",
+  "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=ποιησασ; readings=['ποιησασ', '+ αυτα']"
+ },
+ "B06:10:5[2]": {
+  "band_evidence": "10:5 ποιήσας WH ] + αὐτὰ Treg NIV RP",
+  "book": "B06",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "10:5",
+  "print_form": "ποιησασ",
+  "reason": "B06 10:5: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '10:5 ὅτι τὴν … νόμου WH ] τὴν … νόμου ὅτι Treg NIV RP • τοῦ NIV RP ] – WH Treg • ποιήσας WH ] + αὐτὰ Treg NIV RP • αὐτῇ WH Treg ] αὐτοῖς NIV RP 9 ὁμολ'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=αυτη; readings=['αυτη', 'αυτοισ']"
+ },
+ "B06:9:15[0]": {
+  "band_evidence": "9:15 Μωϋσεῖ γὰρ WH Treg NIV ] γὰρ Μωϋσεῖ RP",
+  "book": "B06",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "9:15",
+  "print_form": "μωυσει γαρ",
+  "reason": "B06 9:15[0]: the PRINTED band reads 'γαρ μωυσει' where the TEI re-encoding reads 'γαρ μωυση' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=μωυσει γαρ; readings=['μωυσει γαρ', 'γαρ μωυση']"
+ },
+ "B07:14:26[1]": {
+  "band_evidence": "14:26 ἀποκάλυψιν ἔχει γλῶσσαν WH Treg NIV ] γλῶσσαν ἀποκάλυψιν ἔχει RP",
+  "book": "B07",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "14:26",
+  "print_form": "αποκαλυψιν εχει γλωσσαν",
+  "reason": "B07 14:26[1]: the PRINTED band reads 'γλωσσαν αποκαλυψιν εχει' where the TEI re-encoding reads 'γλωσσαν εχει αποκαλυψιν' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=αποκαλυψιν εχει γλωσσαν; readings=['αποκαλυψιν εχει γλωσσαν', 'γλωσσαν εχει αποκαλυψιν']"
+ },
+ "B07:16:10[0]": {
+  "band_evidence": "16:10 κἀγώ NIV Treg RP ] ἐγώ WH",
+  "book": "B07",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_COUNT"
+  ],
+  "locus": "16:10",
+  "print_form": "καγω",
+  "reason": "B07 16:10[0] LEMWITS: the PRINTED band attributes lemma 'καγω' as ours=['niv', 'rp', 'treg'] where the TEI reads ['niv', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=καγω; readings=['καγω', 'εγω', 'και εγω']"
+ },
+ "B07:9:2[0]": {
+  "band_evidence": "9:2 μου τῆς WH Treg NIV ] τῆς μου RP",
+  "book": "B07",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "9:2",
+  "print_form": "μου τησ",
+  "reason": "B07 9:2[0]: the PRINTED band reads 'τησ μου' where the TEI re-encoding reads 'τησ εμησ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=μου τησ; readings=['μου τησ', 'τησ εμησ']"
+ },
+ "B08:3:5[1]": {
+  "band_evidence": "3:5 αὑτῶν WH ] αὐτῶν Treg; ἑαυτῶν NIV RP",
+  "book": "B08",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_COUNT"
+  ],
+  "locus": "3:5",
+  "print_form": "αυτων",
+  "reason": "B08 3:5[1] LEMWITS: the PRINTED band attributes lemma 'αυτων' as ours=['wh'] where the TEI reads ['niv', 'treg', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=αυτων; readings=['αυτων', 'εαυτων']"
+ },
+ "B08:7:8[0]": {
+  "band_evidence": "7:8 βλέπω WH Treg ] βλέπων WHapp; βλέπω γὰρ NIV RP",
+  "book": "B08",
+  "error_kinds": [
+   "READING_TEXT",
+   "READING_WITNESSES"
+  ],
+  "locus": "7:8",
+  "print_form": "βλεπω",
+  "reason": "B08 7:8[0]: the PRINTED band reads 'βλεπων' where the TEI re-encoding reads 'βλεπων app' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=βλεπω; readings=['βλεπω', 'βλεπων app', 'βλεπω γαρ']"
+ },
+ "B09:2:14": {
+  "band_evidence": "2:14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP | 2:14 καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP | 2:14 οὐκ WH Treg RP ] οὐχὶ NIV | 2:14 πῶς WH Treg NIV ] τί RP",
+  "book": "B09",
+  "error_kinds": [
+   "PHANTOM"
+  ],
+  "locus": "2:14",
+  "print_form": "κηφα",
+  "reason": "B09 2:14: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP • καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP • οὐκ WH Treg RP ] οὐχὶ NIV • πῶς WH Treg NIV ] τί RP 1'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "3 source apps at locus; emitted 4"
+ },
+ "B09:2:14[1]": {
+  "band_evidence": "καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP",
+  "book": "B09",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "2:14",
+  "print_form": "καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP",
+  "reason": "B09 2:14: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP • καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP • οὐκ WH Treg RP ] οὐχὶ NIV • πῶς WH Treg NIV ] τί RP 1'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=ουκ; readings=['ουκ', 'ουχι']"
+ },
+ "B09:2:14[2]": {
+  "band_evidence": "2:14 οὐκ WH Treg RP ] οὐχὶ NIV",
+  "book": "B09",
+  "error_kinds": [
+   "LEMMA"
+  ],
+  "locus": "2:14",
+  "print_form": "ουκ",
+  "reason": "B09 2:14: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: ' 14 ΚηφᾷΚηφᾷ WH Treg NIV ] Πέτρῳ RP • καὶ … Ἰουδαϊκῶς ζῇς WH Treg NIV ] ζῇς καὶ … Ἰουδαϊκῶς RP • οὐκ WH Treg RP ] οὐχὶ NIV • πῶς WH Treg NIV ] τί RP 1'. Verified 2026-08-04; diorthosis follows the printed page.",
+  "tei_form": "lemma=πωσ; readings=['πωσ', 'τι']"
+ },
+ "B14:2:12[0]": {
+  "band_evidence": "2:12 πάντες WH Treg NIV ] ἅπαντες RP",
+  "book": "B14",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_WITNESSES"
+  ],
+  "locus": "2:12",
+  "print_form": "παντεσ",
+  "reason": "B14 2:12[0] LEMWITS: the PRINTED band attributes lemma 'παντεσ' as ours=['niv', 'treg', 'wh'] where the TEI reads ['niv', 'rp', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=παντεσ; readings=['παντεσ', 'απαντεσ']"
+ },
+ "B17:1:10[0]": {
+  "band_evidence": "1:10 καὶ RP NA ] – WH Treg NIV",
+  "book": "B17",
+  "error_kinds": [
+   "LEMMA_WITNESSES"
+  ],
+  "locus": "1:10",
+  "print_form": "και",
+  "reason": "B17 1:10[0] LEMWITS: the PRINTED band attributes lemma 'και' as ours=['na', 'rp'] where the TEI reads ['rp'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=και; readings=['και', '']"
+ },
+ "B19:4:2[0]": {
+  "band_evidence": "4:2 συγκεκερασμένους WH Treg RP NA ] συγκεκερασμένος NIV",
+  "book": "B19",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_COUNT"
+  ],
+  "locus": "4:2",
+  "print_form": "συγκεκερασμενουσ",
+  "reason": "B19 4:2[0] LEMWITS: the PRINTED band attributes lemma 'συγκεκερασμενουσ' as ours=['na', 'rp', 'treg', 'wh'] where the TEI reads ['na', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=συγκεκερασμενουσ; readings=['συγκεκερασμενουσ', 'συνκεκερασμενουσ', 'συγκεκερασμενοσ', 'συγκεκραμενουσ']"
+ },
+ "B21:3:4[0]": {
+  "band_evidence": "3:4 πραέως καὶ ἡσυχίου Treg NIV RP ] ἡσυχίου καὶ πραέως WH",
+  "book": "B21",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_COUNT"
+  ],
+  "locus": "3:4",
+  "print_form": "πραεωσ και ησυχιου",
+  "reason": "B21 3:4[0] LEMWITS: the PRINTED band attributes lemma 'πραεωσ και ησυχιου' as ours=['niv', 'rp', 'treg'] where the TEI reads ['niv', 'treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=πραεωσ και ησυχιου; readings=['πραεωσ και ησυχιου', 'ησυχιου και πραεωσ', 'πραεοσ και ησυχιου']"
+ },
+ "B27:11:2[1]": {
+  "band_evidence": "11:2 τεσσεράκοντα Treg ] + καὶ WH NIV RP",
+  "book": "B27",
+  "error_kinds": [
+   "READING_COUNT"
+  ],
+  "locus": "11:2",
+  "print_form": "τεσσερακοντα",
+  "reason": "Rev 11:2 τεσσεράκοντα: the TEI adds rdg3 'τεσσαράκοντα καὶ' (RP, resp=#JJM) absent from the printed band — encoder addition, band-verified 2026-08-04.",
+  "tei_form": "lemma=τεσσερακοντα; readings=['τεσσερακοντα', '+ και', 'τεσσαρακοντα και']"
+ },
+ "B27:12:3[0]": {
+  "band_evidence": "12:3 μέγας πυρρός WH NIV ] πυρρὸς μέγας Treg RP",
+  "book": "B27",
+  "error_kinds": [
+   "READING_COUNT"
+  ],
+  "locus": "12:3",
+  "print_form": "μεγασ πυρροσ",
+  "reason": "Rev 12:3 μέγας πυρρός: the TEI separates rdg2 'πυρρὸς μέγας' (Treg, resp=#JJM) and rdg3 'πυρὸς μέγας' (RP, resp=#JJM); the printed band compacts 'πυρρὸς μέγας Treg RP' — band-verified 2026-08-04.",
+  "tei_form": "lemma=μεγασ πυρροσ; readings=['μεγασ πυρροσ', 'πυρροσ μεγασ', 'πυροσ μεγασ']"
+ },
+ "B27:13:14[2]": {
+  "band_evidence": "13:14 τῆς μαχαίρης καὶ ἔζησεν WH Treg NIV ] καὶ ἔζησεν ἀπὸ τῆς μαχαίρης RP",
+  "book": "B27",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "13:14",
+  "print_form": "τησ μαχαιρησ και εζησεν",
+  "reason": "B27 13:14[2]: the PRINTED band reads 'και εζησεν απο τησ μαχαιρησ' where the TEI re-encoding reads 'και εζησεν απο τησ μαχαιρασ' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=τησ μαχαιρησ και εζησεν; readings=['τησ μαχαιρησ και εζησεν', 'και εζησεν απο τησ μαχαιρασ']"
+ },
+ "B27:13:5[2]": {
+  "band_evidence": "13:5 τεσσεράκοντα Treg RP] + καὶ WH NIV",
+  "book": "B27",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_COUNT"
+  ],
+  "locus": "13:5",
+  "print_form": "τεσσερακοντα",
+  "reason": "B27 13:5[2] LEMWITS: the PRINTED band attributes lemma 'τεσσερακοντα' as ours=['rp', 'treg'] where the TEI reads ['treg'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=τεσσερακοντα; readings=['τεσσερακοντα', '+ και', 'τεσσαρακοντα']"
+ },
+ "B27:18:3[0]": {
+  "band_evidence": "18:3 πέπτωκαν WH Treg RP ] πέπωκαν NIV",
+  "book": "B27",
+  "error_kinds": [
+   "LEMMA_WITNESSES",
+   "READING_COUNT"
+  ],
+  "locus": "18:3",
+  "print_form": "πεπτωκαν",
+  "reason": "B27 18:3[0] LEMWITS: the PRINTED band attributes lemma 'πεπτωκαν' as ours=['rp', 'treg', 'wh'] where the TEI reads ['treg', 'wh'] — verified against the extracted band, 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=πεπτωκαν; readings=['πεπτωκαν', 'πεπωκαν', 'πεπτωκασιν']"
+ },
+ "B27:8:12[0]": {
+  "band_evidence": "8:12 ἡ ἡμέρα μὴ φάνῃ τὸ τρίτον αὐτῆς WH Treg NIV ] τὸ τρίτον αὐτῆς ἡ ἡμέρα μὴ φάνῃ RP",
+  "book": "B27",
+  "error_kinds": [
+   "READING_TEXT"
+  ],
+  "locus": "8:12",
+  "print_form": "η ημερα μη φανη το τριτον αυτησ",
+  "reason": "B27 8:12[0]: the PRINTED band reads 'το τριτον αυτησ η ημερα μη φανη' where the TEI re-encoding reads 'το τριτον αυτησ μη φανη η ημερα' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
+  "tei_form": "lemma=η ημερα μη φανη το τριτον αυτησ; readings=['η ημερα μη φανη το τριτον αυτησ', 'το τριτον αυτησ μη φανη η ημερα']"
+ }
 }

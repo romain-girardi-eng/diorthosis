@@ -49,8 +49,9 @@ QUALIFIERS = (
   "dist.", "damn.", "susp.", "trai.", "praem.",
   # editorial actions (first person = the current editor); "ego"/"nos"
   # are NOT here — ordinary Latin pronouns a reading can consist of
-  "scripsi", "scripsimus", "conieci", "correxi", "seclusi", "addidi",
-  "delevi", "deleui", "supplevi",
+  "scripsi", "scripsimus", "conieci", "coniecimus", "correxi", "correximus",
+  "seclusi", "seclusimus", "addidi", "addidimus", "delevi", "delevimus",
+  "deleui", "deleuimus", "supplevi", "supplevimus",
   # collectives and states
   "codd.", "cod.", "edd.", "ed.", "cett.", "rell.", "al.", "recc.", "dett.",
   "vett.", "vulg.", "lac.", "deest", "desunt", "v.l.", "vv.ll.",
@@ -77,6 +78,16 @@ QUALIFIERS = (
 # Discourse words are glue inside attributions but TEXT when nothing else
 # would remain: an edition can perfectly well add the single word "et".
 _DISCOURSE = frozenset({"sic", "vel", "et"})
+
+# First-person editorial actions name the current editor as the authority for
+# the constituted reading. They share the qualifier lexicon for recognition,
+# but TEI must emit them through lemma/reading ``@source``, not silently retain
+# them only in the verbatim note.
+FIRST_PERSON_EDITORS = frozenset({
+  "scripsi", "scripsimus", "conieci", "coniecimus", "correxi", "correximus",
+  "seclusi", "seclusimus", "addidi", "addidimus", "delevi", "delevimus",
+  "deleui", "deleuimus", "supplevi", "supplevimus",
+})
 
 # Latin connectors inside attribution runs ("edd. ab Otto", "coni. Marc. ex
 # LXX"): consumable between known tokens, never meaningful alone.
@@ -196,7 +207,10 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
         # a discourse word after another discourse word ("et sic") or a
         # bare connector ("a. et") is running Latin text, not glue
         break
-      attr.qualifiers.insert(0, q)
+      if q in FIRST_PERSON_EDITORS:
+        attr.editors.insert(0, q)
+      else:
+        attr.qualifiers.insert(0, q)
       words.pop()
       consumed_something()
     elif (src := lookup(tail, lambda v: v in SOURCES)) is not None:
@@ -379,6 +393,13 @@ def parse_entry(raw: str, registry: Registry) -> ParsedEntry | None:
       return None
   if _residual_foreign_tokens(lemma, *(r.text for r in readings)):
     return None
+  # NOTE (review adjudication): a bare "lemma : reading" without any
+  # attribution is NOT refused here. In the marker-anchored convention
+  # the structural evidence is the anchored superscript marker, and
+  # single-witness editions print manuscript readings bare by design
+  # (Bobichon's codex A: ~121 legitimate entries, parse 99.0->93.0 when
+  # this refusal was tried). The attribution-based refusals live in the
+  # verse/line/paragraph grammars, where sigla ARE the structure.
   return ParsedEntry(
     lemma=lemma, lemma_attribution=lemma_attr,
     readings=readings, comments=comments,

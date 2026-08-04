@@ -125,6 +125,20 @@ def test_duplicate_siglum_mid_run_opens_next_reading() -> None:
   ]
 
 
+def test_nonadjacent_duplicate_siglum_refuses_ambiguous_reinterpretation() -> None:
+  raw = "35 foo] bar R V R"
+  e = parse(raw)
+  assert not e.parsed
+  assert e.raw == raw
+
+
+def test_corr_ex_siglum_shaped_pre_correction_text_refuses() -> None:
+  raw = "315 decretali] decretali corr. ex V R"
+  e = parse(raw)
+  assert not e.parsed
+  assert e.raw == raw
+
+
 def test_trailing_numeric_residue_popped() -> None:
   # a next-entry line number hyphen-split at a band break must not
   # become a witness-less "reading"

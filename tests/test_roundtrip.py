@@ -79,6 +79,23 @@ def test_roundtrip_accepts_matching_outputs(tmp_path: Path) -> None:
   assert check_roundtrip(md_path, tei_path) == []
 
 
+def test_roundtrip_accepts_exact_tei_slice_and_line_unwrapped_md(tmp_path: Path) -> None:
+  doc = Document(source_name="source.pdf", ingest="borndigital")
+  apparatus = _block(Layer.APPARATUS, "")
+  apparatus.entries = [ApparatusEntry(
+    raw="1:1 λογος WH ] WHspur ; – RP",
+    source="1:1 λογος WH ] 〚WH〛 ;\n–RP",
+  )]
+  doc.pages = [Page(index=1, printed_page="1", blocks=[apparatus])]
+  md_path = tmp_path / "source.md"
+  tei_path = tmp_path / "source.tei.xml"
+  md_path.write_text(to_markdown(doc), encoding="utf-8")
+  tei_path.write_text(to_tei(doc), encoding="utf-8")
+
+  assert "1:1 λογος WH ] 〚WH〛 ; –RP" in md_path.read_text(encoding="utf-8")
+  assert check_roundtrip(md_path, tei_path) == []
+
+
 def test_roundtrip_detects_missing_apparatus_entry(tmp_path: Path) -> None:
   md_path, tei_path = _write_outputs(tmp_path)
   content = md_path.read_text(encoding="utf-8")

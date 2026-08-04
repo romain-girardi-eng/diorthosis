@@ -55,7 +55,9 @@ class ParagraphEntry:
   line: str
   """Marginal line number as printed ('79', '79-80')."""
   raw: str
-  """The printed entry, verbatim (number + lemma + ']' + readings)."""
+  """Whitespace-normalized parsing view (number + lemma + ']' + readings)."""
+  source_slice: str = ""
+  """Exact substring of the source band; ``raw`` is whitespace-normalized."""
   lemma: str = ""
   readings: list[ParagraphReading] = field(default_factory=list)
   comments: list[str] = field(default_factory=list)
@@ -79,13 +81,12 @@ number is fontium narrative, not an entry boundary."""
 def split_paragraph_entries(band_text: str) -> tuple[str, list[ParagraphEntry]]:
   """(preamble, entries): the preamble is everything before the first
   entry boundary — on a double apparatus, the whole fontium tier."""
-  flat = " ".join(band_text.split())
   # scan WITHOUT consumption: an invalid candidate ("15-16 Psalm 118:18
   # 1 Sententiarum ]" — fontium narrative swallowing a real boundary)
   # must not eat the genuine boundary hiding inside its span
   hits = []
   pos = 0
-  while (m := _BOUNDARY.search(flat, pos)) is not None:
+  while (m := _BOUNDARY.search(band_text, pos)) is not None:
     # an ELLIPTIC lemma is always genuine, whatever its tail — the
     # ellipsis may swallow anything up to a closing locus reference
     # ("nam …52:1]"); the fontium guard only applies to full lemmas
@@ -104,14 +105,16 @@ def split_paragraph_entries(band_text: str) -> tuple[str, list[ParagraphEntry]]:
     hits.append(m)
     pos = m.end()
   if not hits:
-    return flat, []
-  preamble = flat[: hits[0].start()].strip()
+    return band_text.strip(), []
+  preamble = band_text[: hits[0].start()].strip()
   entries: list[ParagraphEntry] = []
   for i, m in enumerate(hits):
-    end = hits[i + 1].start() if i + 1 < len(hits) else len(flat)
+    end = hits[i + 1].start() if i + 1 < len(hits) else len(band_text)
+    source_slice = band_text[m.start():end].strip()
     entries.append(ParagraphEntry(
       line=m.group(1),
-      raw=flat[m.start(): end].strip(),
+      raw=" ".join(source_slice.split()),
+      source_slice=source_slice,
     ))
   return preamble, entries
 
@@ -177,6 +180,12 @@ def parse_paragraph_entry(entry: ParagraphEntry,
       i += len(op.split())
       if op == "corr. ex":
         # the pre-correction text up to the witness run is a note
+        if i < len(words) and _is_witness(words[i], registry) \
+           and all(_is_witness(token, registry) for token in words[i:]):
+          # A siglum-shaped word can itself be the pre-correction reading.
+          # With nothing but registry sigla after ``corr. ex`` both token
+          # assignments are possible, so the whole entry must stay verbatim.
+          return entry
         pre: list[str] = []
         while i < len(words) and not _is_witness(words[i], registry) \
               and _match_operator(words, i) is None:
@@ -198,6 +207,12 @@ def parse_paragraph_entry(entry: ParagraphEntry,
         #   reading; close the current one without it.
         run_initial = (not cur_text and not cur.attribution.qualifiers
                        and cur.attribution.witnesses[0] == bare)
+        adjacent_repeat = words[i - 1].rstrip(".,;:") == bare
+        if not run_initial and not adjacent_repeat:
+          # ``bar R V R`` can mean either bar/[R V R] or bar/[V] + R/[R].
+          # Only a run-initial collision or an adjacent doubled siglum has
+          # enough printed evidence for the corpus' established convention.
+          return entry
         cur.attribution.witnesses.remove(bare)
         if not run_initial:
           close()

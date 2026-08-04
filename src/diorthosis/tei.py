@@ -280,8 +280,10 @@ def _header(tei: ET.Element, doc: Document, title: str | None,
     "superscript apparatus markers are encoded as tei:anchor elements "
     "(the marker gives the end anchor; lemma start anchors are computed "
     "by matching and omitted when the match is not confident). Parsed "
-    "apparatus entries always retain the source's exact wording in a "
-    "note[@type='verbatim']. Blocks marked subtype='generative' were "
+    "apparatus entries always retain their exact source-band substring, "
+    "including whitespace and line breaks, in a note[@type='verbatim']; "
+    "the normalized parsing view is never emitted there. Blocks marked "
+    "subtype='generative' were "
     "produced by OCR and are a recognition model's output, not a decoded "
     "text stream."
   )
@@ -361,7 +363,7 @@ def to_tei(doc: Document, title: str | None = None,
             for a in (parsed.lemma_attribution,
                       *(r.attribution for r in parsed.readings)):
               used_editors.update(a.editors)
-            _emit_app(edition, e.raw, parsed, registry,
+            _emit_app(edition, e.source_slice, parsed, registry,
                       e.anchor.value if e.anchor else None, start_id, end_id,
                       resp=("#human-review" if e.override_action else None))
           else:
@@ -372,7 +374,7 @@ def to_tei(doc: Document, title: str | None = None,
               note.set("target", f"#{end_id}")
             if e.override_action:
               note.set("resp", "#human-review")
-            note.text = e.raw
+            note.text = e.source_slice
         if not block.entries:
           ET.SubElement(edition, "note", {"type": "apparatus"}).text = block.text
       elif block.layer is Layer.TRANSLATION:

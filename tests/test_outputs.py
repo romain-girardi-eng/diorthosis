@@ -8,8 +8,12 @@ no copyrighted material is embedded.
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+from collections import Counter
+
+import pytest
 
 from diorthosis.anchor import anchor_page
+from diorthosis.conspectus import Registry
 from diorthosis.md import MD_CE_VERSION, to_markdown
 from diorthosis.model import Block, Document, Layer, Page, Source
 from diorthosis.tei import TEI_NS, to_tei
@@ -91,6 +95,42 @@ class TestTEI:
     ab = root.find(".//t:div[@type='edition']/t:ab", ns)
     assert ab is not None and ab.get("subtype") == "generative"
 
+  def test_every_verbatim_note_is_an_exact_immutable_source_slice(self) -> None:
+    registry = Registry()
+    registry.witnesses = {token: token for token in ("A", "B", "M", "U", "R", "V")}
+    bands = [
+      "18 est] om.\n R\n20   in] om. V",
+      "5 alpha M | beta\n U ∥ 7 gamma V | delta R",
+      "1:1 λόγος WH ] 〚WH〛 ; –RP",
+      "1 Λόγος A : νόμος B\n2 Alpha A : beta B",
+    ]
+    doc = Document(source_name="source-slices.pdf", ingest="borndigital")
+    for index, band in enumerate(bands):
+      page = Page(index=index, printed_page=str(index + 1))
+      page.blocks = [_block(Layer.APPARATUS, band)]
+      anchor_page(page, registry)
+      doc.pages.append(page)
+
+    entries = [entry for page in doc.pages for block in page.blocks
+               for entry in block.entries]
+    assert entries
+    for page in doc.pages:
+      band = page.blocks[0].text
+      assert all(entry.source_slice in band for entry in page.blocks[0].entries)
+
+    original = entries[0].source_slice
+    with pytest.raises(AttributeError):
+      entries[0]._source_slice = "rewritten"
+    assert entries[0].source_slice == original
+
+    root = ET.fromstring(to_tei(doc, registry=registry))
+    ns = {"t": TEI_NS}
+    emitted = [note.text or "" for note in root.findall(
+      ".//t:app/t:note[@type='verbatim']", ns)]
+    emitted += [note.text or "" for note in root.findall(
+      ".//t:note[@type='apparatus']", ns)]
+    assert Counter(emitted) == Counter(entry.source_slice for entry in entries)
+
 
 class TestMarkdown:
   def test_contract_header_and_layer_fences(self) -> None:
@@ -121,7 +161,10 @@ class TestTEIStandardsAlignment:
     from diorthosis.conspectus import Registry, with_builtin_editors
 
     reg = Registry()
-    reg.witnesses = {"A": "Parisinus graecus 450"}
+    reg.witnesses = {
+      "A": "Parisinus graecus 450",
+      "B": "Musaei Britannici Ms",
+    }
     reg.editors = {"Mign.": "Migne", "Thirlb.": "Thirlby"}
     doc = fixture()
     return doc, with_builtin_editors(reg)

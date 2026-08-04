@@ -102,11 +102,40 @@ def locate_lemma_start(lemma: str, text: str, end_offset: int) -> int | None:
   lw = lemma_words(lemma)
   if not lw:
     return None
-  first = lw[0]
-  window = text[max(0, end_offset - 400): end_offset]
-  best: int | None = None
-  for m in re.finditer(r"\S+", window):
-    token = m.group(0).strip(_WORD_STRIP)
-    if fold(norm_text(token)) == first:
-      best = max(0, end_offset - 400) + m.start()
-  return best
+
+  # Work on source-offset-bearing tokens. Splitting only on whitespace made
+  # ``similiter.Et`` one token and ``nat-\n\nuram`` two, while taking the last
+  # occurrence of the lemma's first word shortened repeated lemmata such as
+  # ``Ἠλὶ ἠλὶ`` to the second word. This treats punctuation as a boundary and
+  # joins only explicit line-break hyphenation while retaining source offsets.
+  window_start = max(0, end_offset - 1200)
+  window = text[window_start:end_offset]
+  masked = list(window)
+  for rx in (_INLINE_REF_SPAN, _GLUED_REF_PAREN):
+    for m in rx.finditer(window):
+      masked[m.start():m.end()] = " " * (m.end() - m.start())
+  searchable = "".join(masked)
+  word_rx = re.compile(
+    r"[^\W\d_]+(?:-\s+(?:\d{1,3}\s+)?[^\W\d_]+)*",
+    flags=re.UNICODE,
+  )
+  tokens: list[tuple[str, int, int]] = []
+  for m in word_rx.finditer(searchable):
+    value = fold(re.sub(r"-\s+(?:\d{1,3}\s+)?", "", m.group(0)))
+    if value:
+      tokens.append((value, window_start + m.start(), window_start + m.end()))
+
+  # The lemma ends at the printed marker/line/verse anchor, so only the token
+  # sequence ending there is admissible. Requiring the complete sequence is
+  # fail-closed: when the full start cannot be established, omit ``@from``
+  # instead of manufacturing a plausible short span.
+  if len(tokens) < len(lw):
+    return None
+  for stop in range(len(tokens), len(lw) - 1, -1):
+    candidate = tokens[stop - len(lw):stop]
+    if [token[0] for token in candidate] != lw:
+      continue
+    tail = text[candidate[-1][2]:end_offset]
+    if not re.search(r"[^\W\d_]", tail, flags=re.UNICODE):
+      return candidate[0][1]
+  return None

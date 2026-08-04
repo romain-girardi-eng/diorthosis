@@ -50,6 +50,15 @@ def test_unseparated_boundaries():
   assert [e.line for e in es] == ["5", "7", "9", "11"]
 
 
+def test_parenthesized_reading_before_number_refuses_ambiguous_boundary():
+  raw = "5 duodecim M | (ut dicitur) 12 milia U | duodecim V"
+  entries = split_line_entries(raw)
+  assert len(entries) == 1
+  assert entries[0].raw == raw.removeprefix("5 ")
+  parsed = parse_line_entry(entries[0], reg())
+  assert not parsed.parsed
+
+
 # -- sigla -------------------------------------------------------------
 
 def test_burst_glued_sigla_longest_first():
