@@ -14,3 +14,4 @@ build/
 tools/golden/data/
 tools/golden/work/
 tools/golden/tei_all.rng
+docs/audits/
