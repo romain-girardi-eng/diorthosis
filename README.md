@@ -36,7 +36,7 @@ One internal model, two outputs — **a single truth, two views**:
   `<anchor>` elements at apparatus markers, `<note type="apparatus"
   target="#a-p300-m6">` entries pointing into the text, translation in its
   own `<div>`, page furniture as `<fw>`.
-- **Markdown (`md-ce/0.1`)** — the AI-ready view, rendered deterministically
+- **Markdown (`md-ce/0.2`)** — the AI-ready view, rendered deterministically
   from the same model: every section is a `###` header naming its layer with
   bracketed provenance, so **a chunker can never mix apparatus into text**;
   markers appear as `⟦6⟧` in the text and at the head of the matching entry.
@@ -73,27 +73,71 @@ page-level work (layer separation, printed-folio extraction):
    anchored`); unanchored entries are preserved, never dropped; prose bands
    (apparatus fontium) are never forced into the numeric mold.
 
-## What P1 does — and does not — do
+## What it does — and does not — do (v0.5)
 
 **Does:** ingest born-digital PDFs (via regreek: 9 legacy Greek encodings,
 validated 98–100 % on held-out texts) and any OCR engine's ALTO, hOCR or
 PAGE-XML; separate layers; extract the citable printed folio; split
-apparatus bands into entries; anchor them to their in-text markers with
-lemma discrimination (99.5 % of 2 031 entries over the full reference
-edition); parse them into lemma/readings/attributions with honest refusal
-(98.8 % parse; foreign conventions are refused, never misattributed); emit
+apparatus bands into entries and anchor each to its exact place in the
+constituted text; **parse the apparatus into structured
+`<app>/<lem>/<rdg>`** with witness and editor attributions drawn from the
+edition's own conspectus siglorum, under three convention grammars —
+numeric markers (Sources Chrétiennes family), verse-referenced (biblical
+editions), line-referenced reledmac (DLL family) — plus superscript
+sigla; refuse verbatim what a grammar does not define; emit
 **schema-valid TEI P5** (validated against `tei_all.rng`) and
 **md-ce/0.2** — a normative Markdown format with twelve mechanically
 checkable invariants ([SPEC.md](SPEC.md)), enforced by
-`diorthosis validate`.
+`diorthosis validate`. Outputs are byte-deterministic.
 
-**Does not (yet):** *interpret* the apparatus. Entries are anchored but kept
-verbatim — turning `Μωσέως : Μωϋσέως Mign., Otto` into
-`<app><lem>Μωσέως</lem><rdg resp="#Mign #Otto">Μωϋσέως</rdg></app>` requires
-per-series grammar files (each series has its own conventions), which is
-phase 2, together with the conspectus-siglorum parser that will supply the
-witness registry. Marginal line-number anchoring (Teubner/OCT style) is
-detected but not yet resolved. Two-column layouts are a known limitation.
+**Does not (yet):** parse the paragraphed-reledmac DOUBLE apparatus
+(fontium + variants — in progress on the Plaoul commentary); represent
+negative apparatus (where the lemma's support is implied by silence);
+handle two-column layouts; and **no accuracy figures exist yet for noisy
+OCR input** — every number below is measured on born-digital PDFs.
+
+## Evidence — and what each test does and does not prove
+
+The test suite is layered by epistemic strength. Read the labels: they
+are different claims.
+
+1. **Adversarial backtest** (the printed PDF and the scholarly TEI were
+   produced *independently* of each other): the whole SBLGNT New
+   Testament — the official published PDF against the PTA's TEI
+   re-encoding of the same apparatus. **6 800 entries, 0 structural
+   errors**, with 59 print-vs-TEI divergences documented one by one
+   under an explicit adjudication protocol (a claimed divergence must be
+   *provable from the extracted band itself* — the band contains our
+   reading and not the TEI's, or the printed sigla side with us; every
+   key carries its citation). This is the strongest evidence the suite
+   has, and it covers ONE convention on ONE atypically regular apparatus
+   (editions cited, not manuscripts).
+
+2. **Toolchain-inversion tests** (the official PDF is *generated from*
+   the reference TEI by the project's own toolchain — zero alignment
+   ambiguity, but parser and typesetter see the same conventions): the
+   DLL Bellum Alexandrinum, 563 entries, 0 errors, 100 % anchored.
+   These prove the grammar inverts a real typesetting chain exactly.
+   They do **not** prove generalization to independently set editions.
+
+3. **Retypeset goldens** (we typeset the scholar's TEI ourselves, then
+   parse our own print — self-generated ground truth, kept as
+   *regression tests*): balex 524, SBLGNT 6 906, Problemata 5 524 —
+   0 errors. A generator and a parser can share a blind spot; these
+   numbers guard against regressions, nothing more.
+
+4. **Real edition without digital ground truth** (self-validation
+   metrics only): Bobichon's Justin Martyr, 2 031 entries — 99.3 %
+   anchoring, 99.0 % parse, 97.5 % lemma concordance, **89.8 %
+   attribution**. Read that last number honestly: roughly one entry in
+   ten needs a human eye on its attributions. On such editions
+   diorthosis is a *pre-annotation* tool, not a replacement for review.
+
+What is **not** yet demonstrated: generalization to editions never seen
+during grammar development. The next benchmark is a public table over
+~10 unseen editions (including scanned Teubner-era prints through a real
+OCR front-end) with independently double-keyed samples — until it
+exists, the zeros above should be read within the limits stated here.
 
 ## Architecture
 
