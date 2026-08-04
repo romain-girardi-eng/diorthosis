@@ -174,6 +174,17 @@ def anchor_context(page: PageOut, anchor_id: str) -> str | None:
   return None
 
 
+def anchor_positions(page: PageOut) -> tuple[str, dict[str, int]]:
+  """Flatten one page and resolve every anchor ID to its exact offset."""
+  text = ""
+  positions: dict[str, int] = {}
+  for chunk, aid in page.ab_stream:
+    text += chunk
+    if aid is not None:
+      positions[aid] = len(text)
+  return text, positions
+
+
 # Attribution tokens that our grammar deliberately classifies as technical
 # qualifiers, not named editors: they are preserved in the verbatim note and
 # excluded from the strict editor-set comparison.
@@ -243,6 +254,11 @@ def compare(golden: dict, pages: dict[str, PageOut],
       if lem is not None and sorted(lem["wits"]) != sorted(g["lemma_wits"]):
         out.append(Finding("ERROR_WIT", folio, n,
                            f"lem wits {lem['wits']} != {g['lemma_wits']}"))
+      if lem is not None and _strict_editors(lem["editors"]) != \
+         _strict_editors(g["lemma_editors"]):
+        out.append(Finding(
+          "ERROR_EDITOR", folio, n,
+          f"lem editors {lem['editors']} != {g['lemma_editors']}"))
       if len(rdgs) != len(g["readings"]):
         out.append(Finding("ERROR_READING", folio, n,
                            f"{len(rdgs)} readings != {len(g['readings'])}"))
@@ -267,17 +283,34 @@ def compare(golden: dict, pages: dict[str, PageOut],
       if to is None:
         out.append(Finding("GAP_UNANCHORED", folio, n, "app has no @to"))
       else:
-        ctx = anchor_context(page, to.removeprefix("#"))
-        if ctx is None:
+        page_text, positions = anchor_positions(page)
+        to_id = to.removeprefix("#")
+        end = positions.get(to_id)
+        if end is None:
           out.append(Finding("ERROR_ANCHOR", folio, n,
                              f"@to anchor {to!r} not found in the page text"))
         else:
-          tw = toks(ctx)
+          tw = toks(page_text[:end])
           aw = toks(g["anchor_word"])
           if not tw or not aw or tw[-1] != aw[-1]:
             out.append(Finding("ERROR_ANCHOR", folio, n,
                                f"text before anchor ends {tw[-3:]} — expected "
                                f"{g['anchor_word']!r}"))
+          from_ = app.get("from")
+          if from_ is not None:
+            start = positions.get(from_.removeprefix("#"))
+            if start is None:
+              out.append(Finding(
+                "ERROR_ANCHOR", folio, n,
+                f"@from anchor {from_!r} not found in the page text"))
+            elif start > end:
+              out.append(Finding(
+                "ERROR_ANCHOR", folio, n, "@from resolves after @to"))
+            elif toks(page_text[start:end]) != toks(g["lemma"]):
+              out.append(Finding(
+                "ERROR_ANCHOR", folio, n,
+                f"resolved anchor span {page_text[start:end]!r} != full "
+                f"golden lemma {g['lemma']!r}"))
   return out
 
 
@@ -309,7 +342,15 @@ def main() -> int:
     print(f"{'ERROR' if f.fatal else 'gap  '} p{f.page} n={f.n} "
           f"[{f.kind}] {f.detail}")
   total = sum(len(p["entries"]) for p in golden["pages"])
-  print(f"\n{total} golden entries | {len(errors)} ERRORS | {len(gaps)} gaps")
+  source_total = golden.get("source_total", total)
+  excluded: dict[str, int] = {}
+  for record in golden.get("ledger", []):
+    if record.get("state") == "excluded":
+      reason = record.get("reason") or "missing reason"
+      excluded[reason] = excluded.get(reason, 0) + 1
+  print(f"\n{total} compared of {source_total} source apps "
+        f"({sum(excluded.values())} excluded: {dict(sorted(excluded.items()))}) | "
+        f"{len(errors)} ERRORS | {len(gaps)} gaps")
   if errors:
     print("FAIL: the apparatus contains wrong structure")
     return 1

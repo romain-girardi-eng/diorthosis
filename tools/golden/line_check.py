@@ -12,13 +12,14 @@ Usage: line_check.py scholar.xml ours.tei.xml [--rng rng] [--known file]
 
 from __future__ import annotations
 
-import json
 import re
 import sys
 import unicodedata
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 from pathlib import Path
 
+from divergences import load_divergences
 from lxml import etree
 
 TEI = "{http://www.tei-c.org/ns/1.0}"
@@ -142,7 +143,36 @@ def scholar_apps(path: Path) -> list[dict]:
   return merged
 
 
-def our_apps(path: Path) -> tuple[list[dict], list[str]]:
+def _page_anchor_context(edition: ET.Element) -> dict[str, dict]:
+  """Resolve emitted anchors to their page, exact offset, and line label."""
+  pages: dict[str, dict] = {}
+  page = "?"
+  for el in edition:
+    tag = el.tag.rsplit("}", 1)[-1] if isinstance(el.tag, str) else ""
+    if tag == "pb":
+      page = el.get("n") or el.get(XML_ID) or "?"
+      pages[page] = {"text": "", "anchors": {}}
+      continue
+    if tag != "ab" or page not in pages:
+      continue
+    state = pages[page]
+    text = el.text or ""
+    base = len(state["text"])
+    for child in el:
+      if child.tag == f"{TEI}anchor":
+        aid = child.get(XML_ID)
+        if aid:
+          state["anchors"][aid] = {
+            "offset": base + len(text), "n": child.get("n"),
+          }
+        text += child.tail or ""
+      else:
+        text += "".join(child.itertext()) + (child.tail or "")
+    state["text"] += text + "\n"
+  return pages
+
+
+def our_apps(path: Path) -> tuple[list[dict], list[str], dict[str, dict]]:
   root = ET.parse(path).getroot()
   wit_names = {}
   for w in root.iter(f"{TEI}witness"):
@@ -158,9 +188,13 @@ def our_apps(path: Path) -> tuple[list[dict], list[str]]:
       ed_names[xid] = ((abbr.text or "").strip()
                        if abbr is not None else xid.removeprefix("ed-"))
   edition = root.find(f".//{TEI}div[@type='edition']")
+  contexts = _page_anchor_context(edition)
   apps, notes = [], []
-  for el in edition.iter():
+  page = "?"
+  for el in edition:
     tag = el.tag.rsplit("}", 1)[-1] if isinstance(el.tag, str) else ""
+    if tag == "pb":
+      page = el.get("n") or el.get(XML_ID) or "?"
     if tag == "note" and el.get("type") == "apparatus":
       notes.append(el.text or "")
     if tag != "app":
@@ -182,17 +216,22 @@ def our_apps(path: Path) -> tuple[list[dict], list[str]]:
       "lem": side(lem) if lem is not None else {"text": "", "attr": []},
       "rdgs": [side(r) for r in el.findall(f"{TEI}rdg")],
       "to": (el.get("to") or ""),
+      "from": (el.get("from") or ""),
+      "page": page,
+      "band": next((n.text or "" for n in el.findall(f"{TEI}note")
+                    if n.get("type") == "verbatim"), ""),
     })
-  return apps, notes
+  return apps, notes, contexts
 
 
 def main() -> int:
   gold = scholar_apps(Path(sys.argv[1]))
-  ours, notes = our_apps(Path(sys.argv[2]))
+  ours, notes, contexts = our_apps(Path(sys.argv[2]))
   known: dict = {}
+  known_errors: list[str] = []
   if "--known" in sys.argv:
-    known = json.loads(
-      Path(sys.argv[sys.argv.index("--known") + 1]).read_text())
+    known, known_errors = load_divergences(
+      Path(sys.argv[sys.argv.index("--known") + 1]), "balex")
   if "--rng" in sys.argv:
     rng = etree.RelaxNG(etree.parse(sys.argv[sys.argv.index("--rng") + 1]))
     if not rng.validate(etree.parse(sys.argv[2])):
@@ -201,49 +240,120 @@ def main() -> int:
 
   errors: list[str] = []
   gaps: list[str] = []
-  divergences = 0
+  fired: dict[str, set[str]] = defaultdict(set)
+
+  def exc_key(g: dict) -> str:
+    return f"balex:{g['loc']}:{g['lem']['text']}"
+
+  def evidence_ok(key: str, record: dict, band: str) -> bool:
+    if record.get("unproven") is True:
+      errors.append(f"{key}: exception is explicitly unproven")
+      return False
+    print_form = fold(record["print_form"])
+    if record["band_evidence"] and (
+        not print_form or print_form not in fold(record["band_evidence"])
+        or print_form not in fold(band)):
+      errors.append(f"{key}: print_form is not present in both stored and "
+                    "extracted band evidence")
+      return False
+    return True
+
+  def record_error(key: str, kind: str, message: str, band: str) -> None:
+    record = known.get(key)
+    if record is None or kind not in record["error_kinds"]:
+      errors.append(message)
+      return
+    if evidence_ok(key, record, band):
+      fired[key].add(kind)
+
+  def check_attr(key: str, kind: str, side: str, ours_attr: list[str],
+                 gold_attr: list[str], band: str, detail: str) -> None:
+    if ours_attr == gold_attr:
+      return
+    missing = sorted(a for a in gold_attr if a not in ours_attr)
+    extra = sorted(a for a in ours_attr if a not in gold_attr)
+    record = known.get(key)
+    demotions = record.get("demotions", {}) if record else {}
+    allowed = sorted(demotions.get(side, []))
+    if not missing and extra == allowed:
+      record_error(key, kind, detail, band)
+      return
+    errors.append(detail + f" missing={missing} extra={extra}")
+
+  def anchor_record(o: dict, attr: str) -> dict | None:
+    ref = o[attr].removeprefix("#")
+    return contexts.get(o["page"], {}).get("anchors", {}).get(ref)
+
+  def check_anchor(key: str, g: dict, o: dict) -> None:
+    if not o["to"]:
+      gaps.append(f"{g['loc']}: unanchored")
+      return
+    end = anchor_record(o, "to")
+    if end is None:
+      errors.append(f"{g['loc']} ANCHOR unresolved @to={o['to']!r} "
+                    f"on page {o['page']}")
+      return
+    start = anchor_record(o, "from") if o["from"] else None
+    if o["from"] and start is None:
+      errors.append(f"{g['loc']} ANCHOR unresolved @from={o['from']!r} "
+                    f"on page {o['page']}")
+      return
+    if start is not None and start["offset"] > end["offset"]:
+      errors.append(f"{g['loc']} ANCHOR @from follows @to on page {o['page']}")
+    if end["n"] != o["n"]:
+      errors.append(f"{g['loc']} ANCHOR @to resolves to anchor line "
+                    f"{end['n']!r} on page {o['page']}, stated {o['n']!r}")
+    if start is not None and start["n"] is not None:
+      errors.append(f"{g['loc']} ANCHOR @from unexpectedly carries line "
+                    f"{start['n']!r} on page {o['page']}")
+
   n = min(len(gold), len(ours))
   for k in range(n):
     g, o = gold[k], ours[k]
     key = f"{g['loc'] or k}"
-    errs: list[str] = []
+    typed_key = exc_key(g)
+    band = o["band"]
     if o["lem"]["text"] != g["lem"]["text"] \
        and o["lem"]["text"].replace(" ", "") != \
            g["lem"]["text"].replace(" ", ""):
-      errs.append(f"{key} LEM ours={o['lem']['text'][:38]!r} "
-                  f"scholar={g['lem']['text'][:38]!r}")
-    elif [a for a in g["lem"]["attr"] if a not in o["lem"]["attr"]]:
-      # the golden TEI demotes second-tier authorities to notes the print
-      # sets flat, so extras on our side are tolerated; MISSING ones are
-      # structural errors
-      errs.append(f"{key} LEMATTR ours={o['lem']['attr']} "
-                  f"scholar={g['lem']['attr']} lem={g['lem']['text'][:26]!r}")
-    elif len(o["rdgs"]) != len(g["rdgs"]):
-      errs.append(f"{key} NRDGS ours={len(o['rdgs'])} "
-                  f"scholar={len(g['rdgs'])} lem={g['lem']['text'][:26]!r}")
+      record_error(typed_key, "LEMMA_TEXT",
+                   f"{key} LEM ours={o['lem']['text'][:38]!r} "
+                   f"scholar={g['lem']['text'][:38]!r}", band)
+    check_attr(typed_key, "LEMMA_ATTRIBUTION", "lemma",
+               o["lem"]["attr"], g["lem"]["attr"], band,
+               f"{key} LEMATTR ours={o['lem']['attr']} "
+               f"scholar={g['lem']['attr']} lem={g['lem']['text'][:26]!r}")
+    if len(o["rdgs"]) != len(g["rdgs"]):
+      record_error(typed_key, "READING_COUNT",
+                   f"{key} NRDGS ours={len(o['rdgs'])} "
+                   f"scholar={len(g['rdgs'])} lem={g['lem']['text'][:26]!r}",
+                   band)
     else:
       for i, (orr, grr) in enumerate(zip(o["rdgs"], g["rdgs"],
                                          strict=True)):
         if orr["text"] != grr["text"] and \
            orr["text"].replace(" ", "") != grr["text"].replace(" ", ""):
-          errs.append(f"{key} RDG{i} ours={orr['text'][:34]!r} "
-                      f"scholar={grr['text'][:34]!r}")
-        if [a for a in grr["attr"] if a not in orr["attr"]]:
-          errs.append(f"{key} RDGATTR{i} ours={orr['attr']} "
-                      f"scholar={grr['attr']} rdg={grr['text'][:26]!r}")
-    if errs and (key in known
-                 or f"{key}:{g['lem']['text'][:24]}" in known):
-      divergences += 1
-    else:
-      errors.extend(errs)
-    if not o["to"]:
-      gaps.append(f"{key}: unanchored")
+          record_error(typed_key, "READING_TEXT",
+                       f"{key} RDG{i} ours={orr['text'][:34]!r} "
+                       f"scholar={grr['text'][:34]!r}", band)
+        check_attr(typed_key, "READING_ATTRIBUTION", f"reading:{i}",
+                   orr["attr"], grr["attr"], band,
+                   f"{key} RDGATTR{i} ours={orr['attr']} "
+                   f"scholar={grr['attr']} rdg={grr['text'][:26]!r}")
+    check_anchor(typed_key, g, o)
   if len(ours) != len(gold):
     errors.append(f"COUNT ours={len(ours)} scholar={len(gold)} "
                   f"(notes kept verbatim: {len(notes)})")
 
+  errors.extend(known_errors)
+  for key, record in known.items():
+    missing_kinds = set(record["error_kinds"]) - fired.get(key, set())
+    if missing_kinds:
+      errors.append(f"{key}: stale exception kinds "
+                    f"{sorted(missing_kinds)} never fired")
+
   print(f"{len(gold)} scholar apps | {n} compared | {len(errors)} ERRORS "
-        f"| {len(gaps)} gaps | {divergences} documented divergences | "
+        f"| {len(gaps)} gaps | {len(fired)} documented divergences | "
         f"{len(notes)} verbatim notes")
   for e in errors[:30]:
     print(f"  ERROR {e}")

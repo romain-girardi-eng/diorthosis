@@ -46,6 +46,7 @@ import json
 import re
 import sys
 import unicodedata
+from collections import Counter
 from pathlib import Path
 
 FIRST_FOLIO = 24
@@ -169,11 +170,23 @@ def _flat_band(b: str) -> str:
 def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
   pages = paginate(edition["sentences"])
 
+  ledger = [dict(record) for record in edition.get("ledger", [])]
+  ledger_by_id = {record["id"]: record for record in ledger}
+
+  def drop(app: dict, reason: str) -> None:
+    source_id = app.get("source_id", "")
+    record = ledger_by_id.get(source_id)
+    if record is None:
+      raise ValueError(f"typesetter app has no source ledger record: {source_id!r}")
+    record.update(state="excluded", reason=reason)
+
   golden: dict = {
     "title": edition["title"],
     "language": edition.get("language", "grc"),
     "witnesses": edition.get("witnesses", {}),
     "conspectus_pdf_page": 0,
+    "source_total": edition.get("source_total", len(ledger)),
+    "ledger": ledger,
     "pages": [],
   }
   body: list[str] = []
@@ -212,7 +225,7 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
     conspectus_pages += 1
   golden["conspectus_pdf_pages"] = conspectus_pages
 
-  dropped = 0
+  dropped: Counter[str] = Counter()
   for pi, page_sentences in enumerate(pages):
     folio = FIRST_FOLIO + pi
     marker = 0
@@ -232,7 +245,8 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
         if idx is None:
           idx = _find_lemma_end(text, lemma, 0)
         if idx is None:
-          dropped += 1
+          drop(app, "typeset_unlocatable")
+          dropped["typeset_unlocatable"] += 1
           continue
         placed.append((idx, app))
         cursor = idx
@@ -242,7 +256,8 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
       deduped: list[tuple[int, dict]] = []
       for idx, app in placed:
         if deduped and idx == deduped[-1][0]:
-          dropped += 1
+          drop(app, "typeset_duplicate_position")
+          dropped["typeset_duplicate_position"] += 1
           continue
         deduped.append((idx, app))
       placed = deduped
@@ -259,6 +274,7 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
         raw = _flat_band(raw_marked)
         band.append(raw_marked)
         entries_golden.append({
+          "source_id": app["source_id"],
           "n": str(marker),
           "lemma": _cap(lemma),
           "lemma_wits": app.get("lemma_wits", []),
@@ -311,8 +327,12 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
   out_golden.write_text(
     json.dumps(golden, ensure_ascii=False, indent=1), encoding="utf-8")
   napps = sum(len(p["entries"]) for p in golden["pages"])
-  note = f", {dropped} apps dropped (unlocatable/duplicate position)" if dropped else ""
-  print(f"typeset: {len(pages)} pages, {napps} apparatus entries{note} -> "
+  exclusions = Counter(
+    record["reason"] for record in ledger if record["state"] == "excluded")
+  print(f"typeset: {len(pages)} pages, {napps} apparatus entries of "
+        f"{golden['source_total']} source apps; excluded="
+        f"{dict(sorted(exclusions.items()))}; typesetter_drops="
+        f"{dict(sorted(dropped.items()))} -> "
         f"{out_tex.name}, {out_golden.name}")
 
 

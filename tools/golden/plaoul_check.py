@@ -13,7 +13,6 @@ Usage: plaoul_check.py lectio.xml lectio.pdf [--known file]
 
 from __future__ import annotations
 
-import json
 import re
 import sys
 import unicodedata
@@ -21,6 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
+from divergences import load_divergences
 from lxml import etree
 
 from diorthosis.anchor import anchor_page
@@ -46,16 +46,23 @@ def fold(s: str) -> str:
   return re.sub(r"\s+", " ", out).strip()
 
 
-def lem_match(ours: str, scholar: str) -> bool:
-  """Long lemmas print ELLIPTICALLY ("diversae …fidei ]"): match on the
-  PREFIX only — the printed suffix goes through typesetter transforms
-  the TEI cannot model (nested rdgs folded into the last word, leaked
-  English notes); global-order alignment already pins the app."""
+def lem_match(ours: str, scholar: str, suffix_word: str) -> tuple[bool, bool]:
+  """Return (matches, suffix_verified) under critical.xslt's contract.
+
+  For long lemmas the XSLT uses the first and last tokens of the lemma's
+  XPath string-value.  That string-value includes nested-app readings and
+  their leaked notes even though the constituted text renders nested lems.
+  """
   if "…" in ours:
-    pw = ours.partition("…")[0].split()
-    return bool(pw) and scholar.split()[: len(pw)] == pw
+    prefix, _, suffix = ours.partition("…")
+    pw = prefix.split()
+    prefix_ok = bool(pw) and scholar.split()[: len(pw)] == pw
+    printed = suffix.split()
+    if not printed or not suffix_word:
+      return prefix_ok, False
+    return prefix_ok and printed[-1] == suffix_word, True
   o, g = ours, scholar
-  return o == g or o.replace(" ", "") == g.replace(" ", "")
+  return o == g or o.replace(" ", "") == g.replace(" ", ""), True
 
 
 def text_of(el) -> str:
@@ -138,6 +145,9 @@ def scholar_apps(root) -> list[dict]:
     apps.append({
       "id": app.get(XML_ID) or "",
       "lem": fold(lem_text),
+      # XPath normalize-space(./lem), used by critical.xslt to choose the
+      # ellipsis suffix, sees every descendant text node.
+      "ellipsis_suffix": (fold(text_of(lem)).split() or [""])[-1],
       "rdgs": rdgs,
     })
   return apps
@@ -162,6 +172,7 @@ def our_apps(pdf_path: str, registry: Registry) -> tuple[list[dict], dict]:
         out.append({
           "line": pe.line,
           "lem": fold(pe.lemma),
+          "band": pe.raw,
           "rdgs": [{"text": fold(r.text),
                     "wits": sorted(r.attribution.witnesses)}
                    for r in pe.readings],
@@ -172,45 +183,81 @@ def our_apps(pdf_path: str, registry: Registry) -> tuple[list[dict], dict]:
 def main() -> int:
   root = etree.parse(sys.argv[1]).getroot()
   known: dict = {}
+  known_errors: list[str] = []
   if "--known" in sys.argv:
-    known = json.loads(
-      Path(sys.argv[sys.argv.index("--known") + 1]).read_text())
+    known, known_errors = load_divergences(
+      Path(sys.argv[sys.argv.index("--known") + 1]), "plaoul")
   registry = registry_from_tei(root)
   gold = scholar_apps(root)
   ours, stats = our_apps(sys.argv[2], registry)
+  exclusions = {
+    "lemma_attribution_not_printed": sum(
+      1 for lem in root.iter(f"{TEI}lem")
+      if lem.get("wit") or lem.get("source")),
+    "app_note_not_printed": sum(
+      len(app.findall(f"{TEI}note")) for app in root.iter(f"{TEI}app")),
+  }
 
   errors: list[str] = []
-  divergences = 0
+  fired: dict[str, set[str]] = {}
+  suffix_unverified = 0
+
+  def record_error(key: str, kind: str, message: str, band: str) -> None:
+    record = known.get(key)
+    if record is None or kind not in record["error_kinds"]:
+      errors.append(message)
+      return
+    print_form = fold(record["print_form"])
+    if record.get("unproven") is True or record["band_evidence"] and (
+        not print_form or print_form not in fold(record["band_evidence"])
+        or print_form not in fold(band)):
+      errors.append(f"{key}: typed exception evidence is unproven or absent")
+      return
+    fired.setdefault(key, set()).add(kind)
+
   n = min(len(gold), len(ours))
   for k in range(n):
     g, o = gold[k], ours[k]
     key = g["id"] or str(k)
-    errs: list[str] = []
-    if not lem_match(o["lem"], g["lem"]):
-      errs.append(f"{key} LEM ours={o['lem'][:38]!r} scholar={g['lem'][:38]!r}")
-    elif len(o["rdgs"]) != len(g["rdgs"]):
-      errs.append(f"{key} NRDGS ours={len(o['rdgs'])} "
-                  f"scholar={len(g['rdgs'])} lem={g['lem'][:26]!r}")
+    matched_lem, suffix_verified = lem_match(
+      o["lem"], g["lem"], g["ellipsis_suffix"])
+    if "…" in o["lem"] and not suffix_verified:
+      suffix_unverified += 1
+    if not matched_lem:
+      record_error(key, "LEMMA_TEXT",
+                   f"{key} LEM ours={o['lem'][:38]!r} "
+                   f"scholar={g['lem'][:38]!r} expected ellipsis suffix="
+                   f"{g['ellipsis_suffix']!r}", o["band"])
+    if len(o["rdgs"]) != len(g["rdgs"]):
+      record_error(key, "READING_COUNT",
+                   f"{key} NRDGS ours={len(o['rdgs'])} "
+                   f"scholar={len(g['rdgs'])} lem={g['lem'][:26]!r}",
+                   o["band"])
     else:
       for i, (orr, grr) in enumerate(zip(o["rdgs"], g["rdgs"],
                                          strict=True)):
         if orr["text"] != grr["text"] and \
            orr["text"].replace(" ", "") != grr["text"].replace(" ", ""):
-          errs.append(f"{key} RDG{i} ours={orr['text'][:34]!r} "
-                      f"scholar={grr['text'][:34]!r}")
-        if [w for w in grr["wits"] if w not in orr["wits"]]:
-          errs.append(f"{key} RDGWITS{i} ours={orr['wits']} "
-                      f"scholar={grr['wits']}")
-    if errs and key in known:
-      divergences += 1
-    else:
-      errors.extend(errs)
+          record_error(key, "READING_TEXT",
+                       f"{key} RDG{i} ours={orr['text'][:34]!r} "
+                       f"scholar={grr['text'][:34]!r}", o["band"])
+        if sorted(orr["wits"]) != sorted(grr["wits"]):
+          record_error(key, "READING_WITNESSES",
+                       f"{key} RDGWITS{i} ours={orr['wits']} "
+                       f"scholar={grr['wits']}", o["band"])
   if len(ours) != len(gold):
     errors.append(f"COUNT ours={len(ours)} scholar={len(gold)}")
+  errors.extend(known_errors)
+  for key, record in known.items():
+    missing = set(record["error_kinds"]) - fired.get(key, set())
+    if missing:
+      errors.append(f"{key}: stale exception kinds {sorted(missing)} never fired")
 
   print(f"{len(gold)} scholar apps | {n} compared | {len(errors)} ERRORS | "
-        f"{divergences} documented divergences | "
-        f"anchored {stats['anchored']}/{stats['entries']}")
+        f"{len(fired)} documented divergences | "
+        f"{suffix_unverified} suffix-unverified | "
+        f"anchored {stats['anchored']}/{stats['entries']} | "
+        f"excluded rendered fields={exclusions}")
   for e in errors[:30]:
     print(f"  ERROR {e}")
   if errors:

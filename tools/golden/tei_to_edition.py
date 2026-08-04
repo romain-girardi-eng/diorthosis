@@ -17,6 +17,7 @@ import json
 import re
 import sys
 import unicodedata
+from collections import Counter
 from pathlib import Path
 
 from lxml import etree
@@ -155,8 +156,30 @@ def convert(path: Path, max_sentences: int | None) -> dict:
   if body is None:
     raise SystemExit("no <body>")
 
-  skipped = {"no_lem": 0, "nested": 0, "rdggrp": 0, "unlocatable": 0,
-             "span": 0, "punct": 0}
+  source_apps = list(root.iter(q("app")))
+  xml_ids = Counter(app.get(XML_ID) or "" for app in source_apps)
+  ledger: list[dict] = []
+  ledger_by_path: dict[str, dict] = {}
+  for i, app in enumerate(source_apps):
+    xid = app.get(XML_ID) or ""
+    source_id = xid if xid and xml_ids[xid] == 1 else f"app-{i:05d}"
+    record = {"id": source_id, "xml_id": xid, "state": "pending", "reason": ""}
+    ledger.append(record)
+    ledger_by_path[root.getroottree().getpath(app)] = record
+
+  def ledger_record(app: etree._Element) -> dict:
+    return ledger_by_path[root.getroottree().getpath(app)]
+
+  def exclude(app: etree._Element, reason: str) -> None:
+    record = ledger_record(app)
+    if record["state"] == "pending":
+      record.update(state="excluded", reason=reason)
+
+  def exclude_subtree(app: etree._Element, reason: str) -> None:
+    exclude(app, reason)
+    for desc in app.iterdescendants(q("app")):
+      exclude(desc, reason)
+
   stream: list[dict] = []   # {"t": text} or {"app": {...}} in reading order
 
   def emit_text(s: str | None) -> None:
@@ -183,12 +206,12 @@ def convert(path: Path, max_sentences: int | None) -> dict:
       isinstance(d.tag, str) and etree.QName(d).localname == "app"
       for d in app.iterdescendants())
     if nested:
-      skipped["nested"] += 1
+      exclude_subtree(app, "nested_app_subtree")
       lem = app.find(q("lem"))
       emit_text(text_of(lem, skip={"note", "app", "rdg"}) if lem is not None else None)
       return
     if app.find(q("rdgGrp")) is not None:
-      skipped["rdggrp"] += 1
+      exclude_subtree(app, "rdggrp_subtree")
       lem = app.find(q("lem"))
       emit_text(text_of(lem, skip={"note"}) if lem is not None else None)
       return
@@ -196,17 +219,17 @@ def convert(path: Path, max_sentences: int | None) -> dict:
     lem_text = (tight(text_of(lem, skip={"note"})).strip()
                 if lem is not None else "")
     if not lem_text.strip():
-      skipped["no_lem"] += 1
+      exclude(app, "no_lem")
       return
     if "…" in lem_text or "..." in lem_text:
       # a discontinuous span lemma cannot carry ONE typeset marker position
-      skipped["span"] += 1
+      exclude(app, "discontinuous_span")
       emit_text(lem_text)
       return
     if not lem_text[0].isalpha():
       # punctuation-variant lemmas (SBLGNT: "; προφήτην ἰδεῖν") are not
       # representable in the marker convention we typeset
-      skipped["punct"] += 1
+      exclude(app, "punctuation_lemma")
       emit_text(lem_text)
       return
     readings = []
@@ -232,6 +255,7 @@ def convert(path: Path, max_sentences: int | None) -> dict:
       wit_tokens(lem, "source", id_to_sig))
     emit_text(lem_text)
     stream.append({"app": {
+      "source_id": ledger_record(app)["id"],
       "lemma": lem_text,
       "lemma_wits": l_wits,
       "lemma_editors": l_eds,
@@ -254,7 +278,8 @@ def convert(path: Path, max_sentences: int | None) -> dict:
         if a["lemma"].split()[-1] in text:
           kept.append(a)
         else:
-          skipped["unlocatable"] += 1
+          record = next(r for r in ledger if r["id"] == a["source_id"])
+          record.update(state="excluded", reason="sentence_unlocatable")
       sentences.append({"text": text, "apps": kept})
       apps = []
 
@@ -279,6 +304,20 @@ def convert(path: Path, max_sentences: int | None) -> dict:
   if max_sentences:
     sentences = sentences[:max_sentences]
 
+  emitted_ids = {
+    app["source_id"] for sentence in sentences for app in sentence["apps"]
+  }
+  candidate_ids = {
+    item["app"]["source_id"] for item in stream if "app" in item
+  }
+  for record in ledger:
+    if record["id"] in emitted_ids:
+      record.update(state="emitted", reason="")
+    elif record["state"] == "pending" and record["id"] in candidate_ids:
+      record.update(state="excluded", reason="max_sentences")
+    elif record["state"] == "pending":
+      record.update(state="excluded", reason="outside_constituted_body")
+
   lang = "grc" if any(
     "Ͱ" <= c <= "Ͽ" or "ἀ" <= c <= "῿"
     for s in sentences[:20] for c in s["text"][:200]
@@ -291,13 +330,18 @@ def convert(path: Path, max_sentences: int | None) -> dict:
         cited.update(r["editors"])
   editors = sorted(cited)
   napps = sum(len(s["apps"]) for s in sentences)
+  skipped = Counter(
+    record["reason"] for record in ledger if record["state"] == "excluded")
   print(f"{path.name}: {len(sentences)} sentences, {napps} apps kept, "
-        f"{len(editors)} editors cited, skipped={skipped}")
+        f"{len(editors)} editors cited, source={len(ledger)}, "
+        f"excluded={dict(sorted(skipped.items()))}")
   return {
     "title": title,
     "language": lang,
     "witnesses": witnesses,
     "editors": editors,
+    "source_total": len(ledger),
+    "ledger": ledger,
     "sentences": sentences,
   }
 

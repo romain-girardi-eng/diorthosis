@@ -1,6 +1,171 @@
 {
-  "72.2:superioribus locis atque": {
-    "reason": "Print-vs-TEI representation choice. The print sets two editorial narratives without repeating the lemma: 'transposuerunt post unus Klotz dubitanter, post nobilitatem Morus dubitanter, post Zela Madvig 1.48–49' and 'seclusit ut glossema Vielhaber 1869'. The TEI encodes them as italic narrative <rdg> elements (rdg-72.2-transposuerunt, rdg-72.2-Vielhaber) whose text is the narrative itself. The SAME construction at 66.4 ('post ortus transposuit Schiller 1889 coll. Flor. Epit. 3.13.7') is encoded by the TEI as a lemma-only app with zero rdgs — the golden is inconsistent between the two sites. diorthosis uniformly keeps such transposition/seclusion narrative as verbatim notes; the printed content is fully preserved.",
-    "band": "p164: 23–24 superioribus locis atque itineribus paene coniunctus oppido MUSTV | transposuerunt post unus Klotz dubitanter, post nobilitatem Morus dubitanter, post Zela Madvig 1.48–49 | seclusit ut glossema Vielhaber 1869 | alii alia"
+  "balex:7.2:domiciliis": {
+    "book": "balex",
+    "locus": "7.2",
+    "error_kinds": ["READING_ATTRIBUTION"],
+    "print_form": "domicilius V et MT per compendia",
+    "tei_form": "rdg wit=#V domicilius; note: et MT per compendia",
+    "band_evidence": "13 ◊ domiciliis S | domicilius V et MT per compendia | domicius U per compendium",
+    "reason": "The stylesheet prints the note's MT as flat attribution to domicilius; the TEI keeps MT in the targeted note.",
+    "demotions": {"reading:0": ["m", "t"]}
+  },
+  "balex:9.3:dediticiis": {
+    "book": "balex",
+    "locus": "9.3",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "dediticiis UcSV et Mmr",
+    "tei_form": "lem wit=#Uc #S #V; note: et Mmr",
+    "band_evidence": "1 dediticiis UcSV et Mmr | dediciis MUacT uel deditiis",
+    "reason": "The printed lemma side includes the manuscript hand cited by the TEI's targeted note.",
+    "demotions": {"lemma": ["mmr"]}
+  },
+  "balex:12.1:classiariorum": {
+    "book": "balex",
+    "locus": "12.1",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "classiariorum USTV et M supra lineam",
+    "tei_form": "lem wit=#U #S #T #V; note: et M supra lineam",
+    "band_evidence": "4 ◊ classiariorum USTV et M supra lineam | nauigatorum M",
+    "reason": "Print flattens the TEI's supralinear-M note onto the lemma side.",
+    "demotions": {"lemma": ["m"]}
+  },
+  "balex:24.1:statuit": {
+    "book": "balex",
+    "locus": "24.1",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "statuit UTV et M supra lineam",
+    "tei_form": "lem wit=#U #T #V; note: et M supra lineam",
+    "band_evidence": "19 statuit UTV et M supra lineam | constituit M",
+    "reason": "Print flattens the TEI's supralinear-M note onto the lemma side.",
+    "demotions": {"lemma": ["m"]}
+  },
+  "balex:26.2:ibi suum": {
+    "book": "balex",
+    "locus": "26.2",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "ibi suum UST et Mmr",
+    "tei_form": "lem wit=#U #S #T; note: et Mmr",
+    "band_evidence": "13 ibi suum UST et Mmr | suum ibi MV",
+    "reason": "The printed lemma side includes the manuscript hand cited by the TEI's targeted note.",
+    "demotions": {"lemma": ["mmr"]}
+  },
+  "balex:27.5:mithridates magna cum prudentia": {
+    "book": "balex",
+    "locus": "27.5",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "Mithridates magna cum prudentia MUSc et T supra lineam",
+    "tei_form": "lem wit=#M #U #Sc; note: et T supra lineam",
+    "band_evidence": "8 ◊ Mithridates magna cum prudentia MUSc et T supra lineam | mithridates magna cum potentia SacT",
+    "reason": "Print flattens the TEI's supralinear-T note onto the lemma side.",
+    "demotions": {"lemma": ["t"]}
+  },
+  "balex:31.3:castrorum locum": {
+    "book": "balex",
+    "locus": "31.3",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "castrorum locum STV et Mmr",
+    "tei_form": "lem wit=#S #T #V; note: et Mmr",
+    "band_evidence": "19 castrorum locum STV et Mmr (cf. BG 2.23.5) | locum castrorum MU (cf. 31.1)",
+    "reason": "The printed lemma side includes the manuscript hand cited by the TEI's targeted note.",
+    "demotions": {"lemma": ["mmr"]}
+  },
+  "balex:33.2:diuturnitate confirmarentur": {
+    "book": "balex",
+    "locus": "33.2",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "diuturnitate confirmarentur Tc et Mmr",
+    "tei_form": "lem wit=#Tc; note: et Mmr",
+    "band_evidence": "4 diuturnitate confirmarentur Tc et Mmr (cf. 53.5 et u. TLL 4.224.45–79) | diuturnitates confirmarentur MUSTacV",
+    "reason": "The printed lemma side includes the manuscript hand cited by the TEI's targeted note.",
+    "demotions": {"lemma": ["mmr"]}
+  },
+  "balex:34.1:prouincias": {
+    "book": "balex",
+    "locus": "34.1",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "prouincias USTV et M supra lineam",
+    "tei_form": "lem wit=#U #S #T #V; note: et M supra lineam",
+    "band_evidence": "17 prouincias USTV et M supra lineam | regiones M",
+    "reason": "Print flattens the TEI's supralinear-M note onto the lemma side.",
+    "demotions": {"lemma": ["m"]}
+  },
+  "balex:46.1:fortuitae dimicationi fortunae rem committere maluit": {
+    "book": "balex",
+    "locus": "46.1",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "Klotz auctore Hoffmann 1857",
+    "tei_form": "lem source=#Klotz; note: auctore Hoffmann 1857",
+    "band_evidence": "12–13 ◊ fortuitae dimicationi [fortunae] rem committere maluit Klotz auctore Hoffmann 1857 (cf. Liu. 25.12.5 impetu fortuito)",
+    "reason": "The print sets the authority named by the targeted TEI note on the same lemma side.",
+    "demotions": {"lemma": ["hoffmann"]}
+  },
+  "balex:46.4:dubitabant": {
+    "book": "balex",
+    "locus": "46.4",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "dubitabant USTV et M supra lineam",
+    "tei_form": "lem wit=#U #S #T #V; note: et M supra lineam",
+    "band_evidence": "24 dubitabant USTV et M supra lineam | dubitarent M",
+    "reason": "Print flattens the TEI's supralinear-M note onto the lemma side.",
+    "demotions": {"lemma": ["m"]}
+  },
+  "balex:52.4:ibi t vasius": {
+    "book": "balex",
+    "locus": "52.4",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "Ibi T. Vasius U et Mmr",
+    "tei_form": "lem wit=#U; note: et Mmr",
+    "band_evidence": "3 Ibi T. Vasius U et Mmr | ibi tuasius MTV | ibit uasius S",
+    "reason": "The printed lemma side includes the manuscript hand cited by the TEI's targeted note.",
+    "demotions": {"lemma": ["mmr"]}
+  },
+  "balex:57.1:quam q cassius": {
+    "book": "balex",
+    "locus": "57.1",
+    "error_kinds": ["READING_ATTRIBUTION"],
+    "print_form": "quintus cassius Vac et T per compendium",
+    "tei_form": "rdg wit=#Vac quintus cassius; note: et T per compendium",
+    "band_evidence": "1 quam Q. Cassius MUVc | quamque cassius S | quintus cassius Vac et T per compendium",
+    "reason": "The stylesheet prints the note's T as flat attribution to the reading.",
+    "demotions": {"reading:1": ["t"]}
+  },
+  "balex:61.4:latius": {
+    "book": "balex",
+    "locus": "61.4",
+    "error_kinds": ["LEMMA_ATTRIBUTION"],
+    "print_form": "latius USTV et M supra lineam",
+    "tei_form": "lem wit=#U #S #T #V; note: et M supra lineam",
+    "band_evidence": "23 latius USTV et M supra lineam (cf. BG 5.19.2) | longius M",
+    "reason": "Print flattens the TEI's supralinear-M note onto the lemma side.",
+    "demotions": {"lemma": ["m"]}
+  },
+  "balex:67.1:et coactus exercitibus imperiisque": {
+    "book": "balex",
+    "locus": "67.1",
+    "error_kinds": ["READING_ATTRIBUTION"],
+    "print_form": "Klotz, Cornelissen secutus",
+    "tei_form": "rdg source=#Klotz; note: Cornelissen secutus",
+    "band_evidence": "22 ⟨et coactus⟩ exercitibus imperiisque, Bensch-Schaus | exercitibus imperiisque ⟨aduersariorum coactus⟩ Klotz, Cornelissen secutus (u. supra)",
+    "reason": "The print sets the authority named by the targeted TEI note on the same reading side.",
+    "demotions": {"reading:6": ["cornelissen"]}
+  },
+  "balex:72.2:superioribus locis atque itineribus paene coniunctus oppido": {
+    "book": "balex",
+    "locus": "72.2",
+    "error_kinds": ["READING_COUNT"],
+    "print_form": "transposuerunt post unus Klotz dubitanter",
+    "tei_form": "two italic narrative rdg elements",
+    "band_evidence": "23–24 superioribus locis atque itineribus paene coniunctus oppido MUSTV | transposuerunt post unus Klotz dubitanter, post nobilitatem Morus dubitanter, post Zela Madvig 1.48–49 | seclusit ut glossema Vielhaber 1869 | alii alia",
+    "reason": "The line grammar preserves pure transposition and seclusion narratives as comments, while this TEI site encodes them as literal readings; the same TEI uses a lemma-only app for the equivalent construction at 66.4."
+  },
+  "balex:73.1:munituras": {
+    "book": "balex",
+    "locus": "73.1",
+    "error_kinds": ["READING_ATTRIBUTION"],
+    "print_form": "muniturus ST et Vc ut uidetur",
+    "tei_form": "rdg wit=#S #T muniturus; note: et Vc ut uidetur",
+    "band_evidence": "6 munituras U | munitura M | muniturus ST et Vc ut uidetur | munitur Vac",
+    "reason": "The stylesheet prints the note's Vc as flat attribution to the reading.",
+    "demotions": {"reading:1": ["vc"]}
   }
 }
