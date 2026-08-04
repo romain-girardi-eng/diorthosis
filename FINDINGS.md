@@ -427,8 +427,8 @@ Every gate green at release: Plaoul 6,293 = 0 (anchored 94.9 %); real
 balex line 563 = 0/0 at 100 % anchoring; retypeset balex 524 = 0/0;
 retypeset SBLGNT 6,906 = 0/0; real NT 6,800 = 0; Problemata 5,524 = 0
 errors / 47 honest gaps (stable since v0.5); real-PDF coverage balex
-93.7 / 95.9 and Matthew 97.0 / 100.0 with zero contamination and zero
-false structures; Bobichon 2,031 entries at 99.3 / 99.0 / 97.5 / 89.8.
+93.7 / 95.9 (zero contamination) and Matthew 97.0 / 100.0 (3 noise-level
+contamination hits, stable since v0.4), zero false structures on both; Bobichon 2,031 entries at 99.3 / 99.0 / 97.5 / 89.8.
 An end-to-end CLI build of lectio5 (`--text-lang la --sigla R,V,S,SV`)
 emits 188 `<app>` (the scholar count), validates against tei_all.rng,
 and passes `validate` and `roundtrip`.

@@ -55,8 +55,9 @@ The typeset harness controls the layout; `real_check.py` does not: it runs
 diorthosis on the edition **as actually printed** (the DLL's own
 `ldlt-balex.pdf`, the official SBLGNT PDFs) and aligns the result against
 the scholars' TEI by content. Measured (2026-08-04): balex 93.0 % text /
-95.9 % band, SBLGNT Matthew 97.0 % / 100.0 % — with **zero** apparatus
-readings leaking into the text layer and **zero** false structures on both
+95.9 % band, SBLGNT Matthew 97.0 % / 100.0 % — with zero apparatus
+readings leaking into the text layer on balex (3 noise-level hits on
+Matthew, stable since v0.4) and **zero** false structures on both
 (their conventions are foreign to the numeric-marker grammar, and
 everything stays verbatim: the honesty contract holding on real layouts).
 
@@ -97,12 +98,16 @@ Greek/Latin domain).
 **License note:** the Plaoul TEI is CC BY-NC-ND 3.0 — the harness
 fetches it at use and never commits or redistributes edition content
 (same fetch-at-use contract as the rest of `data/`); the generated PDF
-stays local. The harness itself (this script) ships no Plaoul text.
+stays local. The harness itself ships no Plaoul edition content beyond short apparatus excerpts quoted for documentation and unit-test fixtures (scholarly citation of individual readings).
 
 Status (2026-08-04, v0.6): **looped to zero — 6,293 apps across all 30
 lectios, 0 errors** (`plaoul_check.py lectioN.xml lectioN.pdf`, per-app
 comparison of lemma, reading count, reading texts and witness sets under
-the project's own critical.xslt rendering contract). Anchoring 5,969/6,293
+the project's own critical.xslt rendering contract — with that contract's
+tolerances stated plainly: folded normalization, elliptic lemmas matched
+on their pre-ellipsis prefix, witness sets checked scholar-side
+(extra witnesses on our side would not fail), alignment by global order;
+this validates the stylesheet's rendered subset, not full TEI semantics). Anchoring 5,969/6,293
 (94.9 %). Key contract points learned from the print: leaked English
 editorial notes DO print (the XSLT's note-silencing template is commented
 out); elliptic printed lemmas match on the pre-ellipsis prefix only (the

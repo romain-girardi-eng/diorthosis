@@ -78,7 +78,7 @@ page-level work (layer separation, printed-folio extraction):
    anchored`); unanchored entries are preserved, never dropped; prose bands
    (apparatus fontium) are never forced into the numeric mold.
 
-## What it does — and does not — do (v0.5)
+## What it does — and does not — do (v0.6)
 
 **Does:** ingest born-digital PDFs (via regreek: 9 legacy Greek encodings,
 validated 98–100 % on held-out texts) and any OCR engine's ALTO, hOCR or
@@ -86,17 +86,17 @@ PAGE-XML; separate layers; extract the citable printed folio; split
 apparatus bands into entries and anchor each to its exact place in the
 constituted text; **parse the apparatus into structured
 `<app>/<lem>/<rdg>`** with witness and editor attributions drawn from the
-edition's own conspectus siglorum, under three convention grammars —
+edition's own conspectus siglorum, under four convention grammars —
 numeric markers (Sources Chrétiennes family), verse-referenced (biblical
-editions), line-referenced reledmac (DLL family) — plus superscript
+editions), line-referenced reledmac (DLL family), paragraphed reledmac
+(LombardPress/scholastic family, double apparatus) — plus superscript
 sigla; refuse verbatim what a grammar does not define; emit
 **schema-valid TEI P5** (validated against `tei_all.rng`) and
 **md-ce/0.2** — a normative Markdown format with twelve mechanically
 checkable invariants ([SPEC.md](SPEC.md)), enforced by
 `diorthosis validate`. Outputs are byte-deterministic.
 
-**Does not (yet):** parse the paragraphed-reledmac DOUBLE apparatus
-(fontium + variants — in progress on the Plaoul commentary); represent
+**Does not (yet):** represent
 negative apparatus (where the lemma's support is implied by silence);
 handle two-column layouts; and **no accuracy figures exist yet for noisy
 OCR input** — every number below is measured on born-digital PDFs.
