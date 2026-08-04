@@ -12,6 +12,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -20,7 +21,26 @@ from .anchor import anchor_page
 from .conspectus import Registry, bootstrap_registry, with_builtin_editors
 from .ingest import ingest_alto, ingest_hocr, ingest_pagexml, ingest_pdf
 from .md import to_markdown
-from .tei import to_tei
+from .model import Document, Layer
+from .tei import resolve_parsed, to_tei
+from .witnesses import witness_table
+
+
+def _used_witness_sigla(doc: Document, registry: Registry) -> set[str]:
+  """Collect witnesses from the same resolved structures emitted as TEI."""
+  used: set[str] = set()
+  for page in doc.pages:
+    for block in page.blocks:
+      if block.layer is not Layer.APPARATUS:
+        continue
+      for entry in block.entries or []:
+        parsed = resolve_parsed(entry, registry)
+        if parsed is None:
+          continue
+        used.update(parsed.lemma_attribution.witnesses)
+        for reading in parsed.readings:
+          used.update(reading.attribution.witnesses)
+  return used
 
 
 def _parse_pages(spec: str | None) -> list[int] | None:
@@ -210,12 +230,22 @@ def main(argv: list[str] | None = None) -> int:
   outdir = Path(args.out)
   outdir.mkdir(parents=True, exist_ok=True)
   stem = Path(doc.source_name).stem[:60] or "edition"
+  witness_path = outdir / f"{stem}.witnesses.json"
   (outdir / f"{stem}.tei.xml").write_text(
     to_tei(doc, title=args.title, registry=registry), encoding="utf-8")
   (outdir / f"{stem}.md").write_text(
     to_markdown(doc, title=args.title, tei_name=f"{stem}.tei.xml"), encoding="utf-8")
+  witness_path.write_text(
+    json.dumps(
+      witness_table(registry, _used_witness_sigla(doc, registry)),
+      indent=1,
+      ensure_ascii=False,
+    ),
+    encoding="utf-8",
+  )
   print(f"wrote {outdir / (stem + '.tei.xml')}")
   print(f"wrote {outdir / (stem + '.md')}")
+  print(f"wrote {witness_path}")
   msg = f"apparatus anchoring: {totals['anchored']}/{totals['entries']} entries anchored"
   if totals["unanchored"]:
     msg += f", {totals['unanchored']} unanchored"

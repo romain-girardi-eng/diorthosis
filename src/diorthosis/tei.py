@@ -36,6 +36,7 @@ from . import __version__
 from .conspectus import Registry, builtin_editors
 from .grammar import Attribution, ParsedEntry, Reading, parse_entry
 from .model import Block, Document, Layer, Page
+from .witnesses import decompose
 
 TEI_NS = "http://www.tei-c.org/ns/1.0"
 
@@ -281,6 +282,9 @@ def _header(tei: ET.Element, doc: Document, title: str | None,
     for siglum, desc in registry.witnesses.items():
       wit = ET.SubElement(lw, "witness")
       wit.set("xml:id", f"wit-{registry.xml_id(siglum)}")
+      base, hand = decompose(siglum, registry)
+      if hand and base in registry.witnesses:
+        wit.set("corresp", f"#wit-{registry.xml_id(base)}")
       abbr = ET.SubElement(wit, "abbr", {"type": "siglum"})
       abbr.text = siglum
       abbr.tail = f" {desc}"
