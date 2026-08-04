@@ -61,3 +61,35 @@ everything stays verbatim: the honesty contract holding on real layouts).
 
     python3 real_check.py data/balex.xml balex-dll.pdf --pages 84-171 --text-lang la
     python3 real_check.py data/sblgnt.xml 61-SBLGNT-Matthew.pdf --max-apps 770
+
+## The third real-backtesting case: Petrus Plaoul (double apparatus)
+
+The Plaoul *Commentary on the Sentences* (ed. Jeffrey C. Witt,
+scta-texts/plaoulcommentary) carries ~6,300 `<app>` entries concentrated
+in lectio1–30, collated against four witnesses (R V S SV) with genuine
+scholastic typology (om., add., interl., in marg., corr. ex, iterum,
+multi-way lectiones). No published PDF exists, but the project's own
+print toolchain does — lombardpress/lbp-print-xslt → reledmac — and
+`plaoul_build_pdf.py` runs THAT toolchain (three environment patches
+documented in its docstring), producing a byte-deterministic PDF whose
+page shows reledmac's standard paragraphed DOUBLE apparatus: fontium on
+top, variants below, in the "N lemma] rdg SIG" convention (distinct from
+the DLL's "∥ … | …" style). Selected 2026-08-04 after a systematic sweep
+(LDLT, LombardPress/SCTA, PTA, HAB Wolfenbüttel, ENC, RIDE reviews);
+runner-up kept in reserve: the Suśruta Project's Sū.1.16 (published
+born-digital PDF at HASP + TEI, 212 apps, Sanskrit — outside the
+Greek/Latin domain).
+
+    python3 plaoul_build_pdf.py workdir/ 1        # lectio1: 235 apps
+    python3 plaoul_build_pdf.py workdir/ {1..30}  # ~6,300 apps
+
+**License note:** the Plaoul TEI is CC BY-NC-ND 3.0 — the harness
+fetches it at use and never commits or redistributes edition content
+(same fetch-at-use contract as the rest of `data/`); the generated PDF
+stays local. The harness itself (this script) ships no Plaoul text.
+
+Status: case selected and mechanics locked (TEI ✓, official-toolchain
+PDF ✓, deterministic ✓). The paragraphed-reledmac grammar, the
+double-apparatus split and the marginalia-in-flow extraction (line
+numbers and folio marks interleave with the text stream) are the v0.6
+loop-to-zero work.
