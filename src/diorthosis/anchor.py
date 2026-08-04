@@ -30,7 +30,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from . import versegrammar
+from . import linegrammar, versegrammar
 from .conspectus import Registry
 from .grammar import parse_entry
 from .match import lemma_matches_before
@@ -305,6 +305,98 @@ def _anchor_verse_band(page: Page, block: Block, registry: Registry | None,
   block.entries = entries
 
 
+def _hyphen_rx(words: list[str]) -> re.Pattern:
+  """Word-sequence pattern tolerating printed LINE-BREAK HYPHENATION inside
+  any word ("stipendi- umque" must match "stipendiumque"), MARGINAL LINE
+  NUMBERS caught inside the text flow ("uacuas 15 in celeberrimis",
+  "proficis- 10 ceretur" — the constituted text numbers its lines; Latin
+  prose itself uses Roman numerals, so 1-3 arabic digits between words
+  are layout, not content) and the usual inter-word typography."""
+  def char_pat(ch: str) -> str:
+    # an em-dash inside a lemma word may close its printed line
+    # ("natura—⏎namque"): whitespace after it is layout
+    return re.escape(ch) + (r"\s*" if ch in "—–" else "")
+
+  def word_pat(w: str) -> str:
+    return r"(?:-\s+(?:\d{1,3}\s+)?)?".join(char_pat(ch) for ch in w)
+  ws = [w.strip(".,;·:!?»«") for w in words]
+  # a section number may print GLUED to the next word ("6Pugnabatur")
+  joiner = r"[\s.,;·:!?—–]+(?:\d{1,3}[\s.,;·:!?]*)*"
+  return re.compile(joiner.join(word_pat(w) for w in ws if w))
+
+
+def _search_line_lemma(lemma: str, text: str,
+                       start_at: int) -> re.Match | None:
+  """Locate a lemma in the constituted text, degrading gracefully when
+  its tail is hyphenated onto the NEXT page ("dabatur uic-⏎"): drop
+  trailing words, then shorten the first word to a prefix — a partial
+  match must still cover at least five characters."""
+  words = lemma.split()
+
+  def hit(ws: list[str]) -> re.Match | None:
+    rx = _hyphen_rx(ws)
+    m = rx.search(text, start_at)
+    if m is None and start_at:
+      m = rx.search(text)
+    if m is not None and m.end() - m.start() >= (5 if ws != words else 0):
+      return m
+    return None
+
+  if (m := hit(words)) is not None:
+    return m
+  for cut in range(len(words) - 1, -1, -1):
+    head = words[:cut]
+    w = words[cut].strip(".,;·:!?»«⟨⟩[]†")
+    for plen in range(len(w) - 1, 3, -1):
+      if (m := hit([*head, w[:plen]])) is not None:
+        return m
+    if head and (m := hit(head)) is not None:
+      return m
+  return None
+
+
+def _anchor_line_band(page: Page, block: Block, registry: Registry | None,
+                      stats: dict[str, int]) -> None:
+  """Split and anchor a line-referenced band (reledmac convention) in
+  place. Anchors resolve by CONTENT: each entry's first reading (the
+  accepted text) is located in the page's constituted text at a
+  monotonically advancing position; the printed line number travels on
+  the anchor value."""
+  entries: list[ApparatusEntry] = []
+  cursors: dict[int, int] = {}
+  for le in linegrammar.split_line_entries(block.text):
+    if registry is not None:
+      linegrammar.parse_line_entry(le, registry)
+    prefix = f"{le.line} " if le.line else ""
+    e = ApparatusEntry(
+      raw=f"{prefix}{'◊ ' if le.crux else ''}{le.raw}",
+      anchor=Anchor(kind="line", value=le.line),
+      parsed_line=le if le.parsed else None,
+    )
+    entries.append(e)
+    stats["entries"] += 1
+    resolved = False
+    if le.parsed and le.lemma:
+      for bi, tb in enumerate(page.blocks):
+        if tb.layer not in (Layer.TEXT, Layer.HEADING):
+          continue
+        start_at = cursors.get(bi, 0)
+        m = _search_line_lemma(le.lemma, tb.text, start_at)
+        if m is None:
+          continue
+        e.anchor.block_index, e.anchor.char_offset = bi, m.end()
+        e.anchor.digit_start = e.anchor.digit_end = m.end()
+        le.resolved_lemma = tb.text[m.start(): m.end()]
+        cursors[bi] = m.start() + 1
+        resolved = True
+        break
+    if resolved:
+      stats["anchored"] += 1
+    else:
+      stats["unanchored"] += 1
+  block.entries = entries
+
+
 def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
   """Split and anchor the apparatus blocks of one page, in place.
 
@@ -335,6 +427,9 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
       continue
     if versegrammar.looks_verse_referenced(block.text):
       _anchor_verse_band(page, block, registry, stats)
+      continue
+    if linegrammar.looks_line_referenced(block.text):
+      _anchor_line_band(page, block, registry, stats)
       continue
     block.entries = split_entries(block.text)
     for e in block.entries:

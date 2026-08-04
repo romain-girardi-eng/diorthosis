@@ -28,7 +28,10 @@ from importlib import resources
 _TOKEN_CHR = "A-Za-zÀ-ÖØ-öø-ÿĀ-ŽΑ-Ωα-ωϘ-ϡ"
 _DECL = re.compile(
   r"^\s*([" + _TOKEN_CHR + r"][" + _TOKEN_CHR + r"0-9*.,\- ]{0,24}?)\s*=\s*(.+?)\s*$")
-_SIGLUM = re.compile(r"^[A-ZΑ-Ωα-ωϘ-ϡ][0-9]?\*?$")
+# the optional second lowercase letter is a superscript distinguisher in
+# print (Nᵘ = "Nu"); a lone lowercase letter declares an early edition
+# ("m", "v" in the Problemata tradition)
+_SIGLUM = re.compile(r"^[A-Za-zΑ-Ωα-ωϘ-ϡ][a-z]?[0-9]?\*?$")
 # editor names include compounds (Gaertner-Hausburg) and disambiguating
 # initials written solid (DSimons, JSimons)
 _EDITOR = re.compile(r"^[A-ZÀ-ÞĀ-Ž][A-Za-zà-öø-ÿā-žÀ-ÞĀ-Ž-]+\.?$")
@@ -88,22 +91,68 @@ def with_builtin_editors(reg: Registry) -> Registry:
   return reg
 
 
+# The LDLT/DLL bracket format: "[ω] Common source of …", "[Mc] Corrections
+# by the original scribe…", "[Hoffmann 1890] E. Hoffmann, ed. …". Witness
+# sigla are short (letter + optional hand-state suffix ac/c/mr/*, Greek
+# family letters); bracketed editors are capitalized names, their year
+# disambiguator stripped for the printed-band token.
+_BRACKET_DECL = re.compile(r"^\s*\[([^\]\n]{1,24})\]\s+(\S.*)$")
+_BRACKET_WITNESS = re.compile(r"^[A-ZΑ-Ωα-ωϘ-ϡ](?:ac|c|mr)?\*?[0-9]?$")
+# ﬀ-ﬆ — the fi/fl/ff ligatures a born-digital text layer keeps
+# ("Wölfﬂin", "Ciafﬁ-Griffa"); the registry stores them verbatim so the
+# apparatus band, which carries the same ligatures, matches exactly
+_BRACKET_EDITOR = re.compile(
+  r"^([A-ZÀ-ÞĀ-Ž][A-Za-zà-öø-ÿā-žÀ-ÞĀ-Ž.'ﬀ-ﬆ-]+)"
+  r"(?:\s+\d{4}[a-z]?)?$")
+
+_BRACKET_INITIAL = re.compile(
+  r"^([A-ZÀ-ÞĀ-Ž])\.\s+([A-ZÀ-ÞĀ-Ž][A-Za-zà-öø-ÿā-žﬀ-ﬆ'-]+)$")
+
+_BRACKET_MULTI = re.compile(
+  r"^([A-ZÀ-ÞĀ-Ž][A-Za-zà-öø-ÿā-žﬀ-ﬆ.'-]*"
+  r"(?:\s+[A-ZÀ-ÞĀ-Ž][A-Za-zà-öø-ÿā-žﬀ-ﬆ.'-]+)+)"
+  r"(?:\s+\d{4}[a-z]?)?$")
+
+
 def parse_conspectus(text: str) -> Registry:
   reg = Registry()
   for raw_line in text.splitlines():
     m = _DECL.match(raw_line)
-    if not m:
+    if m:
+      tokens, description = m.group(1), m.group(2)
+      # "A1, B1 = A, B prima manu" declares several sigla at once
+      for tok in (t.strip() for t in tokens.split(",")):
+        if not tok:
+          continue
+        if _SIGLUM.match(tok):
+          reg.witnesses[tok] = description
+        elif _EDITOR.match(tok):
+          reg.editors[tok] = description
       continue
-    tokens, description = m.group(1), m.group(2)
-    # "A1, B1 = A, B prima manu" declares several sigla at once
-    for tok in (t.strip() for t in tokens.split(",")):
-      if not tok:
-        continue
-      if _SIGLUM.match(tok):
+    b = _BRACKET_DECL.match(raw_line)
+    if b:
+      tok, description = b.group(1).strip(), b.group(2)
+      if _BRACKET_WITNESS.match(tok):
         reg.witnesses[tok] = description
-      elif _EDITOR.match(tok):
-        reg.editors[tok] = description
-      # anything else: not part of the apparatus vocabulary — skip, never guess
+      else:
+        e = _BRACKET_EDITOR.match(tok)
+        if e:
+          reg.editors[e.group(1)] = description
+        else:
+          # an editor declared with an initial ("D. Simons") — the
+          # apparatus prints the name GLUED ("DSimons"): register both
+          i = _BRACKET_INITIAL.match(tok)
+          mw = _BRACKET_MULTI.match(tok)
+          if i:
+            reg.editors[f"{i.group(1)}. {i.group(2)}"] = description
+            reg.editors[f"{i.group(1)}{i.group(2)}"] = description
+          elif mw:
+            # a multi-word surname ("Du Pontet"): the spaced form for
+            # the line grammar's pre-pass, the glued form for peeling
+            name = mw.group(1)
+            reg.editors[name] = description
+            reg.editors[name.replace(" ", "")] = description
+    # anything else: not part of the apparatus vocabulary — skip, never guess
   return reg
 
 
@@ -140,19 +189,26 @@ def find_conspectus_pages(pdf_path: str, search_range: range | list[int]) -> str
   """
   from pdfminer.high_level import extract_text
 
-  head = re.compile(r"sigl|conspectus|abr[eé]viations", re.I)
+  head = re.compile(r"sigl|conspectus|abr[eé]viations|manuscripts", re.I)
+  explicit = isinstance(search_range, list) and len(search_range) == 1
   for page in search_range:
     text = extract_text(pdf_path, page_numbers=[page]) or ""
     if head.search(text.split("\n", 3)[0] if text else "") or (
-      head.search(text[:200]) and "=" in text
+      head.search(text[:200]) and ("=" in text or "[" in text)
     ):
-      for cont in range(page + 1, page + 9):
+      # a sigla list runs over several pages; bracket-format bibliographies
+      # (DLL) run over MANY — with an explicitly given page the caller
+      # vouches for the region, so the window widens
+      horizon = 40 if explicit else 8
+      for cont in range(page + 1, page + 1 + horizon):
         more = extract_text(pdf_path, page_numbers=[cont]) or ""
         lines = [ln for ln in more.splitlines() if ln.strip()]
         if not lines:
           break
-        decls = sum(1 for ln in lines if _DECL.match(ln))
-        if decls < 0.5 * len(lines):
+        decls = sum(1 for ln in lines
+                    if _DECL.match(ln) or _BRACKET_DECL.match(ln))
+        if decls < max(2, 0.5 * len(lines)) and not (
+            explicit and decls >= 2):
           break
         text += "\n" + more
       return text

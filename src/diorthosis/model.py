@@ -74,6 +74,9 @@ class ApparatusEntry:
   parsed_verse: object | None = None
   """A versegrammar.VerseEntry when the band follows the verse-referenced
   convention and this entry parsed; None otherwise."""
+  parsed_line: object | None = None
+  """A linegrammar.LineEntry when the band follows the line-referenced
+  convention and this entry parsed; None otherwise."""
 
 
 @dataclass

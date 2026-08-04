@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "diorthosis"
-version = "0.4.1"
+version = "0.5.0"
 description = "Compile published critical editions (PDF or OCR output) into TEI P5 with anchored apparatus, plus a deterministic AI-ready Markdown view"
 readme = "README.md"
 requires-python = ">=3.10"

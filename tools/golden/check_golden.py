@@ -32,13 +32,22 @@ XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
 def fold(s: str) -> str:
   s = re.sub(r"(?<=\S)-\s+", "", s)      # printed line-break hyphenation
   s = s.replace("—", " ").replace("–", " ")
+  # TeX prints typographic quotes for the source's straight ones
+  s = s.replace("’", "'").replace("‘", "'").replace("”", '"') \
+       .replace("“", '"')
+  # codepoints outside the typeset font's coverage (medieval Coptic and
+  # Armenian abbreviation signs) print as missing glyphs and extract as
+  # U+FFFD — fold both sides to one joker
+  s = re.sub(r"[Ⲁ-⳿԰-֏�]", "�", s)
   d = unicodedata.normalize("NFD", s)
   out = "".join(c for c in d if not unicodedata.combining(c)).lower()
   return re.sub(r"\s+", " ", out.replace("ς", "σ")).strip()
 
 
 def toks(s: str) -> list[str]:
-  return [w.strip(".,·;:!»«()[]") for w in fold(s).split() if w.strip(".,·;:!»«()[]")]
+  # split on INTERIOR punctuation too: the source text sometimes glues
+  # sentences ("similiter.Et") and the typeset keeps the glue
+  return [w for w in re.split(r"[\s.,·;:!?»«()\[\]]+", fold(s)) if w]
 
 
 @dataclass
@@ -129,7 +138,9 @@ def id_maps(root: ET.Element) -> tuple[dict[str, str], dict[str, str]]:
   for b in root.iter(_q("bibl")):
     xid = b.get(XML_ID)
     if xid and xid.startswith("ed-"):
-      ed_map[xid] = (b.text or "").strip() or xid.removeprefix("ed-")
+      abbr = b.find(_q("abbr"))
+      ed_map[xid] = ((abbr.text or "").strip() if abbr is not None
+                     else (b.text or "").strip() or xid.removeprefix("ed-"))
   return wit_map, ed_map
 
 
@@ -262,7 +273,8 @@ def compare(golden: dict, pages: dict[str, PageOut],
                              f"@to anchor {to!r} not found in the page text"))
         else:
           tw = toks(ctx)
-          if not tw or tw[-1] != toks(g["anchor_word"] + " x")[0]:
+          aw = toks(g["anchor_word"])
+          if not tw or not aw or tw[-1] != aw[-1]:
             out.append(Finding("ERROR_ANCHOR", folio, n,
                                f"text before anchor ends {tw[-3:]} — expected "
                                f"{g['anchor_word']!r}"))

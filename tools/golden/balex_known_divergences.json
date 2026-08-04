@@ -1,0 +1,6 @@
+{
+  "72.2:superioribus locis atque": {
+    "reason": "Print-vs-TEI representation choice. The print sets two editorial narratives without repeating the lemma: 'transposuerunt post unus Klotz dubitanter, post nobilitatem Morus dubitanter, post Zela Madvig 1.48–49' and 'seclusit ut glossema Vielhaber 1869'. The TEI encodes them as italic narrative <rdg> elements (rdg-72.2-transposuerunt, rdg-72.2-Vielhaber) whose text is the narrative itself. The SAME construction at 66.4 ('post ortus transposuit Schiller 1889 coll. Flor. Epit. 3.13.7') is encoded by the TEI as a lemma-only app with zero rdgs — the golden is inconsistent between the two sites. diorthosis uniformly keeps such transposition/seclusion narrative as verbatim notes; the printed content is fully preserved.",
+    "band": "p164: 23–24 superioribus locis atque itineribus paene coniunctus oppido MUSTV | transposuerunt post unus Klotz dubitanter, post nobilitatem Morus dubitanter, post Zela Madvig 1.48–49 | seclusit ut glossema Vielhaber 1869 | alii alia"
+  }
+}

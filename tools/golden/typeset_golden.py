@@ -123,23 +123,47 @@ def _cap(s: str) -> str:
   return s
 
 
+_SUP_SIGLUM = re.compile(r"^([A-ZΑ-Ω])([a-z])$")
+"""A two-letter siglum prints its second letter SUPERSCRIPT (Nᵘ, Eᵃ, Pˣ).
+Witness tokens travel between private sentinels so the TeX emission can
+raise them without touching identical words in the reading text."""
+
+
+def _wit_tok(w: str) -> str:
+  return f"\x00{w}\x01" if _SUP_SIGLUM.match(w) else w
+
+
 def band_entry(n: int, app: dict) -> str:
   """One printed apparatus entry, Paradosis/SC convention."""
   parts: list[str] = []
   lemma_side = _cap(app["lemma"].strip())
-  attrib = " ".join([*app.get("lemma_wits", []), *app.get("lemma_editors", [])])
+  attrib = " ".join([*map(_wit_tok, app.get("lemma_wits", [])),
+                     *app.get("lemma_editors", [])])
   if attrib:
     lemma_side += f" {attrib}"
   parts.append(lemma_side)
   for r in app.get("readings", []):
     side = r.get("text", "").strip() or "om."
-    ra = " ".join([*r.get("wits", []), *r.get("editors", [])])
+    ra = " ".join([*map(_wit_tok, r.get("wits", [])),
+                   *r.get("editors", [])])
     if ra:
       side += f" {ra}"
     if r.get("note"):
       side += f" {r['note'].strip()}"
     parts.append(side)
   return f"{n} " + " : ".join(parts)
+
+
+def _emit_band(b: str) -> str:
+  """tex_escape, then raise the sentinel-marked sigla."""
+  out = tex_escape(b)
+  out = re.sub("\x00([A-ZΑ-Ω])([a-z])\x01",
+               r"\1\\textsuperscript{\2}", out)
+  return out.replace("\x00", "").replace("\x01", "")
+
+
+def _flat_band(b: str) -> str:
+  return b.replace("\x00", "").replace("\x01", "")
 
 
 def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
@@ -161,7 +185,10 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
   # TeX-broken pages would desynchronize the page-count guard).
   decl_lines: list[str] = [r"\noindent\textsc{Sigles}\par\bigskip"]
   for siglum, desc in edition.get("witnesses", {}).items():
-    decl_lines.append(rf"\noindent {tex_escape(siglum)} = {tex_escape(desc)}\par")
+    ms = _SUP_SIGLUM.match(siglum)
+    shown = (rf"{ms.group(1)}\textsuperscript{{{ms.group(2)}}}"
+             if ms else tex_escape(siglum))
+    decl_lines.append(rf"\noindent {shown} = {tex_escape(desc)}\par")
   editors = edition.get("editors", [])
   if editors:
     decl_lines.append(r"\bigskip\noindent\textsc{Editores}\par\bigskip")
@@ -228,8 +255,9 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
         pieces.append(tex_escape(text[pos:idx]))
         pieces.append(rf"\textsuperscript{{{marker}}}")
         pos = idx
-        raw = band_entry(marker, app)
-        band.append(raw)
+        raw_marked = band_entry(marker, app)
+        raw = _flat_band(raw_marked)
+        band.append(raw_marked)
         entries_golden.append({
           "n": str(marker),
           "lemma": _cap(lemma),
@@ -262,7 +290,7 @@ def build(edition: dict, out_tex: Path, out_golden: Path) -> None:
       body.append(r"\noindent\rule{25mm}{0.4pt}\par\smallskip")
       body.append(r"{\footnotesize\setlength{\parskip}{0pt}")
       for b in band:
-        body.append(r"\noindent " + tex_escape(b) + r"\par")
+        body.append(r"\noindent " + _emit_band(b) + r"\par")
       body.append("}")
     body.append(r"\newpage")
 

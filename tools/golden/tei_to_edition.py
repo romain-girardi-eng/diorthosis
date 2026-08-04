@@ -83,7 +83,9 @@ def text_of(el: etree._Element, skip: set[str] = frozenset()) -> str:
 
 
 _BIB_YEAR = re.compile(r"\d{4}.*$")
-_SIGLUM_SHAPE = re.compile(r"^[A-Za-zΑ-Ωα-ωϘ-ϡ][0-9]?\*?$")
+# the optional second lowercase letter is a SUPERSCRIPT distinguisher in
+# print (Nᵘ, Eᵃ, Pˣ — flat forms Nu, Ea, Px)
+_SIGLUM_SHAPE = re.compile(r"^[A-Za-zΑ-Ωα-ωϘ-ϡ][a-z]?[0-9]?\*?$")
 
 
 def editor_name(tok: str) -> str:
@@ -98,7 +100,7 @@ def wit_tokens(el: etree._Element, attr: str, id_to_sig: dict[str, str]) -> list
   for tok in raw.split():
     tok = tok.removeprefix("#")
     out.append(id_to_sig.get(tok, tok))
-  return out
+  return list(dict.fromkeys(out))
 
 
 def split_attribution(wits: list[str], editors: list[str]) -> tuple[list[str], list[str]]:
@@ -117,7 +119,12 @@ def load_witnesses(root: etree._Element) -> tuple[dict[str, str], dict[str, str]
   for wit in root.iter(q("witness")):
     xid = wit.get(XML_ID) or ""
     abbr = wit.find(q("abbr"))
-    siglum = norm_space(abbr.text or "") if abbr is not None and abbr.text else xid
+    # the FULL abbr content: a superscript siglum letter is a child
+    # element ("N<hi rend='superscript'>u</hi>" = Nᵘ, flat form "Nu") —
+    # glued ONLY for that shape; "ed. pr." keeps its spaces
+    siglum = (norm_space(text_of(abbr)) if abbr is not None else "") or xid
+    if re.fullmatch(r"[A-ZΑ-Ω] [a-z0-9*]", siglum):
+      siglum = siglum.replace(" ", "")
     # a witness may nest a whole family <listWit>: its own description is
     # only what is NOT inside the nested list
     desc = text_of(wit, skip={"abbr", "listWit", "witness"})
@@ -126,6 +133,15 @@ def load_witnesses(root: etree._Element) -> tuple[dict[str, str], dict[str, str]
     witnesses[siglum] = desc or siglum
     if xid:
       id_to_sig[xid] = siglum
+  # a consensus family may be declared as a listWit carrying its own
+  # xml:id (α = "Pietro's first version") — cited like any witness
+  for lw in root.iter(q("listWit")):
+    xid = lw.get(XML_ID) or ""
+    if xid and xid not in id_to_sig:
+      head = lw.find(q("head"))
+      desc = norm_space(text_of(head)) if head is not None else xid
+      witnesses[xid] = desc or xid
+      id_to_sig[xid] = xid
   return witnesses, id_to_sig
 
 

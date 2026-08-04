@@ -72,11 +72,13 @@ class _AnchorPoint:
 
 
 def _witness_ids(attr: Attribution, registry: Registry) -> str:
-  return " ".join(f"#wit-{registry.xml_id(w)}" for w in attr.witnesses)
+  return " ".join(dict.fromkeys(
+    f"#wit-{registry.xml_id(w)}" for w in attr.witnesses))
 
 
 def _editor_ids(attr: Attribution, registry: Registry) -> str:
-  return " ".join(f"#ed-{registry.xml_id(e)}" for e in attr.editors)
+  return " ".join(dict.fromkeys(
+    f"#ed-{registry.xml_id(e)}" for e in attr.editors))
 
 
 def _emit_reading(app: ET.Element, tag: str, text: str, attr: Attribution,
@@ -191,6 +193,18 @@ def _collect_page_apparatus(page: Page, registry: Registry | None):
     for ei, e in enumerate(block.entries or []):
       if e.parsed_verse is not None and registry is not None:
         parsed = _verse_to_parsed(e.parsed_verse)
+      elif e.parsed_line is not None and registry is not None:
+        le = e.parsed_line
+        # the apparatus' own printed lemma, NOT the span resolved in the
+        # constituted text: the latter carries marginal line numbers and
+        # hyphenation caught mid-span
+        parsed = ParsedEntry(
+          lemma=le.lemma,
+          lemma_attribution=le.lemma_attribution,
+          readings=[Reading(text=r.text, attribution=r.attribution)
+                    for r in le.readings],
+          comments=list(le.comments),
+        )
       else:
         parsed = parse_entry(e.raw, registry) if registry is not None else None
       start_id = end_id = None
@@ -260,7 +274,12 @@ def _editors_bibl(header: ET.Element, registry: Registry,
     bibl = ET.SubElement(lb, "bibl")
     bibl.set("xml:id", f"ed-{registry.xml_id(token)}")
     full = registry.editors.get(token) or canon.get(token) or token
-    bibl.text = full if isinstance(full, str) else token
+    # the printed token itself, machine-recoverable (the xml:id hex-escapes
+    # non-ASCII and the description need not open with the name)
+    abbr = ET.SubElement(bibl, "abbr")
+    abbr.text = token
+    if isinstance(full, str) and full != token:
+      abbr.tail = " " + full
 
 
 def to_tei(doc: Document, title: str | None = None,

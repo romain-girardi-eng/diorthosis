@@ -47,12 +47,28 @@ QUALIFIERS = (
   "add.", "coni.", "ci.", "cj.", "conj.", "corr.", "del.", "em.", "om.",
   "prop.", "secl.", "suppl.", "transp.", "transponendum", "iter.", "exp.",
   "dist.", "damn.", "susp.", "trai.", "praem.",
-  # editorial actions (first person = the current editor)
+  # editorial actions (first person = the current editor); "ego"/"nos"
+  # are NOT here — ordinary Latin pronouns a reading can consist of
   "scripsi", "scripsimus", "conieci", "correxi", "seclusi", "addidi",
-  "delevi", "deleui", "supplevi", "ego", "nos",
+  "delevi", "deleui", "supplevi",
   # collectives and states
   "codd.", "cod.", "edd.", "ed.", "cett.", "rell.", "al.", "recc.", "dett.",
   "vett.", "vulg.", "lac.", "deest", "desunt", "v.l.", "vv.ll.",
+  # citation latinity of the line-referenced series (Maurer/LDLT):
+  # "teste Andrieu" (on X's testimony), "coll." (collato), "u." (uide),
+  # "non male", "ut glossema", "alii alia", third-person verbs of the
+  # editorial narrative
+  # "alia", "recte", "male" as SINGLE tokens are ordinary Latin words a
+  # reading can consist of — only the fixed editorial BIGRAMS qualify
+  "teste", "coll.", "u.", "non male", "ut glossema", "glossema",
+  "alii alia", "seclusit", "omisit", "secutus", "secuti",
+  "indicavit", "indicavere", "addiderit", "defendit", "distinxit",
+  "ut uidetur", "uidetur", "fortasse recte", "fortasse",
+  "testibus", "dubitanter", "per compendia", "per compendium",
+  "supra lineam", "supra linea", "feliciter", "ex compendio",
+  # a witness leaving or rejoining the tradition ("hostes redit S":
+  # S resumes after a lacuna)
+  "redit", "desinit", "deficit", "incipit", "auctore",
   # discourse
   "sic", "vel", "et", "cf.", "Cf.", "ut vid.", "fort.", "vel sim.",
   "scripsit", "scripserunt", "legit",
@@ -72,8 +88,11 @@ SOURCES = frozenset({"LXX", "MT", "Hebr.", "Vulg."})
 # Trailing locus references ("I Apol. 50, 5", "Dial. 66, 2", "p. 106"):
 # work abbreviations, Roman numerals, bare numbers with punctuation.
 _REF_TOKEN = re.compile(
-  r"^(?:[IVXL]+|\d+[,.:]?|p\.|Apol\.|Dial\.|Cor\.|Gen\.|Ex\.|Ps\.|Is\.|Jer\.|"
-  r"Mt\.|Mc\.|Lc\.|Jn\.|Rom\.|Gal\.|Beitr\.,?)$"
+  r"^(?:[IVXL]+|\d+[,.:]?|\d{4}[a-z]|\d{4}[a-z]?[–-]\d{4}[a-z]?|"
+  r"\d+(?:\.\d+)+|n\.\d+|p\.|Apol\.|Dial\.|Cor\.|"
+  r"Gen\.|Ex\.|Ps\.|Is\.|Jer\.|Mt\.|Mc\.|Lc\.|Jn\.|Rom\.|Gal\.|Beitr\.,?|"
+  r"BC|BG|BHisp|BAfr|BAlex|Hirt\.|Aen\.|Tac\.|Virg\.|Cic\.|Liv\.|Hist\.|"
+  r"TLL)$"
 )
 _STRAY_PUNCT = frozenset({",", ";", ":", ".", "·"})
 
@@ -140,9 +159,11 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
   def variants(token: str) -> tuple[str, ...]:
     """Matching forms of a raw token: as-is, stripped of trailing
     punctuation, and re-dotted (abbreviations keep their dot in the
-    registry, but a sentence-final period may double as it)."""
+    registry, but a sentence-final period may double as it). Re-dotting
+    needs at least two letters: a bare "u" is a Latin word, not "u."."""
     bare = token.rstrip(",.;:")
-    return (token, token.rstrip(","), bare, bare + ".")
+    forms = (token, token.rstrip(","), bare)
+    return forms + ((bare + ".",) if len(bare) > 1 else ())
 
   def lookup(token: str, pred) -> str | None:
     for v in variants(token):
@@ -157,8 +178,9 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
     tail = words[-1]
     tail_clean = tail.rstrip(",")
     two = " ".join(words[-2:]).rstrip(",") if len(words) >= 2 else ""
-    if tail in _STRAY_PUNCT:
-      words.pop()  # detached punctuation left by parenthesis removal
+    if tail in _STRAY_PUNCT and len(words) > 1:
+      words.pop()  # detached punctuation left by parenthesis removal —
+      # never the LAST word: a reading can BE a punctuation mark
     elif two in QUALIFIERS:
       attr.qualifiers.insert(0, two)
       del words[-2:]
@@ -168,7 +190,11 @@ def _split_attribution(segment: str, registry: Registry) -> tuple[str, Attributi
       # to plain text it is the reading's own tail ("regnum et M U" reads
       # "regnum et", it is not qualified by "et")
       if q in _DISCOURSE and (
-          len(words) == 1 or not known_attribution(words[-2])):
+          len(words) == 1 or not known_attribution(words[-2])
+          or words[-2].rstrip(",.;:") in _DISCOURSE
+          or words[-2].rstrip(",.;:") in CONNECTORS):
+        # a discourse word after another discourse word ("et sic") or a
+        # bare connector ("a. et") is running Latin text, not glue
         break
       attr.qualifiers.insert(0, q)
       words.pop()
@@ -273,7 +299,10 @@ def parse_entry(raw: str, registry: Registry) -> ParsedEntry | None:
     if len(toks) >= 2 and toks[0].rstrip(".,;:·") in CONNECTORS:
       comments.append(m.group(0))
       return " "
-    if any(q in content for q in QUALIFIERS if " " in q):
+    if any(q in content for q in QUALIFIERS
+           if " " in q and not q.startswith("per ")):
+      # "per compendium"-type manner glosses qualify the reading itself —
+      # the golden encodings keep them inline
       comments.append(m.group(0))
       return " "
     for tok in (t.strip(".,;:·") for t in toks):

@@ -306,3 +306,72 @@ Every other gate stays green: Matthew 822 = 0 errors; retypeset goldens
 524 + 6 906 = 0/0; real balex 95.9 % band / 0 contamination / 0 false
 structures; Bobichon full battery; every emitted TEI valid against
 tei_all.rng.
+
+## 18. v0.5 — the line-referenced grammar (reledmac) and superscript sigla, to zero (2026-08-04)
+
+Two new conventions, each driven to ZERO apparatus errors against a
+scholar-encoded golden.
+
+**Line-referenced (DLL Bellum Alexandrinum, reledmac).** The REAL
+edition PDF (90 pages, 563 printed entries) parsed against the very TEI
+it was typeset from: **563/563 compared, 0 errors, 0 anchoring gaps,
+100 % anchored**, TEI valid against tei_all.rng, byte-deterministic
+build, ONE documented divergence (72.2, where the golden itself encodes
+a transposition narrative as italic <rdg> while encoding the identical
+construction at 66.4 as a lemma-only note — we keep such narrative as
+verbatim notes uniformly). The conventions the loop surfaced, all locked
+in tests/test_linegrammar.py:
+
+- entries split on ∥ with per-chapter line numbers, inherited when
+  omitted; ranges span chapters ("14.24–15.2"); ◊ marks a crux;
+- ∥ is OMITTED after a paren note, a dubitative "?" or a bare locus
+  reference — the closing sign separates, the next entry opens with its
+  line number ("…illius’) 11 ante A. Gabinium", "sed cf. 57.6 11 erat");
+- glued sigla dissolve against the registry longest-first, ONLY on
+  complete dissolution (MUSTcVac → M U S Tc Vac);
+- the FIRST |-segment is the accepted text; a paren AFTER the
+  attribution is a note, one BEFORE it belongs to the reading
+  ("qui (sc. Alexandrini) Cellarius" vs "aptantur MUSTV (u. …)");
+- citation tails (coll./u./cf./teste/uoce…), Latin relative clauses
+  guarded by a preceding attribution token, "quam lacunam …",
+  "an + gerundive", "nisi mauis + infinitive", ablative-absolute manner
+  ("compendiis indicatis", "sensu repugnante") and transposition
+  narrative are NOTES; "nisi mauis FORM (…) uel FORM (…)" and
+  "an FORM?" are dubitative conjecture READINGS;
+- witness-state vocabulary: "redit S" (a witness resumes), supra
+  lineam, ex compendio, dubitanter, feliciter, auctore, ut uidetur;
+- long lemmas close with a "]" terminator; "eius1" carries a
+  superscript OCCURRENCE number; both are typography, not text;
+- content-based anchoring resolves each lemma in the constituted text
+  through hyphenation, em-dash line breaks, GLUED section numbers
+  ("6Pugnabatur") and marginal line numbers caught mid-flow
+  ("proficis- 10 ceretur"), degrading to a ≥5-char prefix when the tail
+  hyphenates onto the next page — 563/563 anchored.
+
+**Superscript sigla (Problemata golden, 5 524 apps).** The retypeset
+golden prints two-letter sigla with a raised second letter (Nᵘ, Eᵃ, Pˣ)
+in band and conspectus alike, plus Greek consensus letters (α β γ κ λ π)
+and lowercase edition sigla (m, v): **0 apparatus errors, 47 honest
+refusal gaps (0.85 %)**. What it taught:
+
+- "alia", "recte", "male", "ego", "nos" as SINGLE tokens are ordinary
+  Latin a reading can consist of — only the fixed editorial bigrams
+  qualify ("alii alia", "non male", "fortasse recte");
+- two discourse words in a row ("et sic") or a discourse word after a
+  bare connector ("a. et") are running text, never attribution glue;
+  re-dotting a bare token needs two letters (a lone "u" is a word);
+- a repeated printer's/license footer is the mirror of a running head:
+  cut it by cross-page repetition (≥3 pages, ≥25 chars, no apparatus
+  separator) — geometry alone fails under a deep apparatus, and both
+  the length and content guards are load-bearing (a wrapped "om. RP"
+  repeats at many page feet);
+- DEGENERATE pages (one line of text) starve the geometric layerer:
+  the short text reads as a running head, the apparatus as the body —
+  content reclassifies (a running head never carries multiple markers;
+  an apparatus band opens "N … : "), and folio continuity recovers a
+  page number glued to a band tail ("… Px 61").
+
+Every gate green at release: real balex line 563 = 0/0; retypeset balex
+524 = 0/0; retypeset SBLGNT 6 906 = 0/0; real NT 6 800 = 0 errors;
+Problemata 5 524 = 0 errors; Bobichon full battery unchanged at
+99.3 / 99.0 / 97.5 / 89.8 (2 031 entries).
