@@ -7,10 +7,15 @@ provenance.**
 Two centuries of textual scholarship — the record of what the manuscripts
 actually read, who conjectured what, which witness carries which variant —
 exist only on paper and in PDFs. Even the flagship open corpora carry the
-constituted text alone: **the apparatus criticus is absent from the digital
-ecosystem**. No retrieval pipeline, no language model, no digital edition
-can answer *"what does manuscript A read here?"* — because that data was
-never structured anywhere.
+constituted text alone (of ~1,356 TEI files in First1KGreek, exactly 2
+contain `<app>`): **the apparatus criticus is nearly absent from the
+digital ecosystem**. To our knowledge, diorthosis is the first published,
+*general-purpose* tool — convention grammars, not single-edition rules —
+that reconstructs a TEI apparatus anchored to the constituted text from
+the printed page itself; the honest version of that claim, with the real
+prior art it rests on (Bambaci's Kennicott pipeline, Turnbull's
+dcodex_variants, Boschetti et al. 2009) addressed head-on, is in
+[docs/prior-art.md](docs/prior-art.md) — a 154-reference review.
 
 The entire TEI ecosystem works forward (encode by hand, then publish).
 `diorthosis` builds the road back: **published edition in → structured
