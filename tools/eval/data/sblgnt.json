@@ -1,0 +1,1023 @@
+[
+  {
+    "question": "What does witness RP read for lemma κωφοὶ at B03 7:22?",
+    "gold_answer": "κωφοὶ",
+    "app_ref": "sblgnt:app-02035",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is ἐστε καὶ οὐχ υἱοί the constituted text or a rejected variant at B19 12:8?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-06122",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἢ at B04 8:14?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-03160",
+    "type": "count"
+  },
+  {
+    "question": "Is εἴδωλόν τί … ὅτι εἰδωλόθυτόν the constituted text or a rejected variant at B07 10:19?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-05164",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is ὁ the constituted text or a rejected variant at B01 6:8?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-00084",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading εἰς at B03 24:50?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-02894",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading Τὸν at B05 19:15?",
+    "gold_answer": [
+      "Treg",
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-04383",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness RP read for lemma Καὶ ὁ πεσὼν ἐπὶ τὸν λίθον τοῦτον συνθλασθήσεται· ἐφ᾽ ὃν δ᾽ ἂν πέσῃ λικμήσει αὐτόν. at B01 21:44?",
+    "gold_answer": "Καὶ … αὐτόν.",
+    "app_ref": "sblgnt:app-00559",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading ἀμὴν at B01 18:19?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NA",
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-00421",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is οὐδεὶς δύναται the constituted text or a rejected variant at B02 3:27?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-00975",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma υἱὸν at B27 1:13?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-06499",
+    "type": "count"
+  },
+  {
+    "question": "Is + ἄρτον μὴ λίθον ἐπιδώσει αὐτῷ ἢ καὶ the constituted text or a rejected variant at B03 11:11?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-02256",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading τὴν at B06 3:26?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-04787",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is ὑμῶν the constituted text or a rejected variant at B12 4:8?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-05785",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἡμέρας at B01 28:15?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-00821",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma εἷς ἐστιν ὁ θεός at B20 2:19?",
+    "gold_answer": "3",
+    "app_ref": "sblgnt:app-06182",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading ὡς at B04 12:35?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-03358",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is + Ἀμήν the constituted text or a rejected variant at B07 16:24?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-05319",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is αὐτὸν the constituted text or a rejected variant at B19 12:3?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-06120",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness WH read for lemma πολλοὶ δὲ at B04 11:19?",
+    "gold_answer": "πολλοὶ δὲ",
+    "app_ref": "sblgnt:app-03283",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness NIV read for lemma εἶναι Ἰερουσαλὴμ αὐτὸν at B03 19:11?",
+    "gold_answer": "εἶναι Ἰερουσαλὴμ αὐτὸν",
+    "app_ref": "sblgnt:app-02580",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is ἕνα … ἀπέστειλεν the constituted text or a rejected variant at B02 12:6?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-01498",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading σταυρώσωσιν at B02 15:20?",
+    "gold_answer": [
+      "WH",
+      "NIV",
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-01702",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading περιελόντες at B05 28:13?",
+    "gold_answer": [
+      "WH",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-04738",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading τὸν at B08 5:21?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-05392",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading ὡμολόγησεν at B05 7:17?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-03881",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is χειρὸς the constituted text or a rejected variant at B05 2:23?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-03718",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is καὶ the constituted text or a rejected variant at B19 11:39?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-06119",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness WH read for lemma διαμερισθήσονται at B03 12:53?",
+    "gold_answer": "διαμερισθήσονται",
+    "app_ref": "sblgnt:app-02345",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma μύλος ὀνικὸς at B02 9:42?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01357",
+    "type": "count"
+  },
+  {
+    "question": "What does witness NIV read for lemma πτῶμα at B02 15:45?",
+    "gold_answer": "πτῶμα",
+    "app_ref": "sblgnt:app-01736",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is ἐφ᾽ the constituted text or a rejected variant at B01 10:13?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-00180",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἔλεγον· Οὐχί, ἀλλὰ at B04 9:9?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-03200",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading ἔχων at B27 21:14?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-06902",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ὀνειδιζόμεθα at B15 4:10?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-05899",
+    "type": "count"
+  },
+  {
+    "question": "What does witness RP read for lemma Πέτρος at B03 8:45?",
+    "gold_answer": "+ καὶ οἱ μετ᾽ αὐτοῦ",
+    "app_ref": "sblgnt:app-02111",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is τοῦ θεοῦ the constituted text or a rejected variant at B01 22:30?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-00579",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is ἐν ὅλῃ τῇ γῇ the constituted text or a rejected variant at B27 13:3?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-06721",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is ἔφη πρὸς αὐτούς Μετανοήσατε the constituted text or a rejected variant at B05 2:38?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-03734",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness WH read for lemma ἀνδρὶ at B03 6:8?",
+    "gold_answer": "ἀνδρὶ",
+    "app_ref": "sblgnt:app-01958",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ποιεῖν at B01 7:18?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-00114",
+    "type": "count"
+  },
+  {
+    "question": "Is περιβαλοῦσιν the constituted text or a rejected variant at B03 19:43?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-02615",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading πίστιν καὶ τὴν ἀγάπην at B27 2:19?",
+    "gold_answer": [
+      "Treg"
+    ],
+    "app_ref": "sblgnt:app-06528",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading Οὐκ at B05 2:7?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-03704",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ὡς at B03 6:4?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01946",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading + καὶ συνῆλθον πρὸς αὐτόν at B02 6:33?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-01158",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ὑμᾶς at B03 6:28?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01986",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading ὁ at B04 18:16?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-03538",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness NIV read for lemma πνεύματος τοῦ ἁγίου at B05 2:33?",
+    "gold_answer": "πνεύματος τοῦ ἁγίου",
+    "app_ref": "sblgnt:app-03726",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is τὸν the constituted text or a rejected variant at B05 3:11?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-03757",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἀρέσῃ at B07 7:33?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-05085",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading + αὐτοῦ at B02 14:16?",
+    "gold_answer": [
+      "Treg",
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-01622",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma δύο at B03 10:1?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-02195",
+    "type": "count"
+  },
+  {
+    "question": "Is παρεστῶσιν the constituted text or a rejected variant at B02 14:69?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-01679",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness NIV read for lemma αὐτόν at B05 3:7?",
+    "gold_answer": "αὐτόν",
+    "app_ref": "sblgnt:app-03750",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading καὶ at B01 8:7?",
+    "gold_answer": [
+      "Treg",
+      "NIV",
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-00125",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading σὺν at B05 16:32?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-04281",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness RP read for lemma κατελαβόμην at B05 25:25?",
+    "gold_answer": "καταλαβόμενος",
+    "app_ref": "sblgnt:app-04638",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness WH read for lemma σκότους at B22 2:17?",
+    "gold_answer": "σκότους",
+    "app_ref": "sblgnt:app-06357",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness Treg read for lemma καθίσας at B02 12:41?",
+    "gold_answer": "καθίσας",
+    "app_ref": "sblgnt:app-01548",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma εἰς at B02 7:17?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01215",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading πολὺ τιμιώτερον at B21 1:7?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-06247",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness WH read for lemma εὐθὺς at B02 1:21?",
+    "gold_answer": "εὐθὺς",
+    "app_ref": "sblgnt:app-00857",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness NIV read for lemma καὶ at B03 2:9?",
+    "gold_answer": "καὶ",
+    "app_ref": "sblgnt:app-01801",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness NIV read for lemma ἄλλον at B27 10:1?",
+    "gold_answer": "ἄλλον",
+    "app_ref": "sblgnt:app-06664",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness NIV read for lemma ὁ at B04 4:36?",
+    "gold_answer": "ὁ",
+    "app_ref": "sblgnt:app-02982",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is + Ἀμὴν λέγω ὑμῖν, ἀνεκτότερον ἔσται Σοδόμοις ἢ Γομόρροις ἐν ἡμέρᾳ κρίσεως, ἢ τῇ πόλει ἐκείνῃ. the constituted text or a rejected variant at B02 6:11?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-01126",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness RP read for lemma εἰ at B21 2:3?",
+    "gold_answer": "εἴπερ",
+    "app_ref": "sblgnt:app-06265",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading ὄξος at B03 23:36?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-02811",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness Treg read for lemma τῇ ἐπιγνώσει at B12 1:10?",
+    "gold_answer": "τῇ ἐπιγνώσει",
+    "app_ref": "sblgnt:app-05731",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἕν at B04 17:22?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-03518",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἐξοχὴν at B05 25:23?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-04633",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἵνα at B13 4:1?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-05825",
+    "type": "count"
+  },
+  {
+    "question": "What does witness NIV read for lemma ἐκ at B10 1:20?",
+    "gold_answer": "ἐκ",
+    "app_ref": "sblgnt:app-05593",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is εὑρήσετέ the constituted text or a rejected variant at B04 7:36?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-03137",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is εἰς ὃν the constituted text or a rejected variant at B01 12:18?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-00228",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading γίνεσθε καὶ Ἰουδαίοις at B07 10:32?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-05174",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading αὐτῷ εἶπεν at B01 19:16?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-00454",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is τίνων the constituted text or a rejected variant at B16 3:14?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-05940",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness NIV read for lemma ὅτι at B04 14:2?",
+    "gold_answer": "ὅτι",
+    "app_ref": "sblgnt:app-03415",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Εἰ δὲ at B06 2:17?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-04775",
+    "type": "count"
+  },
+  {
+    "question": "What does witness Treg read for lemma καὶ at B03 14:5?",
+    "gold_answer": "καὶ",
+    "app_ref": "sblgnt:app-02398",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἤρξατο λέγειν αὐτοῖς at B02 13:5?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01557",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma παραγγέλλων οὐκ ἐπαινῶ at B07 11:17?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-05184",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading εἶπεν at B01 13:37?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-00270",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Τί σὺ at B04 9:17?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-03212",
+    "type": "count"
+  },
+  {
+    "question": "What does witness Treg read for lemma ἐγράφη at B06 15:4?",
+    "gold_answer": "ἐγράφη",
+    "app_ref": "sblgnt:app-04934",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma σοφία ἡμῖν at B07 1:30?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-04997",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma καὶ ἐξῆλθεν at B02 1:28?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-00865",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading μεμέρισται at B02 3:26?",
+    "gold_answer": [
+      "Treg",
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-00973",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is ὁ λόγος οὗτος the constituted text or a rejected variant at B04 21:23?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-03665",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading ἦν at B05 17:1?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-04293",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is ᾖ the constituted text or a rejected variant at B03 20:28?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-02646",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading + ὁ Πέτρος at B03 22:62?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-02764",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ὡς at B27 14:3?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-06750",
+    "type": "count"
+  },
+  {
+    "question": "What does witness Treg read for lemma δύναται ταῦτα τὰ σημεῖα at B04 3:2?",
+    "gold_answer": "δύναται ταῦτα τὰ σημεῖα",
+    "app_ref": "sblgnt:app-02947",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is οὖν the constituted text or a rejected variant at B03 14:34?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-02433",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is ἐπιστρέψαι the constituted text or a rejected variant at B05 26:18?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-04665",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἀνομίας at B14 2:3?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-05851",
+    "type": "count"
+  },
+  {
+    "question": "What does witness NIV read for lemma τούτου at B01 13:22?",
+    "gold_answer": "om.",
+    "app_ref": "sblgnt:app-00254",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness RP read for lemma μνησθήσομαι at B19 10:17?",
+    "gold_answer": "μνησθῶ",
+    "app_ref": "sblgnt:app-06090",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading δέ at B07 9:16?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-05137",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is πλοῖα δύο the constituted text or a rejected variant at B03 5:2?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-01898",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness WH read for lemma εἰς τὸ πέραν at B02 6:45?",
+    "gold_answer": "εἰς τὸ πέραν",
+    "app_ref": "sblgnt:app-01174",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is + ἐστιν the constituted text or a rejected variant at B01 18:7?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-00406",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness NIV read for lemma τὰ γράμματα at B03 16:7?",
+    "gold_answer": "τὰ γράμματα",
+    "app_ref": "sblgnt:app-02475",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma αὐτὸν ζῆν at B05 25:24?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-04637",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading + ὁ at B03 11:22?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-02266",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness WH read for lemma ἡμέρας at B27 16:14?",
+    "gold_answer": "ἡμέρας",
+    "app_ref": "sblgnt:app-06793",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness NA read for lemma Ἑλληνιστάς at B05 11:20?",
+    "gold_answer": "Ἑλληνιστάς",
+    "app_ref": "sblgnt:app-04069",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ὀργισθεὶς at B02 1:41?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-00885",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading διέτριβον at B05 25:14?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-04620",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is ἡγιασμένοις ἐν Χριστῷ Ἰησοῦ, τῇ οὔσῃ ἐν Κορίνθῳ, the constituted text or a rejected variant at B07 1:2?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-04986",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is ἅγιος the constituted text or a rejected variant at B04 6:69?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-03104",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading om. at B04 21:1?",
+    "gold_answer": [
+      "WH",
+      "Treg"
+    ],
+    "app_ref": "sblgnt:app-03641",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma τοῦ at B12 2:17?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-05757",
+    "type": "count"
+  },
+  {
+    "question": "What does witness RP read for lemma κτίσας at B01 19:4?",
+    "gold_answer": "ποιήσας",
+    "app_ref": "sblgnt:app-00444",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma αὐτὸς ἦν at B02 4:38?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01052",
+    "type": "count"
+  },
+  {
+    "question": "What does witness WH read for lemma τῷ at B10 3:11?",
+    "gold_answer": "τῷ",
+    "app_ref": "sblgnt:app-05616",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading εἰς at B03 12:49?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-02342",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma εἶπεν δὲ at B03 9:50?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-02175",
+    "type": "count"
+  },
+  {
+    "question": "Is τε the constituted text or a rejected variant at B05 8:6?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-03923",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is + ἐν ἐμοὶ ἐν τῇ νυκτὶ ταύτῃ the constituted text or a rejected variant at B02 14:27?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-01636",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading ἔσται at B01 24:37?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-00655",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness WH read for lemma ἐλθὼν at B04 7:50?",
+    "gold_answer": "ἐλθὼν",
+    "app_ref": "sblgnt:app-03153",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma αὐτόν at B01 22:35?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-00582",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma πέντε at B01 25:16?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-00687",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading εἰδὼς at B02 12:28?",
+    "gold_answer": [
+      "WH",
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-01525",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is ἀποφεύγοντας the constituted text or a rejected variant at B22 2:18?",
+    "gold_answer": "constituted text",
+    "app_ref": "sblgnt:app-06359",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma μέλλοντι at B05 27:2?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-04687",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading Καὶ οἱ at B02 5:14?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-01073",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness WH read for lemma αὐτὸν at B05 28:17?",
+    "gold_answer": "αὐτὸν",
+    "app_ref": "sblgnt:app-04743",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness Treg read for lemma σώματος at B07 12:12?",
+    "gold_answer": "σώματος",
+    "app_ref": "sblgnt:app-05214",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ἐν at B05 9:21?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-03975",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading + ἄν at B07 15:25?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-05282",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness RP read for lemma θαλάσσης at B27 5:13?",
+    "gold_answer": "+ ἐστίν",
+    "app_ref": "sblgnt:app-06588",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is om. the constituted text or a rejected variant at B26 1:12?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-06475",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma ὑπὸ at B05 10:17?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-04020",
+    "type": "count"
+  },
+  {
+    "question": "Is σοι ὁ κύριος the constituted text or a rejected variant at B02 5:19?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-01084",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma καὶ at B04 20:6?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-03617",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading εἰς at B02 3:1?",
+    "gold_answer": [
+      "WH"
+    ],
+    "app_ref": "sblgnt:app-00941",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma τὰ αὐτὰ at B03 6:26?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01985",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading ὑμῶν at B13 5:28?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-05844",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading + τῇ at B05 14:10?",
+    "gold_answer": [
+      "RP"
+    ],
+    "app_ref": "sblgnt:app-04172",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Καὶ καταβαινόντων at B02 9:9?",
+    "gold_answer": "2",
+    "app_ref": "sblgnt:app-01306",
+    "type": "count"
+  },
+  {
+    "question": "What does witness NIV read for lemma Τὰ Καίσαρος ἀπόδοτε at B02 12:17?",
+    "gold_answer": "Τὰ Καίσαρος ἀπόδοτε",
+    "app_ref": "sblgnt:app-01507",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is ἐὰν μὴ φάγωμεν, ὑστερούμεθα, οὔτε ἐὰν φάγωμεν, περισσεύομεν the constituted text or a rejected variant at B07 8:8?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-05114",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness WH read for lemma οὖν at B02 11:31?",
+    "gold_answer": "οὖν",
+    "app_ref": "sblgnt:app-01484",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading διδάσκαλον at B03 6:40?",
+    "gold_answer": [
+      "WH",
+      "Treg",
+      "NIV"
+    ],
+    "app_ref": "sblgnt:app-02002",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is πλεονέκται οὔτε κλέπται the constituted text or a rejected variant at B07 6:10?",
+    "gold_answer": "rejected variant",
+    "app_ref": "sblgnt:app-05053",
+    "type": "lemma_vs_variant"
+  }
+]

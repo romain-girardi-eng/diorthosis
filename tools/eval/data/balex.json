@@ -1,0 +1,1075 @@
+[
+  {
+    "question": "Is contendit the constituted text or a rejected variant at 30.1?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00220",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is eum uatinium the constituted text or a rejected variant at 45.1?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00304",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness U read for lemma Vliam at 61.2?",
+    "gold_answer": "ullam",
+    "app_ref": "balex:app-00435",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which editor proposed ulteriorem at 19.2?",
+    "gold_answer": [
+      "Schambach1879-1882"
+    ],
+    "app_ref": "balex:app-00147",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "What does witness V read for lemma cum <in> at 64.3?",
+    "gold_answer": "cum",
+    "app_ref": "balex:app-00459",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness V read for lemma sestertiis centenis at 48.2?",
+    "gold_answer": "ihc cesar",
+    "app_ref": "balex:app-00334",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is praecursuros et loca excelsiora atque aedificia occupaturos the constituted text or a rejected variant at 8.6?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00053",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading antea gabinium at 3.3?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "Tc",
+      "Vac"
+    ],
+    "app_ref": "balex:app-00019",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma urbs at 1.5?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00008",
+    "type": "count"
+  },
+  {
+    "question": "Is in procliue the constituted text or a rejected variant at 76.1?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00553",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma suo regno at 35.2?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00254",
+    "type": "count"
+  },
+  {
+    "question": "Is illi triremem the constituted text or a rejected variant at 25.5?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00193",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading siluestre <est> pertinens at 35.3?",
+    "gold_answer": [
+      "Aldus"
+    ],
+    "app_ref": "balex:app-00256",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading itinere refugiens at 53.3?",
+    "gold_answer": [
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00363",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is legiones {V} in castra remittit the constituted text or a rejected variant at 55.1?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00370",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading amissae at 12.2?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00080",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading appellatus at 48.2?",
+    "gold_answer": [
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00333",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Nam cum at 46.3?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00315",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading Q. Cassius at 48.1?",
+    "gold_answer": [
+      "M",
+      "U"
+    ],
+    "app_ref": "balex:app-00324",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is cogeretur the constituted text or a rejected variant at 43.2?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00293",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which editor proposed conciebantur at 49.2?",
+    "gold_answer": [
+      "Landgraf1888"
+    ],
+    "app_ref": "balex:app-00340",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "What does witness U read for lemma In alteram at 17.3?",
+    "gold_answer": "In alteram",
+    "app_ref": "balex:app-00130",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness M read for lemma impulsus siue at 74.3?",
+    "gold_answer": "impulsus siue",
+    "app_ref": "balex:app-00536",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness S read for lemma illa at 24.4?",
+    "gold_answer": "illa",
+    "app_ref": "balex:app-00181",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Marcellum quaestorem at 57.4?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00405",
+    "type": "count"
+  },
+  {
+    "question": "Which editor proposed omnes nauigiorum excursus at 19.2?",
+    "gold_answer": [
+      "Landgraf1888"
+    ],
+    "app_ref": "balex:app-00149",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Is Marcellum quaestorem the constituted text or a rejected variant at 57.4?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00405",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which editor proposed commeatu <onustis> at 25.2?",
+    "gold_answer": [
+      "Kübler1896a"
+    ],
+    "app_ref": "balex:app-00187",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "What does witness edprin read for lemma muniuit at 78.2?",
+    "gold_answer": "muniuit",
+    "app_ref": "balex:app-00564",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading confixerant at 2.5?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00014",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed armatura at 68.2?",
+    "gold_answer": [
+      "Cuiacius"
+    ],
+    "app_ref": "balex:app-00501",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Berones at 53.1?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00360",
+    "type": "count"
+  },
+  {
+    "question": "Is esse ut hos the constituted text or a rejected variant at 33.4?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00244",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading in at 1.2?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00003",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading ueterata religio at 76.1?",
+    "gold_answer": [
+      "Sac"
+    ],
+    "app_ref": "balex:app-00552",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading muniuit at 78.2?",
+    "gold_answer": [
+      "edprin"
+    ],
+    "app_ref": "balex:app-00564",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness V read for lemma sublatum at 19.2?",
+    "gold_answer": "sublatum",
+    "app_ref": "balex:app-00150",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is reliquiis the constituted text or a rejected variant at 42.4?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00288",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading Comana at 66.3?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00475",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading certaretur at 29.3?",
+    "gold_answer": [
+      "stigma"
+    ],
+    "app_ref": "balex:app-00217",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is prima luce the constituted text or a rejected variant at 73.2?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00527",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness edprin read for lemma Rhodios at 14.1?",
+    "gold_answer": "Rhodias",
+    "app_ref": "balex:app-00097",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Triarium at 73.2?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00528",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma auxiliares at 62.1?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00449",
+    "type": "count"
+  },
+  {
+    "question": "Which editor proposed aduentu siue inimicus at 36.5?",
+    "gold_answer": [
+      "Nipperdey"
+    ],
+    "app_ref": "balex:app-00264",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which editor proposed has esse {certas} opportunitates at 35.3?",
+    "gold_answer": [
+      "Scaliger"
+    ],
+    "app_ref": "balex:app-00257",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Is coeptum the constituted text or a rejected variant at 66.5?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00483",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma exposuissent at 10.2?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00059",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading causa at 49.2?",
+    "gold_answer": [
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00339",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed {cum} magnis copiis at 26.1?",
+    "gold_answer": [
+      "Hoffmann1890"
+    ],
+    "app_ref": "balex:app-00198",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which editor proposed unetuicesimanorum at 57.2?",
+    "gold_answer": [
+      "Lipsius"
+    ],
+    "app_ref": "balex:app-00397",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Is circumire {acies secundo} the constituted text or a rejected variant at 40.2?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00275",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which editor proposed Vliam at 61.5?",
+    "gold_answer": [
+      "Ciacconius"
+    ],
+    "app_ref": "balex:app-00444",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which editor proposed fertilissimumque at 66.2?",
+    "gold_answer": [
+      "Schneider"
+    ],
+    "app_ref": "balex:app-00473",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which editor proposed intermissa at 73.3?",
+    "gold_answer": [
+      "Schneider"
+    ],
+    "app_ref": "balex:app-00533",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma tricesima sexta <legio> at 40.4?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00280",
+    "type": "count"
+  },
+  {
+    "question": "Is {V} the constituted text or a rejected variant at 17.4?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00136",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness M read for lemma <locum> nostris at 38.3?",
+    "gold_answer": "nostris",
+    "app_ref": "balex:app-00271",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness M read for lemma casum periculi at 7.1?",
+    "gold_answer": "casum periculi",
+    "app_ref": "balex:app-00032",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading legiones at 53.5?",
+    "gold_answer": [
+      "U",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00367",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness M read for lemma posse at 68.1?",
+    "gold_answer": "posse",
+    "app_ref": "balex:app-00495",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which editor proposed nostris at 19.6?",
+    "gold_answer": [
+      "Aldus"
+    ],
+    "app_ref": "balex:app-00154",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Is itinere the constituted text or a rejected variant at 25.1?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00184",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading Cappadocia at 35.2?",
+    "gold_answer": [
+      "stigma"
+    ],
+    "app_ref": "balex:app-00252",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which witnesses transmit reading re at 65.1?",
+    "gold_answer": [
+      "U",
+      "S",
+      "T"
+    ],
+    "app_ref": "balex:app-00462",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed paulo <ultra> at 21.4?",
+    "gold_answer": [
+      "Beroaldus"
+    ],
+    "app_ref": "balex:app-00165",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "What does witness V read for lemma legionem at 53.5?",
+    "gold_answer": "legionem",
+    "app_ref": "balex:app-00368",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness S read for lemma Legionem quintam in castra remittit at 55.1?",
+    "gold_answer": "legiones V in castra remittit",
+    "app_ref": "balex:app-00370",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which editor proposed {dabatur uictis} at 16.1?",
+    "gold_answer": [
+      "Gruterus"
+    ],
+    "app_ref": "balex:app-00117",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which witnesses transmit reading Titum Torium at 57.3?",
+    "gold_answer": [
+      "S"
+    ],
+    "app_ref": "balex:app-00403",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is Isdem the constituted text or a rejected variant at 55.3?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00375",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma maritima at 25.3?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00190",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading Equitum autem Romanorum at 56.4?",
+    "gold_answer": [
+      "stigma"
+    ],
+    "app_ref": "balex:app-00385",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed auersum at 52.2?",
+    "gold_answer": [
+      "Oudendorp"
+    ],
+    "app_ref": "balex:app-00355",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which witnesses transmit reading pugna occupatum animum haberet at 15.8?",
+    "gold_answer": [
+      "Mc"
+    ],
+    "app_ref": "balex:app-00111",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed nostris at 3.1?",
+    "gold_answer": [
+      "Nipperdey"
+    ],
+    "app_ref": "balex:app-00017",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma animaduertere at 48.1?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00328",
+    "type": "count"
+  },
+  {
+    "question": "Which editor proposed equitibusque at 77.2?",
+    "gold_answer": [
+      "Schneider"
+    ],
+    "app_ref": "balex:app-00560",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Caesaris <moram> at 15.3?",
+    "gold_answer": "4",
+    "app_ref": "balex:app-00104",
+    "type": "count"
+  },
+  {
+    "question": "Which editor proposed imperiorum at 56.2?",
+    "gold_answer": [
+      "Schneider"
+    ],
+    "app_ref": "balex:app-00382",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Is fuerunt the constituted text or a rejected variant at 22.1?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00166",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma parum at 25.3?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00191",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading et castra at 36.3?",
+    "gold_answer": [
+      "S"
+    ],
+    "app_ref": "balex:app-00259",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed {sine ratione} at 20.3?",
+    "gold_answer": [
+      "Forchhammer"
+    ],
+    "app_ref": "balex:app-00156",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "What does witness T read for lemma regum at 33.3?",
+    "gold_answer": "regnum",
+    "app_ref": "balex:app-00242",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness M read for lemma tres at 31.1?",
+    "gold_answer": "illo",
+    "app_ref": "balex:app-00225",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which editor proposed decesserat at 13.5?",
+    "gold_answer": [
+      "Ciacconius"
+    ],
+    "app_ref": "balex:app-00093",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma expectans at 1.5?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00007",
+    "type": "count"
+  },
+  {
+    "question": "What does witness V read for lemma uacuas in celeberrimis urbis locis at 2.3?",
+    "gold_answer": "uacuas in celeberrimis urbis locis",
+    "app_ref": "balex:app-00013",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness S read for lemma commode geri at 65.1?",
+    "gold_answer": "commode geri",
+    "app_ref": "balex:app-00463",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma posse at 68.1?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00495",
+    "type": "count"
+  },
+  {
+    "question": "Is causa the constituted text or a rejected variant at 49.2?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00339",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is gloriarentur the constituted text or a rejected variant at 70.2?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00507",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma amissae at 12.2?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00080",
+    "type": "count"
+  },
+  {
+    "question": "What does witness M read for lemma in Africam at 56.5?",
+    "gold_answer": "in Africa",
+    "app_ref": "balex:app-00389",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma accessiones at 22.1?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00167",
+    "type": "count"
+  },
+  {
+    "question": "Which editor proposed <magno> sibi usui at 61.6?",
+    "gold_answer": [
+      "Oudendorp"
+    ],
+    "app_ref": "balex:app-00445",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Is magnitudine quamquam the constituted text or a rejected variant at 44.3?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00301",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma Magna at 11.4?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00070",
+    "type": "count"
+  },
+  {
+    "question": "Which editor proposed illae at 15.6?",
+    "gold_answer": [
+      "Klotz"
+    ],
+    "app_ref": "balex:app-00107",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which witnesses transmit reading frequenter at 68.1?",
+    "gold_answer": [
+      "S",
+      "V"
+    ],
+    "app_ref": "balex:app-00499",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed ingeniosissimi at 3.1?",
+    "gold_answer": [
+      "Wölfflin"
+    ],
+    "app_ref": "balex:app-00016",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "What does witness M read for lemma pertendit at 30.1?",
+    "gold_answer": "pertendit",
+    "app_ref": "balex:app-00220",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness S read for lemma hiberna at 49.1?",
+    "gold_answer": "ibernia",
+    "app_ref": "balex:app-00336",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is esset ut hos the constituted text or a rejected variant at 33.4?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00244",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is artiorem the constituted text or a rejected variant at 19.2?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00147",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is siue amicus {siue inimicus} the constituted text or a rejected variant at 36.5?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00263",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness V read for lemma numquam tamen at 37.1?",
+    "gold_answer": "numquam tamen non",
+    "app_ref": "balex:app-00265",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which editor proposed {interclusum a Caesare a se } at 27.3?",
+    "gold_answer": [
+      "Ciacconius"
+    ],
+    "app_ref": "balex:app-00208",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which witnesses transmit reading uacuas at 2.3?",
+    "gold_answer": [
+      "M"
+    ],
+    "app_ref": "balex:app-00013",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma obuersari at 36.4?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00262",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading foramina at 1.2?",
+    "gold_answer": [
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00002",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is dissimulant the constituted text or a rejected variant at 48.1?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00327",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Is loco the constituted text or a rejected variant at 74.4?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00543",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma DCCC at 18.3?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00143",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading adacturum at 12.2?",
+    "gold_answer": [
+      "Mac",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00082",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed altera dein duae at 11.4?",
+    "gold_answer": [
+      "Dauisius1706"
+    ],
+    "app_ref": "balex:app-00069",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "What does witness V read for lemma praeoccupat Arsinoe per Ganymeden eunuchum, nutricium suum, atque Achillan at 4.1?",
+    "gold_answer": "praeoccupat Arsinoe per Ganymeden eunuchum, nutricium suum, atque Achillan",
+    "app_ref": "balex:app-00020",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which editor proposed <> manum at 22.2?",
+    "gold_answer": [
+      "Stephanus"
+    ],
+    "app_ref": "balex:app-00168",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma conscriptos at 56.4?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00386",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma cursu litore at 13.5?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00092",
+    "type": "count"
+  },
+  {
+    "question": "What does witness M read for lemma munitum at 72.1?",
+    "gold_answer": "munitum",
+    "app_ref": "balex:app-00516",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma constituta at 37.5?",
+    "gold_answer": "1",
+    "app_ref": "balex:app-00269",
+    "type": "count"
+  },
+  {
+    "question": "What does witness T read for lemma contulisse at 42.4?",
+    "gold_answer": "compulisse",
+    "app_ref": "balex:app-00289",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma legionibus at 66.1?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00471",
+    "type": "count"
+  },
+  {
+    "question": "Which editor proposed sustinuit <et> magnis at 40.3?",
+    "gold_answer": [
+      "Madvig"
+    ],
+    "app_ref": "balex:app-00279",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "Which editor proposed desederat at 13.5?",
+    "gold_answer": [
+      "Siesbye"
+    ],
+    "app_ref": "balex:app-00093",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma substitisse at 35.2?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00255",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma uirtuti at 16.5?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00126",
+    "type": "count"
+  },
+  {
+    "question": "Which witnesses transmit reading carbonem at 57.2?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00399",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma uniuersam at 25.3?",
+    "gold_answer": "3",
+    "app_ref": "balex:app-00188",
+    "type": "count"
+  },
+  {
+    "question": "Is usum the constituted text or a rejected variant at 52.2?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00355",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "What does witness T read for lemma {P.} at 35.2?",
+    "gold_answer": "P.",
+    "app_ref": "balex:app-00251",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "What does witness T read for lemma supportare at 43.1?",
+    "gold_answer": "su(b/p)portari",
+    "app_ref": "balex:app-00292",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma sestertios <centenos> at 52.1?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00352",
+    "type": "count"
+  },
+  {
+    "question": "What does witness T read for lemma Vlia at 61.3?",
+    "gold_answer": "ulla",
+    "app_ref": "balex:app-00437",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading uidebatur at 19.2?",
+    "gold_answer": [
+      "M",
+      "U"
+    ],
+    "app_ref": "balex:app-00151",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness V read for lemma electi at 16.5?",
+    "gold_answer": "flecti",
+    "app_ref": "balex:app-00125",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Which witnesses transmit reading mitibus at 70.2?",
+    "gold_answer": [
+      "M",
+      "S",
+      "Tc",
+      "V"
+    ],
+    "app_ref": "balex:app-00506",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "What does witness T read for lemma cum magnis copiis at 26.1?",
+    "gold_answer": "cum magnis copiis",
+    "app_ref": "balex:app-00198",
+    "type": "reading_of_witness"
+  },
+  {
+    "question": "Is aperto the constituted text or a rejected variant at 40.2?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00276",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading undeui(n)ce(n)simanorum at 57.2?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00397",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is praemiisque the constituted text or a rejected variant at 17.3?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00133",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading Praeficit at 25.3?",
+    "gold_answer": [
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00189",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Is turpe the constituted text or a rejected variant at 34.2?",
+    "gold_answer": "constituted text",
+    "app_ref": "balex:app-00247",
+    "type": "lemma_vs_variant"
+  },
+  {
+    "question": "Which witnesses transmit reading defecerat at 13.5?",
+    "gold_answer": [
+      "M",
+      "U",
+      "S",
+      "T",
+      "V"
+    ],
+    "app_ref": "balex:app-00093",
+    "type": "witness_of_reading"
+  },
+  {
+    "question": "Which editor proposed antea at 49.1?",
+    "gold_answer": [
+      "Madvig"
+    ],
+    "app_ref": "balex:app-00337",
+    "type": "editor_attribution"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma siluestre <est> pertinens at 35.3?",
+    "gold_answer": "3",
+    "app_ref": "balex:app-00256",
+    "type": "count"
+  },
+  {
+    "question": "How many variant readings are recorded for lemma commeatum at 25.1?",
+    "gold_answer": "2",
+    "app_ref": "balex:app-00186",
+    "type": "count"
+  },
+  {
+    "question": "Is fluminis the constituted text or a rejected variant at 29.4?",
+    "gold_answer": "rejected variant",
+    "app_ref": "balex:app-00218",
+    "type": "lemma_vs_variant"
+  }
+]
