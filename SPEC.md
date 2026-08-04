@@ -71,8 +71,11 @@ exit 1 = violations, one line each.
     I11 Honesty of coverage. meta `anchored=a/b` equals the sum of per-page
         `entries − unresolved` over `entries`; the numbers are recomputable from the
         file itself, so an unverifiable coverage claim is impossible.
-    I12 Determinism. Byte-identical input + version ⇒ byte-identical output. No dict
-        iteration, wall-clock, path or locale enters the emission. Output is NFC.
+    I12 Determinism. Byte-identical input + version ⇒ byte-identical output. This is
+        enforced by `tools/golden/double_build.py`, which runs the same build in two
+        separate processes and byte-compares every output file so process-specific
+        hash randomization cannot hide order dependence. `diorthosis validate` checks
+        only I12's LF line endings, NFC normalization and trailing-newline subset.
 
 ## Round-trip guarantee
 
