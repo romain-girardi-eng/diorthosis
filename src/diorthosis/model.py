@@ -77,6 +77,11 @@ class ApparatusEntry:
   parsed_line: object | None = None
   """A linegrammar.LineEntry when the band follows the line-referenced
   convention and this entry parsed; None otherwise."""
+  parsed_override: object | None = None
+  """A grammar.ParsedEntry supplied by HUMAN REVIEW (overrides file).
+  Wins over every grammar; the TEI marks it resp="#human-review"."""
+  override_action: str = ""
+  """'' | 'parse' | 'verbatim' — how review touched this entry."""
 
 
 @dataclass

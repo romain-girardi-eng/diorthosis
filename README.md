@@ -169,3 +169,30 @@ they apply.
 
 MIT. If this tool contributes to published research, please cite it (see
 `CITATION.cff`).
+
+## The review loop
+
+A grammar gets an edition to 90–99 %; the last stretch is human review —
+made REPLAYABLE:
+
+```console
+$ pip install 'diorthosis[review]'
+$ diorthosis review edition.pdf --pages 290-320 -o review/
+wrote review/index.html
+review: 64 entries — 63 parsed, 0 refused, 1 unanchored; 64 snippets
+```
+
+`review/index.html` shows every apparatus entry face to face with the
+IMAGE SNIPPET of the printed band lines it was split from — per-entry
+provenance a reviewer can check at a glance. Refusals and unanchored
+entries filter into a work queue; each entry carries an editable
+override form; "download overrides.json" exports the corrections, and
+
+```console
+$ diorthosis build edition.pdf --overrides overrides.json -o out/
+```
+
+replays them on every rebuild. Every overridden entry is marked
+`resp="#human-review"` in the TEI with a `respStmt` declaration — a
+human correction is provenance, never silently merged into what the
+grammar read; the verbatim source wording is retained regardless.

@@ -72,6 +72,10 @@ def main(argv: list[str] | None = None) -> int:
                  help="language of the CONSTITUTED TEXT (PDF source only): "
                       "'la' treats the Latin-script main band as the text and "
                       "its foot band as the apparatus")
+  b.add_argument("--overrides", default=None, metavar="JSON",
+                 help="per-edition human-review overrides file; every "
+                      "applied override is marked resp='#human-review' "
+                      "in the TEI")
 
   i = sub.add_parser("inspect", help="show one page's anchored structure")
   i.add_argument("pdf")
@@ -81,6 +85,19 @@ def main(argv: list[str] | None = None) -> int:
 
   v = sub.add_parser("validate", help="check a md-ce file against SPEC.md's invariants")
   v.add_argument("file", help="a .md file produced by diorthosis build")
+
+  r = sub.add_parser(
+    "review",
+    help="generate the human-review page: image snippet per apparatus "
+         "entry, parse side by side, exportable overrides.json")
+  r.add_argument("pdf", help="born-digital PDF (the review needs the page image)")
+  r.add_argument("--pages", default=None, help="0-based page spec: 290-320 or 1,5,9")
+  r.add_argument("-o", "--out", required=True, help="output directory")
+  r.add_argument("--conspectus-page", type=int, default=None)
+  r.add_argument("--text-lang", choices=("grc", "la"), default="grc")
+  r.add_argument("--overrides", default=None, metavar="JSON",
+                 help="existing overrides to apply before review "
+                      "(reviewed entries show as such)")
 
   args = ap.parse_args(argv)
 
@@ -109,6 +126,33 @@ def main(argv: list[str] | None = None) -> int:
       print(to_markdown(doc))
       print(f"[anchoring: {stats['anchored']}/{stats['entries']} entries anchored]",
             file=sys.stderr)
+    return 0
+
+  if args.cmd == "review":
+    try:
+      import pypdfium2  # noqa: F401
+    except ImportError:
+      print("review needs the optional extra: pip install 'diorthosis[review]'",
+            file=sys.stderr)
+      return 2
+    from .review import render_review
+
+    registry, note = bootstrap_registry(args.pdf, args.conspectus_page)
+    if note:
+      print(note)
+    doc = ingest_pdf(args.pdf, _parse_pages(args.pages),
+                     text_lang=args.text_lang)
+    for page in doc.pages:
+      anchor_page(page, registry)
+    if args.overrides:
+      from .overrides import apply_overrides, load_overrides
+
+      apply_overrides(doc, load_overrides(args.overrides))
+    stats = render_review(doc, args.pdf, Path(args.out), registry)
+    print(f"wrote {Path(args.out) / 'index.html'}")
+    print(f"review: {stats['entries']} entries — {stats['parsed']} parsed, "
+          f"{stats['refused']} refused, {stats['unanchored']} unanchored, "
+          f"{stats['reviewed']} reviewed; {stats['snippets']} snippets")
     return 0
 
   if sum(map(bool, (args.pdf, args.alto, args.hocr, args.page_xml))) != 1:
@@ -151,6 +195,17 @@ def main(argv: list[str] | None = None) -> int:
     st = anchor_page(page, registry)
     for k in totals:
       totals[k] += st.get(k, 0)
+
+  if getattr(args, "overrides", None):
+    from .overrides import apply_overrides, load_overrides
+
+    ov_stats = apply_overrides(doc, load_overrides(args.overrides))
+    print(f"overrides: {ov_stats['applied']} parses replaced, "
+          f"{ov_stats['verbatim']} forced verbatim")
+    if ov_stats["unmatched"]:
+      print(f"[!] {len(ov_stats['unmatched'])} override key(s) matched no "
+            f"entry (stale file?): {', '.join(ov_stats['unmatched'][:8])}",
+            file=sys.stderr)
 
   outdir = Path(args.out)
   outdir.mkdir(parents=True, exist_ok=True)

@@ -30,6 +30,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.5"]
+# the review UI rasterizes page snippets; pypdfium2 is BSD/Apache
+# (PyMuPDF's AGPL is deliberately avoided)
+review = ["pypdfium2>=4", "Pillow>=10"]
 
 [project.urls]
 Homepage = "https://github.com/romain-girardi-eng/diorthosis"

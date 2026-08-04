@@ -111,10 +111,13 @@ def _emit_reading(app: ET.Element, tag: str, text: str, attr: Attribution,
 
 def _emit_app(parent: ET.Element, raw: str, parsed: ParsedEntry,
               registry: Registry, n: str | None,
-              start_id: str | None, end_id: str | None) -> None:
+              start_id: str | None, end_id: str | None,
+              resp: str | None = None) -> None:
   app = ET.SubElement(parent, "app")
   if n:
     app.set("n", n)
+  if resp:
+    app.set("resp", resp)
   if start_id:
     app.set("from", f"#{start_id}")
   if end_id:
@@ -176,6 +179,32 @@ def _verse_to_parsed(ve) -> ParsedEntry:
   )
 
 
+def resolve_parsed(e, registry: Registry | None) -> ParsedEntry | None:
+  """One entry's structured reading, in priority order: human review
+  wins over every grammar; a review 'verbatim' forces the honest
+  refusal. Shared by the TEI emitter and the review UI so both always
+  show the SAME structure."""
+  if e.override_action == "verbatim":
+    return None
+  if e.parsed_override is not None:
+    return e.parsed_override
+  if e.parsed_verse is not None and registry is not None:
+    return _verse_to_parsed(e.parsed_verse)
+  if e.parsed_line is not None and registry is not None:
+    le = e.parsed_line
+    # the apparatus' own printed lemma, NOT the span resolved in the
+    # constituted text: the latter carries marginal line numbers and
+    # hyphenation caught mid-span
+    return ParsedEntry(
+      lemma=le.lemma,
+      lemma_attribution=le.lemma_attribution,
+      readings=[Reading(text=r.text, attribution=r.attribution)
+                for r in le.readings],
+      comments=list(le.comments),
+    )
+  return parse_entry(e.raw, registry) if registry is not None else None
+
+
 def _collect_page_apparatus(page: Page, registry: Registry | None):
   """First pass: parse apparatus entries and compute both anchor points.
 
@@ -191,22 +220,7 @@ def _collect_page_apparatus(page: Page, registry: Registry | None):
       continue
     entries_plan: list[tuple] = []
     for ei, e in enumerate(block.entries or []):
-      if e.parsed_verse is not None and registry is not None:
-        parsed = _verse_to_parsed(e.parsed_verse)
-      elif e.parsed_line is not None and registry is not None:
-        le = e.parsed_line
-        # the apparatus' own printed lemma, NOT the span resolved in the
-        # constituted text: the latter carries marginal line numbers and
-        # hyphenation caught mid-span
-        parsed = ParsedEntry(
-          lemma=le.lemma,
-          lemma_attribution=le.lemma_attribution,
-          readings=[Reading(text=r.text, attribution=r.attribution)
-                    for r in le.readings],
-          comments=list(le.comments),
-        )
-      else:
-        parsed = parse_entry(e.raw, registry) if registry is not None else None
+      parsed = resolve_parsed(e, registry)
       start_id = end_id = None
       if (e.anchor is not None and e.anchor.block_index is not None
           and e.anchor.char_offset is not None):
@@ -237,6 +251,16 @@ def _header(tei: ET.Element, doc: Document, title: str | None,
   fd = ET.SubElement(header, "fileDesc")
   ts = ET.SubElement(fd, "titleStmt")
   ET.SubElement(ts, "title").text = title or doc.source_name
+  if any(e.override_action
+         for page in doc.pages for b in page.blocks
+         for e in (b.entries or [])):
+    rs = ET.SubElement(ts, "respStmt")
+    rs.set("xml:id", "human-review")
+    ET.SubElement(rs, "resp").text = (
+      "Entries marked resp='#human-review' were corrected or reclassified "
+      "by a human reviewer through a diorthosis overrides file; their "
+      "verbatim source wording is retained unchanged.")
+    ET.SubElement(rs, "name").text = "human reviewer"
   pub = ET.SubElement(fd, "publicationStmt")
   ET.SubElement(pub, "p").text = (
     f"Structural conversion produced by diorthosis {__version__} from "
@@ -324,13 +348,16 @@ def to_tei(doc: Document, title: str | None = None,
                       *(r.attribution for r in parsed.readings)):
               used_editors.update(a.editors)
             _emit_app(edition, e.raw, parsed, registry,
-                      e.anchor.value if e.anchor else None, start_id, end_id)
+                      e.anchor.value if e.anchor else None, start_id, end_id,
+                      resp=("#human-review" if e.override_action else None))
           else:
             note = ET.SubElement(edition, "note", {"type": "apparatus"})
             if e.anchor is not None:
               note.set("n", e.anchor.value)
             if end_id:
               note.set("target", f"#{end_id}")
+            if e.override_action:
+              note.set("resp", "#human-review")
             note.text = e.raw
         if not block.entries:
           ET.SubElement(edition, "note", {"type": "apparatus"}).text = block.text
