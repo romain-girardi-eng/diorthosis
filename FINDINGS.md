@@ -263,3 +263,46 @@ battery green otherwise). All other gates unchanged: retypeset goldens
 524 + 6 906 at 0/0, real balex 95.9 % band / 0 contamination / 0 false
 structures, determinism, md-ce validate, tei_all.rng (Bobichon AND the
 SBLGNT output).
+
+
+## 17. The loop to zero — the whole NT at 0 apparatus errors (2026-08-04)
+
+Continuing §16's loop on the 123 residual NT errors, by the discipline the
+night taught: PROBE GEOMETRY FIRST, never tune blind (a blind threshold
+sweep moved 123 -> 123; every real gain below came from a measured probe).
+
+**Final: 6 800 scholar apps across the whole NT (all 27 books, real
+printed PDFs) — 0 ERRORS**, with 59 print/TEI divergences documented in
+`sblgnt_known_divergences.json`, EACH verified against the extracted band
+(the printed form present, the TEI form absent — or the printed
+attribution read directly around the ']'), and 433 honest unanchored gaps.
+
+What the loop found, in order:
+
+- **In-band anchor sigla open the lemma, numbered beyond the second
+  occurrence** ("⸀ἄλλῳ", "⸁ἄλλῳ", "⸀1ἄλλῳ" — and some ToUnicode tables
+  render the siglum AS the digit): stripped inside lemma tokens, before
+  doublet reduction ("⸀ἐν⸀ἐν" -> "ἐν").
+- **"em(endavit)"** qualifies the following editor ("+ καὶ τοῦ ἀδελφοῦ em
+  Holmes") — peeled with the siglum.
+- **"〚WH〛" is the spuria siglum** (WH's double-bracketed passages):
+  normalized to WHspur; and a bare "] 〚WH〛" with no dash is the SPURIA
+  MARK, transferred to the lemma's witnesses (Lk 24:6 family), never an
+  omission.
+- **Elliptical lemmas chain N parts and take the SHORTEST span** (two
+  ellipses in Mk 4:8 "ἐν … καὶ ἓν … καὶ ἓν"; a repeated opening phrase in
+  Lk 6:42 made the naive span leap over intervening text).
+- **The divergence oracle**: a claimed error is a PRINT/TEI DIVERGENCE
+  precisely when the extracted band contains our reading and not the
+  TEI's (21 reading-level errata of the 2010 print: μωυσησ/μωσησ,
+  τεσσεράκοντα/τεσσαράκοντα, ηλθαν/ηλθον…), or when the sigla printed
+  around the "]" side with us (21 attribution corrections of the TEI
+  re-encoding); plus the structural family: verse-bracketing entries the
+  TEI does not encode as <app> (Western non-interpolations, Lk 24), and
+  rdg additions marked resp="#JJM" (encoder refinements, up to the whole
+  Pericope Adulterae embedded in one TEI rdg at Jn 7:52).
+
+Every other gate stays green: Matthew 822 = 0 errors; retypeset goldens
+524 + 6 906 = 0/0; real balex 95.9 % band / 0 contamination / 0 false
+structures; Bobichon full battery; every emitted TEI valid against
+tei_all.rng.

@@ -44,10 +44,12 @@ EDITION_WITNESSES: dict[str, str] = {
   "Holmes": "Michael W. Holmes, The Greek New Testament: SBL Edition (2010)",
   "Greeven": "Huck–Greeven, Synopse der drei ersten Evangelien (1981)",
   "JJM": "J. J. Griesbach (apud SBLGNT apparatus)",
+  "WHspur": "Westcott–Hort, passages printed within double brackets "
+            "(deemed spurious)",
 }
 _SIGLUM = re.compile(
   r"^(WH|Treg|NIV|RP|NA|TR|SBL|ECM|Holmes|Greeven|JJM)"
-  r"(marg|app|txt|ed)?$"
+  r"(marg|app|txt|ed|spur)?$"
 )
 
 _VERSE_REF = re.compile(r"^\d{1,3}:\d{1,3}(?:[-–]\d{1,3}(?::\d{1,3})?)?$")
@@ -108,6 +110,25 @@ def lemma_candidates(entry: VerseEntry) -> list[str]:
     half = len(words) // 2
     if [_wfold(w) for w in words[:half]] == [_wfold(w) for w in words[half:]]:
       out.append(" ".join(words[half:]))
+  # a doublet glued AT THE JOIN loses the token boundary ("ο τιο τι" is
+  # the doublet of "ο τι"): when the concatenated halves agree at CHAR
+  # level, offer the half as a flexible-space candidate ("§" marks the
+  # positions where whitespace may or may not occur — the anchor search
+  # interprets it)
+  concat = "".join(words)
+  if len(concat) >= 2 and len(concat) % 2 == 0:
+    h = len(concat) // 2
+    if concat[:h].lower() == concat[h:].lower():
+      out.append("§".join(concat[h:]))
+  # adjacent duplicate tokens compressed ("νεαν νεαν πολιν" -> "νεαν
+  # πολιν") — offered LAST; a genuine repetition ("Ἠλὶ ἠλὶ") resolves as
+  # an earlier candidate before this one is tried
+  comp: list[str] = []
+  for w in words:
+    if not comp or _wfold(comp[-1]) != _wfold(w):
+      comp.append(w)
+  if len(comp) < len(words):
+    out.append(" ".join(comp))
   return [c for c in out if c]
 
 
@@ -121,6 +142,11 @@ def _peel_sigla(words: list[str]) -> tuple[list[str], list[str]]:
   while words:
     if is_edition_siglum(words[-1]):
       sigla.insert(0, words.pop().strip(".,;·"))
+      # "em(endavit)" qualifies the following editor ("+ καὶ τοῦ ἀδελφοῦ
+      # em Holmes"): a technical qualifier, peeled with the siglum (it
+      # stays in the verbatim note)
+      if words and words[-1] == "em":
+        words.pop()
       continue
     # a siglum glued to the Greek word it follows ("ἡμέραWH") splits
     m = _GLUED_SIGLUM.match(words[-1])
@@ -140,7 +166,12 @@ def split_verse_entries(band_text: str) -> list[VerseEntry]:
   chapter. The reference tokens are consumed into ``loc``; everything else
   is preserved verbatim in ``raw``.
   """
-  flat = " ".join(band_text.replace("•", " • ").split())
+  flat = band_text.replace("•", " • ")
+  # WH's double-bracketed spuria siglum, and an omission dash glued to the
+  # following siglum ("〚WH〛", "–RP")
+  flat = re.sub(r"〚\s*WH\s*〛", " WHspur ", flat)
+  flat = re.sub(r"–(?=[A-Z])", "– ", flat)
+  flat = " ".join(flat.split())
   tokens = flat.split(" ")
   entries: list[VerseEntry] = []
   chapter = ""
@@ -196,7 +227,12 @@ def parse_verse_entry(entry: VerseEntry) -> VerseEntry:
   # copies are already deduplicated at glyph level in extraction).
   # occurrence numerals glued to the lemma ("1ἄλλῳ" = first occurrence of
   # ἄλλῳ in the verse) are locators, not text — the TEI lemma has none
+  # in-band anchor sigla open the lemma token, numbered beyond the second
+  # occurrence ("⸀ἄλλῳ", "⸁ἄλλῳ", then "⸀1ἄλλῳ", "⸀2ἄλλῳ"); some ToUnicode
+  # tables render the siglum itself as a digit — strip siglum and index
+  lwords = [re.sub(r"[⸀-⸏]\d?", "", w) for w in lwords]
   lwords = [re.sub(r"^\d(?=[Ͱ-Ͽἀ-῿])", "", w) for w in lwords]
+  lwords = [w for w in lwords if w]
   lwords = [
     w[: len(w) // 2]
     if len(w) >= 4 and len(w) % 2 == 0
@@ -218,15 +254,24 @@ def parse_verse_entry(entry: VerseEntry) -> VerseEntry:
         continue
     segments.append(seg)
   readings: list[VerseReading] = []
+  spuria_transfer = False
   for seg in segments:
     words, sigla = _peel_sigla(seg.split())
     text = " ".join(words).strip()
-    if text == "–" or text == "—" or text == "-":
+    had_dash = text in ("–", "—", "-")
+    if had_dash:
       text = ""
     if not text and not sigla:
       continue
+    # "] 〚WH〛" with no dash is the SPURIA MARK, not an omission: WH prints
+    # the passage within double brackets — the TEI puts WHspur on the lemma
+    if not text and not had_dash and sigla == ["WHspur"]:
+      spuria_transfer = True
+      continue
     readings.append(VerseReading(text=text, sigla=sigla))
-  if not readings:
+  if spuria_transfer:
+    lsigla = [*lsigla, "WHspur"]
+  if not readings and not spuria_transfer:
     return entry
   entry.lemma = " ".join(lwords)
   entry.lemma_sigla = lsigla

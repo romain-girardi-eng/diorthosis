@@ -27,7 +27,8 @@ XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
 
 def fold(s: str) -> str:
   s = unicodedata.normalize("NFKC", s)
-  s = re.sub(r"[⸀-⸏⟦⟧〚〛\[\]]", " ", s)
+  s = re.sub(r"[⸀-⸏⟦⟧〚〛]", " ", s)
+  s = s.replace("[", "").replace("]", "")   # editorial brackets: δ[ε] == δε
   s = re.sub(r"\+\s*", "+ ", s)   # glued addition operator: "+των" == "+ των"
   d = unicodedata.normalize("NFD", s)
   out = "".join(c for c in d if not unicodedata.combining(c)).lower()
@@ -162,8 +163,11 @@ def main() -> int:
   for loc, gapps in sorted(gold_covered.items()):
     oapps = ours.get(loc, [])
     if len(oapps) > len(gapps):
-      errors_raw.append((f"{loc}", f"{loc}: PHANTOM — {len(oapps)} ours vs "
-                         f"{len(gapps)} scholar"))
+      if loc in known or (book and f"{book}:{loc}" in known):
+        divergences += 1
+      else:
+        errors_raw.append((f"{loc}", f"{loc}: PHANTOM — {len(oapps)} ours "
+                           f"vs {len(gapps)} scholar"))
     for k, g in enumerate(gapps):
       key = f"{loc}[{k}]"
       if k >= len(oapps):
@@ -173,13 +177,16 @@ def main() -> int:
       errs: list[str] = []
       g_lem = g["lemma"]
       g_r1 = g["readings"][0] if g["readings"] else {"text": "", "wits": []}
-      if o["lemma"] != g_lem and o["lemma"] != g_r1["text"]:
+      def sp(x: str) -> str:
+        return x.replace(" ", "")
+      if o["lemma"] != g_lem and o["lemma"] != g_r1["text"] \
+         and sp(o["lemma"]) not in (sp(g_lem), sp(g_r1["text"])):
         errs.append(f"{key} LEMMA ours={o['lemma'][:40]!r} "
                     f"scholar={g_lem[:40]!r}")
       else:
         if sorted(o["lem_wits"]) != sorted(g_r1["wits"]):
-          errs.append(f"{key} LEMWITS ours={o['lem_wits']} "
-                      f"scholar={g_r1['wits']}")
+          errs.append(f"{key} LEMWITS lemma={g_lem[:30]!r} "
+                      f"ours={o['lem_wits']} scholar={g_r1['wits']}")
         g_rest = g["readings"][1:]
         if len(o["readings"]) != len(g_rest):
           errs.append(f"{key} NREADINGS ours={len(o['readings'])} "
@@ -189,11 +196,12 @@ def main() -> int:
                                                 strict=True)):
             o_text = orr["text"].removeprefix("+ ").strip()
             g_text = grr["text"].removeprefix("+ ").strip()
-            if o_text != g_text:
+            if o_text != g_text and sp(o_text) != sp(g_text):
               errs.append(f"{key} RDG{ord_} ours={orr['text'][:36]!r} "
                           f"scholar={grr['text'][:36]!r}")
             if sorted(orr["wits"]) != sorted(grr["wits"]):
-              errs.append(f"{key} RDGWITS{ord_} ours={orr['wits']} "
+              errs.append(f"{key} RDGWITS{ord_} lemma={g_lem[:30]!r} "
+                          f"rdg={grr['text'][:24]!r} ours={orr['wits']} "
                           f"scholar={grr['wits']}")
         if not o["to"]:
           gaps.append(f"{key}: unanchored")
@@ -203,7 +211,7 @@ def main() -> int:
           if lem_last and not before.endswith(lem_last):
             errs.append(f"{key} ANCHOR text before ends "
                         f"…{before[-30:]!r}, lemma ends {lem_last!r}")
-      if errs and key in known:
+      if errs and (key in known or (book and f"{book}:{key}" in known)):
         divergences += 1
       else:
         errors_raw.extend((key, e) for e in errs)

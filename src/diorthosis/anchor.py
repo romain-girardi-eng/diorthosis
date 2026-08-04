@@ -214,20 +214,39 @@ def _find_span_end(window: str, lemma: str) -> tuple[int, int] | None:
   def rx(words: list[str]) -> re.Pattern:
     # tokens are matched punctuation-stripped, with the text's own
     # typography tolerated between them — anchor sigla AND punctuation
-    # ("προφήτην ἰδεῖν;" must match "⸂προφήτην ἰδεῖν⸃;")
+    # ("προφήτην ἰδεῖν;" must match "⸂προφήτην ἰδεῖν⸃;"). A char-level
+    # candidate uses "§" between characters where whitespace MAY occur
+    # (glued-doublet reconstruction: "ο§τ§ι" matches "ὅ τι" and "ὅτι").
+    if len(words) == 1 and "§" in words[0]:
+      chars = words[0].split("§")
+      return re.compile(
+        r"[\s⸀-⸏]*".join(re.escape(ch) for ch in chars if ch))
     ws = [w.strip(".,;·:!?»«") for w in words]
     return re.compile(
       r"[\s⸀-⸏.,;·:!?]+".join(re.escape(w) for w in ws if w))
 
   if "…" in lemma or "..." in lemma:
+    # Elliptical lemmas may carry SEVERAL ellipses ("ἐν … καὶ ἓν … καὶ ἓν").
+    # Chain the parts in order from EVERY possible start of the first part
+    # and keep the SHORTEST span: a repeated opening phrase must not make
+    # the span leap over intervening text (Lc 6:42: two "τὸ κάρφος").
     parts = [w for w in re.split(r"\s*(?:…|\.\.\.)\s*", lemma) if w]
-    m1 = rx(parts[0].split()).search(window)
-    if m1 is None:
-      return None
-    m2 = rx(parts[-1].split()).search(window, m1.end())
-    if m2 is None:
-      return None
-    return m1.start(), m2.end()
+    first_rx = rx(parts[0].split())
+    best: tuple[int, int] | None = None
+    for m0 in first_rx.finditer(window):
+      pos_ = m0.end()
+      last_end = m0.end()
+      ok = True
+      for part in parts[1:]:
+        m = rx(part.split()).search(window, pos_)
+        if m is None:
+          ok = False
+          break
+        last_end = m.end()
+        pos_ = m.end()
+      if ok and (best is None or last_end - m0.start() < best[1] - best[0]):
+        best = (m0.start(), last_end)
+    return best
   m = rx(lemma.split()).search(window)
   if m is None:
     return None
@@ -264,8 +283,10 @@ def _anchor_verse_band(page: Page, block: Block, registry: Registry | None,
             s, t = wstart + span[0], wstart + span[1]
             e.anchor.block_index, e.anchor.char_offset = bi, t
             e.anchor.digit_start = e.anchor.digit_end = t
-            ve.lemma = cand
             ve.resolved_lemma = tb.text[s:t]
+            # a technical candidate form (char-level "§") never becomes
+            # the lemma — the resolved text span is the lemma
+            ve.lemma = ve.resolved_lemma if "§" in cand else cand
             resolved = True
             break
           if resolved:
