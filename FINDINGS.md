@@ -272,7 +272,9 @@ night taught: PROBE GEOMETRY FIRST, never tune blind (a blind threshold
 sweep moved 123 -> 123; every real gain below came from a measured probe).
 
 **Final: 6 800 scholar apps across the whole NT (all 27 books, real
-printed PDFs) — 0 ERRORS**, with 59 print/TEI divergences documented in
+printed PDFs) — 0 ERRORS** [read through §21: under the asserted bucket
+partition the compared count is 6 797 of 6 921 source leaf apps], with
+59 print/TEI divergences documented in
 `sblgnt_known_divergences.json`, EACH verified against the extracted band
 (the printed form present, the TEI form absent — or the printed
 attribution read directly around the ']'), and 433 honest unanchored gaps.
@@ -315,7 +317,8 @@ scholar-encoded golden.
 **Line-referenced (DLL Bellum Alexandrinum, reledmac).** The REAL
 edition PDF (90 pages, 563 printed entries) parsed against the very TEI
 it was typeset from: **563/563 compared, 0 errors, 0 anchoring gaps,
-100 % anchored**, TEI valid against tei_all.rng, byte-deterministic
+100 % anchored** [read through §21: that aggregate is 515 attached +
+48 end-only], TEI valid against tei_all.rng, byte-deterministic
 build, ONE documented divergence (72.2, where the golden itself encodes
 a transposition narrative as italic <rdg> while encoding the identical
 construction at 66.4 as a lemma-only note — we keep such narrative as
@@ -424,11 +427,236 @@ cross-corpus regressions caught by re-running every harness after each
 change; see regreek's FINDINGS.
 
 Every gate green at release: Plaoul 6,293 = 0 (anchored 94.9 %); real
-balex line 563 = 0/0 at 100 % anchoring; retypeset balex 524 = 0/0;
-retypeset SBLGNT 6,906 = 0/0; real NT 6,800 = 0; Problemata 5,524 = 0
-errors / 47 honest gaps (stable since v0.5); real-PDF coverage balex
+balex line 563 = 0/0 at 100 % anchoring [see §21: 515 attached +
+48 end-only]; retypeset balex 524 = 0/0;
+retypeset SBLGNT 6,906 = 0/0; real NT 6,800 = 0 [§21: 6,797 under the
+asserted partition]; Problemata 5,524 = 0
+errors / 47 honest gaps (stable since v0.5) [§20: 50 from v0.7 on];
+real-PDF coverage balex
 93.7 / 95.9 (zero contamination) and Matthew 97.0 / 100.0 (3 noise-level
 contamination hits, stable since v0.4), zero false structures on both; Bobichon 2,031 entries at 99.3 / 99.0 / 97.5 / 89.8.
 An end-to-end CLI build of lectio5 (`--text-lang la --sigla R,V,S,SV`)
 emits 188 `<app>` (the scholar count), validates against tei_all.rng,
 and passes `validate` and `roundtrip`.
+
+## 20. v0.7 — convention gating: eight unseen editions refuse wholesale (2026-08-04)
+
+The flagship generalization result, and the release with no entry until now.
+§14–§19 had driven four conventions to zero against scholar ground truth. The
+question that had never been asked was the honest one: what does the tool do
+on an edition it has never seen? §"Out-of-the-box generalization" in
+`docs/generalization.md` answered it on nine never-seen born-digital editions
+(774 selected pages: Segrave *Insolubilia*, Britannico's Persius, a Budé
+Herodian, Iacopone's *Laudario*, Blacasset, Pigna, a Sanskrit IAST Śaiva
+edition, the Devanagari *Suśrutasaṃhitā*, plus one same-toolchain
+unseen-content case, Gracilis). No grammar, threshold, override or test was
+touched for the baseline run; the only options were page selection, the
+shipped `la`/`grc` band model, a conspectus page, and sigla transcribed from
+front matter.
+
+**The v0.6 answer was the worst possible one: it did not refuse, it invented.**
+Summing that document's own table, 1,368 of 1,959 split entries were parsed,
+and of the 36 deterministic samples drawn across the eight editions with
+parsed output, **31 were false structures** — fontes paragraphs recast as
+lemmas, page-sized Budé bands collapsed into one lemma with many readings,
+tier headings promoted to readings, and — in Pigna, an edition with **no
+critical apparatus at all** — twelve parses of explanatory prose. Every one
+was schema-valid TEI, and seven of the nine builds passed BOTH `validate` and
+`roundtrip` (only Blacasset's md-ce and Suśruta's round trip failed, and for
+unrelated reasons — duplicate folios and Devanagari spacing). That is the
+finding: schema validity and round-trip stability are orthogonal to
+philological truth. Two grammars did it, differently. The paragraph grammar
+took the volume — 1,224 of the 1,368 parses, nearly all of them *Insolubilia*
+and Suśruta, where a real `lemma]` convention is present and mis-segmented.
+The generic marker grammar took the rest, 144, and produced the wildest
+structures, because it was the ungated dispatch `else`: whatever no other
+grammar claimed, it claimed.
+
+**What was built.** A whole-BAND convention gate per grammar
+(`convention.py` + one `gate_*` per grammar module), on structural signals
+only: foreign separators (`||`, `∥`, spaced `|`, `•`), orphan `]` closers
+beyond the split boundaries, token-weighted trial-parse consumption, the
+share of entries that trial-parse, the share of sides carrying an
+attribution — and, for the generic marker path, the mandatory pipeline
+evidence that numeric-marker splitting produced boundaries AND that at least
+one of those markers RESOLVED against the page's text layer. No edition is
+whitelisted and no gate reads an edition-specific signal. Each refusal stores
+its own measured reason on every entry of the band, so review and the
+generalization harness both see WHY.
+
+**What moved.** Eight of the nine editions now refuse 100 % wholesale.
+*Insolubilia* keeps 20 of 923 entries (2.2 %) — precisely the bands with no
+unconsumed `||` — and 5/5 deterministic samples are faithful. Fabricated
+structures in the sampled population: 31 → 0.
+
+**What it cost, measured entry by entry.** Almost nothing, and the almost is
+the interesting part.
+
+- Bobichon (the reference marker edition, 2 031 entries): **identical** on all
+  four metrics, 186 of 186 marker bands still accepted.
+- Real balex 563 = 0/0, retypeset balex 524 = 0/0, retypeset SBLGNT
+  6 906 = 0/0, Plaoul 6 293 = 0, real Matthew 822 = 0: unchanged.
+- ***Problemata* 47 → 50 gaps — the only regression-shaped movement, and it is
+  a gain.** Three entries changed side, on printed folios 61, 105 and 477.
+  Each of those pages carries a single opening phrase as its whole constituted
+  text — `SED SICUT.1`, `HUIUS AUTEM.1`, `QUIA QUEMADMODUM.1` — and the
+  geometric layerer reads that lone short line as a RUNNING HEAD. The page
+  therefore has no text or heading block at all, the printed superscript `1`
+  has nowhere to resolve, and v0.6 emitted the band as `<app>` regardless,
+  with a lemma pointing at nothing (`app has no @to`). The gate's
+  resolved-marker requirement now refuses the band and keeps it verbatim.
+  `check_golden` counts each of the three as two gaps (`kept as verbatim note`
+  + `note has no target`) where it counted one: 47 + 3 = 50. Nothing was lost —
+  the printed band is retained byte for byte — and the claim that was dropped
+  was one the page could not support. This is §18's degenerate-page family
+  again (one line of text starves the layerer), in exactly the three cases
+  where §18's content-based reclassification cannot fire: the rule it added
+  is "a running head never carries MULTIPLE markers", and these three lines
+  carry exactly one.
+
+**A number that looks contradictory across entries, and is not.** §18 and §19
+record Bobichon attribution at 89.8 %; `docs/generalization.md` and everything
+after it record 89.9 %. Both are correct. Re-running `tools/evaluate.py`
+against each tagged tree prints 1 805/2 010 = 89.8 % at v0.5.0 and v0.6.0 and
+1 806/2 010 = 89.9 % from `ae864ad` (the post-v0.6 hardening pass) onward. One
+reading gained an attribution before v0.7; the gate moved nothing.
+
+**What remains open.** The `||` *Insolubilia* paragraph variant, in which
+`||` opens another `lemma]` unit inside the same numbered line entry, is a
+separate workstream with its own certification requirement; until it exists
+any band containing `||` refuses wholesale, and this gate must not be weakened
+to simulate support. And the honest reading of the whole result: this is
+conservative convention RECOGNITION, not new coverage. Eight refusals are
+eight editions still needing an explicit grammar and human review before they
+become structured data.
+
+## 21. Wave A of 1.0 — the refusal promise made true again (2026-08-05)
+
+§20 hardened the grammars. An adversarial assessment then attacked the
+INSTRUMENTS, and found five of them saying "fine" when they were not — plus
+one fabrication that walked straight through the gate §20 had just built.
+
+**The fabrication.** The *Insolubilia* PDF prints Latin on even pages and its
+English translation, with numbered English editorial footnotes, on odd pages.
+§20's study selects `30,32,...,148`. On page 63 — odd, therefore never
+measured — the generic marker grammar accepted a band of two English footnotes
+and emitted footnote 47 as an apparatus variant: `<app n="47">` whose `<lem>`
+is the note's opening sentence ("Note that in this argument, Segrave
+implicitly appeals to Bradwardine's famous second postulate") and whose `<rdg>`
+is its quotation of the postulate, with four `(cid:105)` fragments as
+`<note type="comment">`. Schema-valid, `validate` and `roundtrip` green,
+exit 0.
+
+Numbered editorial prose copies the numeric-marker convention's entire printed
+shape — a superscript number glued to a word, a colon inside the sentence — so
+shape alone cannot separate it from an apparatus. What it never carries is
+sigla. The gate now requires that at least one reading SOMEWHERE IN THE BAND
+name a witness, an editor or a cited version. Three deliberate choices in that
+sentence: *somewhere in the band*, because the entry-level rule was tried and
+reverted (editions collated against a single witness print bare readings by
+design; the release record puts the cost at six points of Bobichon parse rate,
+99.0 → 93.0, and this pass did not re-derive that figure); *a reading*, not the
+lemma; and qualifiers do not count — the leaking band itself contained
+"ed. Ponzalli".
+
+Measured on the same 60 English pages
+(`--pages 31,33,...,149 --text-lang la`): v0.7 emits 1 `<app>` / 1 `<rdg>` and
+118 verbatim notes at exit 0; wave A emits 0 `<app>` and 119 verbatim notes,
+with the refusals broken out by class (83 unconsumed-token, 24 no marker
+boundary, 9 below the trial-parse majority, 2 on the new attribution floor,
+1 with no resolved marker). Inert where it must be, and the "where" matters:
+the three retypeset goldens all print the numeric-marker convention, so all
+three traverse the gate that changed — balex 524 = 0/0, SBLGNT 6 906 = 0/0,
+*Problemata* 5 524 = 0 errors / 50 gaps, none moved. Bobichon keeps 186/186
+marker bands accepted with all four metrics unchanged, and the nine-edition
+generalization table is identical edition by edition.
+
+**Five instruments that reported success they had not earned.**
+
+- **`build` exited 0 on a degenerate result.** The README's own one-liner,
+  `diorthosis build ldlt-balex.pdf -o out/`, ran the whole 481-page PDF, found
+  ZERO constituted-text blocks (the layerer read 29 heading, 956 notes, 505
+  translation — a Latin main band is a "translation" without `--text-lang la`),
+  produced zero apparatus entries, and wrote an md-ce that **v0.7's own
+  validator rejects with 23 `I7` duplicate-folio violations** — at exit 0.
+  `build` now self-validates before claiming success and names both faults;
+  exit codes are documented (0 success, 1 refused, 2 user input, 3 internal
+  fault) with `--ignore-self-check` as the deliberate escape.
+- **One invocation announced two coverage scores.** The console counter, the
+  md-ce meta line and the TEI disagreed, and all three called an `<app>`
+  carrying only its END anchor "anchored". There is now ONE `report`
+  production rendered identically in the console, in the meta line and under
+  every page header (`md-ce/0.3`; the validator refuses the version it does not
+  check), partitioning entries twice — parsed/refused/unparsed, and
+  attached/end-only/unanchored. **Real balex: 563 entries — 563 parsed,
+  0 refused; 563 anchored = 515 ATTACHED + 48 END-ONLY.** The "100 % anchored"
+  of §18 and §19 was that aggregate; read those entries through this one.
+- **`real_check` could PASS on an empty examination.** A wholesale convention
+  refusal leaves zero production candidates, and "0 violations of 0 examined"
+  printed PASS. A PASS now needs an examined denominator at or above a
+  documented floor (a tenth of the ground truth), else NOT-PROVEN. This
+  immediately convicted the invocation the golden README documented for balex
+  (`--pages 84-171`, no `--conspectus-page`): it starts two pages late,
+  bootstraps 5 witnesses instead of the printed 24 + 103 editors, the line
+  grammar refuses the whole band, and the run examines 0 production
+  candidates. The canonical invocation
+  (`--pages 82-171 --conspectus-page 54`) PASSes on real denominators:
+  text 530/555 = 95.5 %, band 555/555 = 100.0 %, contamination 0/527 examined,
+  false structures 0/321 examined, floor 56. Matthew likewise: 755/770 = 98.1 %
+  text, 770/770 = 100.0 % band, 0/488, 0/767, floor 77. The golden README has
+  been corrected to the canonical command and states what the old one reports.
+- **The whole-NT totals exceeded their own manifest.** Every source app now
+  lands in exactly one bucket and the partition is ASSERTED per book and on the
+  corpus sum before exit 0. **6 921 = 6 797 compared + 61 refused-with-reason +
+  60 uncovered + 3 unaccounted + 0 unexamined**, 27 books reconciled,
+  0 errors, 59 typed divergences, 430 honest gaps. The 61 refusals are the four
+  single-chapter books (Philemon, 2 John, 3 John, Jude), whose bands open on
+  bare verse numbers where the grammar requires `C:V`. **The run exits 1**: the
+  three apps that fall in no bucket (Mark 6:33, John 9:11 twice) are NAMED for
+  human adjudication instead of vanishing. A driver that reports its own
+  unexplained residue as fatal is the point; §17's "6 800 = 0" was the pre-
+  partition count.
+- **Human corrections could land on the wrong entry.** Override keys were
+  positional, so an edit to `p120-e3` re-targeted whatever became the fourth
+  entry of page 120 on the next build — and emitted it carrying
+  `resp="#human-review"`, i.e. a human's authority attached to a correction
+  that human never made. Keys are now bound to the entry's byte-exact source
+  slice by hash, and the file format is versioned (`diorthosis-overrides/1`).
+
+**What it cost.** Three things, all of them accounting rather than capability.
+The whole-NT driver no longer exits 0 until three apps are adjudicated by a
+human. `generalize.py` must pass `--ignore-self-check`, because Blacasset's
+tagged PDF duplicates folios, fails `I7` 72 times and therefore refuses to
+certify itself — and a build the tool refuses to certify is a ROW of the
+generalization table, not a missing row. And every published anchoring figure
+now owes its split: the golden README and `docs/generalization.md` state it,
+and §18/§19 carry a forward reference rather than a rewrite — a notebook
+entry records what was measured on its date, and correcting it in place would
+destroy the very thing that makes the correction legible.
+`docs/generalization.md` also now carries the fabrication and its reproduction.
+
+**One environment lesson, which cost a full verification round.** These
+harnesses are run from an uninstalled checkout. `sblgnt_nt_driver.py` spawns
+`python -m diorthosis.cli` with `cwd=REPO` and no `PYTHONPATH`, so against an
+interpreter with no diorthosis installed all 27 books fail with
+`ModuleNotFoundError` — and the wave A accounting reports that correctly and
+loudly (`6 921 unexamined`, identity holds, 28 fatal failures, exit 1) rather
+than printing a small green total. A stale editable install of v0.6.0 shadowing
+the working tree is the same trap wearing the opposite mask. Export
+`PYTHONPATH=$REPO/src`, and read the denominator before reading the verdict.
+
+**Full battery re-derived on this tree (2026-08-05, `bd01130`):** 219 tests
+green; byte-identical two-process build of real balex; Plaoul 6 293 = 0
+(anchored 5 969/6 293 = 94.9 %); real balex line 563 = 0 errors / 0 gaps with
+17 typed divergences, 563 anchored = 515 attached + 48 end-only, `validate`
+and `roundtrip` OK; retypeset balex 524 = 0/0; retypeset SBLGNT 6 906 = 0/0;
+*Problemata* 5 524 = 0 errors / 50 gaps; whole NT 6 797 compared = 0 errors
+with the accounting identity holding; `real_check` balex and Matthew PASS on
+non-zero denominators; Bobichon 2 031 at 99.3 / 99.0 / 97.5 / 89.9; the
+nine-edition generalization table unchanged, now with zero fabrication on the
+marker path.
+
+**What remains open.** The three unaccounted NT apps await adjudication. The
+same assessment left one further item in the queue that this pass did NOT
+reproduce or verify — an italic qualifier promoted into reading text — and it
+is recorded here as open and unverified rather than as a finding.

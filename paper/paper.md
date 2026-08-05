@@ -12,7 +12,7 @@ authors:
 affiliations:
   - name: CEPAM-UMR 7264, Université Côte d'Azur
     index: 1
-date: 4 August 2026
+date: 5 August 2026
 bibliography: paper.bib
 ---
 
@@ -27,18 +27,37 @@ explicit grammars, anchors readings to the text, distinguishes manuscript
 witnesses from editorial sources, and preserves every apparatus source slice
 verbatim. When the evidence is insufficient, it emits the source as an
 unparsed note instead of manufacturing a plausible reading. The TEI is the
-citable artifact; the `md-ce/0.2` view is intended for retrieval and language-
+citable artifact; the `md-ce/0.3` view is intended for retrieval and language-
 model pipelines.
 
 # Statement of need
 
-In the major open corpora surveyed for this project, machine-actionable
-apparatus is effectively absent: Perseus and First1KGreek provide constituted
-texts, while the corpus census recorded for this project found only two files
-containing `<app>` among approximately 1,356 First1KGreek TEI files
-[@first1kgreek; @perseusGreek; @perseusLatin]. This is the gap identified by
-@damon2016: digital editions commonly discard the transmission evidence and
-editorial reasoning recorded by a critical apparatus.
+In the major open corpora, machine-actionable apparatus is effectively absent.
+A census run for this paper counted, in the edition TEI files under `data/`
+(excluding the `__cts__.xml` catalogue stubs) of three pinned repository
+states — First1KGreek at `bfea9ac`, `canonical-greekLit` at `790c842`, and
+`canonical-latinLit` at `59b8b8b`, all August 2026
+[@first1kgreek; @perseusGreek; @perseusLatin]:
+
+| repository | edition files | files with `<app>` | files with `<rdg>` | `<rdg>` elements |
+|---|---:|---:|---:|---:|
+| First1KGreek | 1,204 | 3 | 3 | 60 |
+| canonical-greekLit | 1,612 | 6 | 0 | 0 |
+| canonical-latinLit | 687 | 17 | 1 | 1 |
+| **total** | **3,503** | **26** | **4** | **61** |
+
+The `<app>` count overstates the coverage: 22 of the 26 files use
+`<app><lem>…</lem></app>` with no reading at all, which anchors an editorial
+note but records no variant, and one of the three First1KGreek files carries a
+single empty placeholder (`<app><lem></lem> <rdg source="foo" wit="a"></rdg></app>`)
+beside an apparatus encoded as `<note>` prose. Four files in 3,503 contain a
+`<rdg>` of any kind, and 45 of the 61 `<rdg>` elements are non-empty. This is
+the gap identified by @damon2016: digital editions commonly discard the
+transmission evidence and editorial reasoning recorded by a critical apparatus.
+
+An earlier version of this claim, taken from a GitHub code search rather than
+a clone, reported "two files among approximately 1,356"; the count above was
+re-derived on full clones and supersedes it.
 
 The printed page is not safely recoverable by asking a vision-language model to
 transcribe it freely. On ancient Greek critical editions, @karamolegkou2026
@@ -80,37 +99,81 @@ source wording.
 # Quality control
 
 Validation is deliberately stratified, because no tier substitutes for another.
+Every figure below was re-derived on the release tree; where a harness reports
+a limit as untested, that is stated rather than counted as a zero.
 
 1. **Adversarial real print.** The whole-NT SBLGNT harness compares 6,797
-   apparatus entries with zero oracle errors and accounts for all 6,921 source
-   leaf apparatus entries by explicit outcomes. This is evidence for that
-   edition and oracle, not for unseen conventions.
-2. **Official-toolchain inversion.** LombardPress-derived fixtures give
-   `balex` 563 comparisons with zero errors and zero gaps, and Plaoul 6,293
-   comparisons with zero errors. They test recovery from pages produced by an
-   independent publishing toolchain, but not independent editorial encoding.
+   apparatus entries with zero oracle errors: the officially published PDFs
+   on one side, a TEI re-encoding of the same apparatus produced independently
+   of them on the other. Its partition
+   accounts for every one of the 6,921 source leaf entries by an explicit
+   outcome — 6,797 compared, 61 refused with a named convention reason
+   (the four single-chapter books, whose bands open on bare verse numbers),
+   60 uncovered, 3 unaccounted — and the identity is asserted per book and on
+   the corpus sum before the run may exit 0. It does not exit 0 today: those
+   3 unaccounted entries (Mark 6:33, John 9:11 twice) are named as fatal and
+   await human adjudication rather than being absorbed. This is evidence for
+   that edition and oracle, not for unseen conventions.
+2. **Publisher-toolchain inversion.** The Digital Latin Library's own
+   reledmac PDF of `balex` gives 563 comparisons with zero errors, zero gaps
+   and 17 typed divergences, and the LombardPress/SCTA toolchain PDF of
+   Plaoul gives 6,293 comparisons with zero errors. They test recovery from
+   pages produced by an independent publishing toolchain, but the printed page
+   and the reference encoding descend from one source, so they do not test
+   independent editorial encoding.
 3. **Retypeset round trips.** The `balex`, SBLGNT, and *Problemata* fixtures
    compare respectively 524, 6,906, and 5,524 representable apparatus entries
-   with zero structural errors; the *Problemata* ledger also records 47 honest
+   with zero structural errors; the *Problemata* ledger also records 50 honest
    gaps. These are deterministic regression tests. A round trip is not an
    adversarial test.
 4. **Self-validation.** On 2,031 Bobichon entries, the pipeline reports 99.3%
    anchoring, 99.0% parse success, 97.5% lemma concordance, and 89.9%
    attribution coverage. These are internal consistency and coverage measures,
    not accuracy against an external ground truth.
+5. **Out-of-the-box generalization, measured and negative.** On nine
+   never-seen born-digital editions (774 selected pages, no grammar or
+   threshold changed), whole-band convention gates refuse eight of the nine
+   wholesale; the ninth, Segrave's *Insolubilia*, parses 20 of 923 entries
+   (2.2%), all five deterministic samples faithful. The published claim of
+   this tier is a refusal rate, not an accuracy rate: no unseen apparatus
+   tradition is supported, and a refused band is retained verbatim with the
+   gate's own measured reason attached.
+
+Coverage is reported on two axes, because "anchored" alone was a claim
+stronger than its evidence. An entry is *attached* when its `<app>` carries
+both `@from` and `@to`, and *end-only* when the lemma's start could not be
+located. The real `balex` build anchors 563 of 563 entries — 515 attached,
+48 end-only — and the same one-line report is emitted to the console and into
+the `md-ce` meta line so a single invocation cannot announce two scores.
 
 Known print/TEI mismatches are stored as typed, executable divergence records
 whose evidence and expected error class must still match. A two-process fixture
-compares emitted files byte for byte, and the current automated suite contains
-159 tests. Together these controls support reproducibility and fail-closed
+compares emitted files byte for byte, and the automated suite contains 219
+tests at the measured revision. Together these controls support
+reproducibility and fail-closed
 accounting; they do not establish OCR accuracy on noisy scans or generalization
 to every apparatus tradition.
 
+The verbatim-refusal contract is a claim about the software, so it is tested
+adversarially and its failures are published. The most recent one, closed in
+the 1.0 hardening pass, is instructive: on the English translation pages of
+the *Insolubilia* — pages the generalization study's page selection excluded —
+a numbered English editorial footnote was emitted as a `<lem>`/`<rdg>`
+apparatus variant, in schema-valid TEI, at exit 0. Numbered editorial prose
+reproduces the numeric-marker convention's entire printed shape and can only
+be told apart by what it never carries: sigla. The generic marker grammar now
+requires that at least one reading somewhere in the band name a witness, an
+editor or a cited version, and the same 60 pages now emit zero `<app>` and
+119 verbatim refusals with named evidence. The gate is measured inert on the
+certified marker corpus and on the nine unseen editions.
+
 The figures above are emitted by `tools/golden/sblgnt_nt_driver.py`,
 `tools/golden/line_check.py`, `tools/golden/plaoul_check.py`,
-`tools/golden/check_golden.py`, and `tools/evaluate.py`; typed divergences and
+`tools/golden/check_golden.py`, `tools/golden/real_check.py`,
+`tools/golden/generalize.py`, and `tools/evaluate.py`; typed divergences and
 byte checks are executable in `tools/golden/divergences.py` and
-`tools/golden/double_build.py`, and the test count is reported by `pytest`.
+`tools/golden/double_build.py`; `diorthosis validate` checks the `md-ce`
+invariants, and the test count is reported by `pytest`.
 
 # Acknowledgements
 

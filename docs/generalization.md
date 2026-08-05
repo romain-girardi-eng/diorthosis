@@ -1,4 +1,4 @@
-# Out-of-the-box generalization: v0.6 baseline and v0.7 convention gating
+# Out-of-the-box generalization: v0.6 baseline, v0.7 convention gating, and the wave A fabrication
 
 ## Scope and method
 
@@ -14,6 +14,18 @@ text-band model, a printed conspectus page, and sigla transcribed unambiguously
 from front matter. Thus a refusal is a successful application of the
 verbatim-refusal contract: the source slice remains present without invented
 structure.
+
+The post-gating table was re-derived on the 1.0 wave A tree (`bd01130`) on
+2026-08-05 and is unchanged, edition by edition, from the v0.7 run recorded
+below. Two things about the harness itself changed with wave A and are stated
+here because they affect how the table must be read. First, `generalize.py`
+now passes `--ignore-self-check`: since wave A a `build` refuses to exit 0 on
+a result its own validator rejects, and Blacasset's tagged PDF is exactly such
+a result — a build the tool refuses to certify is a ROW of this table, not a
+missing row, and the refusal is reported in the Validate column. Second, and
+more important, **the fabrication column below measures only the pages this
+study selected**; §"The fabrication the table could not see" records a
+marker-path fabrication that lived on pages it excluded.
 
 Page numbers below are zero-based PDF file indices, as expected by the CLI.
 `tools/golden/generalize.py` now runs the v0.7 gated production path, measures
@@ -113,7 +125,7 @@ queue stable, and no refused trial parse is emitted as `<app>` structure.
 
 | Edition | Language | Convention family | PDF pages (0-based) | Pages | Entries | Parsed % (by grammar) | Refused % | Anchored % | Fabrication check | Notes |
 |---|---|---|---|---:|---:|---|---:|---:|---|---|
-| Walter Segrave, *Insolubilia* | Scholastic Latin | paragraph reledmac, `\|\|` variant | `30,32,...,148` | 60 | 923 | 2.2% (paragraph 20) | 97.8% | 2.1% | **PASS: 5/5 faithful** | all 903 entries in bands containing unconsumed `\|\|` refused; only locally separator-free bands parsed |
+| Walter Segrave, *Insolubilia* | Scholastic Latin | paragraph reledmac, `\|\|` variant | `30,32,...,148` | 60 | 923 | 2.2% (paragraph 20) | 97.8% | 2.1% | **PASS: 5/5 faithful — on these pages only\*** | all 903 entries in bands containing unconsumed `\|\|` refused; only locally separator-free bands parsed |
 | Britannico, Persius commentary | Humanist Latin | two-tier `vv.ll.` / fontes, colon | `160-433` | 274 | 343 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | wholesale verbatim refusal |
 | Herodian, Books I–II | Ancient Greek | Budé locus + colon + `\|\|` | two alternating runs | 56 | 74 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | numeric-marker splitting/resolution signature absent |
 | Iacopone, *Laudario* | Medieval Italian | three-tier negative apparatus | eight runs, `122-266` | 49 | 146 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | closing-lemma density is incompatible with paragraph entries |
@@ -123,11 +135,19 @@ queue stable, and no refused trial parse is emitted as `<app>` structure.
 | *Suśrutasaṃhitā* 1.16 | Sanskrit, Devanagari | stacked `lemma]` tiers | `58-67` | 10 | 254 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | short tier preambles or unattributed trial segments refuse each band |
 | Petrus Gracilis, b1q1 | Scholastic Latin | LombardPress double reledmac | `0-10` | 11 | 18 | 0.0% (none) | 100.0% | 0.0% | N/A: 0 parsed | extracted bands lack a strong complete paragraph or marker signature |
 
+**\*** The fabrication column is bounded by the page selection of its own row.
+On the *Insolubilia*'s EXCLUDED odd (English) pages, v0.7 emitted an English
+editorial footnote as a `<lem>`/`<rdg>` variant at exit 0; wave A closed that
+and emits zero structure there. See “The fabrication the table could not see”.
+
 The post-gating integrity checks stayed PASS except for Blacasset's pre-existing
 72 duplicate-folio `I7` violations. Suśruta's post-gating roundtrip is now
 PASS because the foreign tier structure is no longer emitted. Anchoring also
 drops with refusal: a rejected convention is not reused to make a structural
-lemma-to-text claim.
+lemma-to-text claim. Since wave A, Blacasset's `I7` failure also makes its
+build refuse to certify itself (exit 1); `generalize.py` passes
+`--ignore-self-check` so the row is measured and the failure is reported in the
+Validate column rather than removing the edition from the study.
 
 #### Gate designs and thresholds
 
@@ -175,13 +195,22 @@ and `tools/golden/generalize.py` carries it into the refusal counts.
 
 #### Validated-family invariance after the gate change
 
-| Target | Post-gating result |
+| Target | Post-gating result (re-derived 2026-08-05 at `bd01130`) |
 |---|---|
-| Plaoul lectio 1 / 5 / 14 / 22 | 235 / 188 / 304 / 271 compared; **0 errors each** |
-| Real DLL balex line grammar | 563 compared; **0 errors, 0 gaps, 17 typed divergences; 563/563 anchored** |
+| Plaoul lectio 1 / 5 / 14 / 22 | 235 / 188 / 304 / 271 compared; **0 errors each** (all 30 lectios: 6,293 compared, 0 errors, anchored 5,969/6,293 = 94.9%) |
+| Real DLL balex line grammar | 563 compared; **0 errors, 0 gaps, 17 typed divergences; 563/563 anchored — 515 attached, 48 end-only** |
 | Retypeset balex golden | 524 compared; **0 errors, 0 gaps** |
+| Retypeset SBLGNT golden | 6,906 compared; **0 errors, 0 gaps** |
+| Retypeset *Problemata* golden | 5,524 compared; **0 errors, 50 gaps** (47 at v0.6; the three added by the gate are named in `tools/golden/README.md`) |
 | Real SBLGNT Matthew verse grammar | 822 compared; **0 errors** |
-| Bobichon marker grammar, pages 188–560 | 2,031 entries; **99.3% anchoring, 99.0% parse, 97.5% concordance, 89.9% attribution** |
+| Whole real NT, source-complete oracle | 6,797 compared, **0 errors**, 59 typed divergences; partition 6,797 + 61 refused + 60 uncovered + 3 unaccounted = 6,921 = source total |
+| Bobichon marker grammar, pages 188–560 | 2,031 entries; **99.3% anchoring, 99.0% parse, 97.5% concordance, 89.9% attribution**; 186/186 marker bands accepted by the gate |
+
+“563/563 anchored” is not “100% attached”. diorthosis anchors by internal
+double-end-point attachment; 48 of the 563 balex entries carry `@to` only,
+because the start of the lemma span could not be located. Until wave A the
+build reported the aggregate alone, and that single number was the coverage
+claim this document should never have quoted unqualified.
 
 #### Post-gating fabrication spot-check
 
@@ -193,7 +222,72 @@ checked against both their exact source slices and rendered pages:
 lemma, reading segmentation/text, and attribution. Verdict: **5/5 faithful,
 zero fabricated structures**. The other eight editions have zero parsed
 entries, hence no proposed structures to sample and no possible fabrication in
-the parsed-sample population.
+the parsed-sample population. Re-derived at `bd01130`: the same five keys, the
+same five source slices, the same five parses.
+
+That verdict is exactly as wide as its population — *parsed entries on the
+selected pages*. It says nothing about the pages the study did not select, and
+that is where the next section found a fabrication.
+
+#### The fabrication the table could not see
+
+**Status: found after v0.7, closed in wave A (`bd01130`), reproducible below.**
+
+An adversarial assessment built the *Insolubilia* on pages this study
+excludes. The PDF prints Latin on even pages and the English translation, with
+numbered English editorial footnotes, on odd pages; the study selects
+`30,32,...,148`. On page 63 — odd, hence never measured here — the generic
+numeric-marker grammar accepted a band of two English footnotes and emitted
+footnote 47 as an apparatus variant: `<app n="47">` with the note's opening
+sentence as `<lem>` and its quotation of Bradwardine's second postulate as
+`<rdg>`, plus four `(cid:105)` fragments as `<note type="comment">`. The TEI
+was schema-valid, `validate` and `roundtrip` passed, and the build exited 0.
+
+The mechanism is worth stating because it is the failure mode this whole
+document exists to detect: numbered editorial prose reproduces the numeric
+marker convention's *entire printed shape* — a superscript number glued to a
+word, a colon inside the sentence — so shape alone cannot separate it from an
+apparatus. What it never carries is sigla. The gate now requires that at least
+one reading somewhere in an accepted band name a witness, an editor or a cited
+version. It is a whole-band floor deliberately: the entry-level version of the
+rule was tried and reverted, because editions collated against a single witness
+print bare readings by design; the release record puts the cost of the
+entry-level variant at six points of Bobichon parse rate (99.0 → 93.0), a
+figure carried over from that adjudication and not re-derived here.
+
+Reproduce, on the 60 English pages of the same PDF:
+
+```console
+$ pages=$(python3 -c "print(','.join(str(p) for p in range(31,150,2)))")
+$ python3 -m diorthosis.cli build /tmp/gen10/insolubles.pdf \
+      --pages "$pages" --text-lang la -o out/
+```
+
+| tree | `<app>` emitted | `<rdg>` | verbatim apparatus notes | exit |
+|---|---:|---:|---:|---|
+| v0.7.0 (`b7c85b4`) | **1** | **1** | 118 | 0 |
+| wave A (`bd01130`) | 0 | 0 | 119 | 0 |
+
+At `bd01130` the same run prints its refusals by class — 83 bands on the
+unconsumed-token ceiling, 24 with no marker boundary, 9 below the trial-parse
+majority, **2 on the new attribution floor**, 1 with no resolved marker — and
+`coverage: 119 entries — 0 parsed, 119 refused, 0 unparsed`.
+
+Cost, measured: the gate is inert on everything already certified. Bobichon
+pages 188–560 keep 186 of 186 marker bands accepted and all four
+self-validation metrics identical to v0.6 (99.3 / 99.0 / 97.5 / 89.9); the
+nine-edition table above is unchanged; and the three retypeset goldens — which
+all print the numeric-marker convention, so all traverse the gate that
+changed — are unchanged at balex 524 = 0 errors / 0 gaps, SBLGNT
+6,906 = 0 / 0, *Problemata* 5,524 = 0 errors / 50 gaps.
+
+Two lessons this document should carry forward. A fabrication check is bounded
+by its sampling frame, and a page selection chosen to isolate the edited text
+is a sampling frame — a future run of this study should include a slice of each
+edition's *non-apparatus* matter (translation pages, footnote apparatus,
+front matter) precisely because that is where a grammar has nothing true to
+find. And "schema-valid, round-trip stable, exit 0" was already known here not
+to imply "philologically true"; it now also does not imply "not fabricated".
 
 **Precise TODO — separate workstream:** add the *Insolubilia* paragraph
 variant in which `\|\|` opens another `lemma]` unit inside the same numbered
@@ -285,6 +379,14 @@ These spot checks do not estimate correctness rates. They demonstrate that
 schema-valid and roundtrip-stable output can still be philologically false and
 motivate the protocol below.
 
+One more fabrication belongs in this ledger, found after the gates were built
+and closed in wave A: on the *Insolubilia*'s English pages — outside every
+page selection in this document — the generic marker grammar emitted an
+English editorial footnote as a `<lem>`/`<rdg>` variant. It is recorded with
+its reproduction under “The fabrication the table could not see”, and it is
+the reason the discussion above must be read as *what fabricated on the
+selected pages*, not *what fabricated*.
+
 ## Inter-annotator protocol for future human validation
 
 This section is a protocol for Romain and a colleague to execute. No annotation
@@ -312,6 +414,34 @@ sample sizes for this run are:
 | Universal Śaivism | 0 | 0; report “not estimable” |
 | Suśruta | 194 | 65 |
 | Gracilis | 1 | 1 (census) |
+
+**That table sizes the v0.6 study and is retained for it. After gating the
+populations invert, and so does the study.** At v0.7/wave A the parsed
+population is 20 entries in *Insolubilia* (sample n = 17, a near-census) and
+zero everywhere else, so a parse-correctness interval is not estimable for
+eight of the nine editions. The population that now carries the result is the
+REFUSED one — 1,939 entries — and its sizing under the same formula is:
+
+| Edition | Refused population N | Double-annotated refused sample n |
+|---|---:|---:|
+| Insolubilia | 903 | 87 |
+| Britannico | 343 | 76 |
+| Herodian | 74 | 43 |
+| Iacopone | 146 | 59 |
+| Blacasset | 53 | 35 |
+| Pigna | 66 | 40 |
+| Universal Śaivism | 82 | 45 |
+| Suśruta | 254 | 70 |
+| Gracilis | 18 | 16 |
+
+The question that study answers is not “is the parse right” but “was the
+refusal appropriate, and what did it cost” — for each sampled entry, whether a
+qualified editor could have produced a defensible structured parse from the
+printed band alone. A refusal rate is only good news if the refused material
+was genuinely out of reach; measuring that is the point, and it is not
+measured yet. Pigna is the built-in control: it has no critical apparatus, so
+every one of its 66 refusals must be judged appropriate or the gate is
+mis-specified.
 
 To validate the refusal side separately, also double-annotate 30 randomly
 selected refused entries per edition, or all refused entries when fewer than

@@ -39,7 +39,14 @@ review = ["pypdfium2>=4", "Pillow>=10"]
 [project.urls]
 Homepage = "https://github.com/romain-girardi-eng/diorthosis"
 Issues = "https://github.com/romain-girardi-eng/diorthosis/issues"
+# the two contracts a consumer of this package depends on: the public Python
+# surface, and what a release promises about it and about the emitted formats
+Documentation = "https://github.com/romain-girardi-eng/diorthosis/blob/main/docs/api.md"
+Changelog = "https://github.com/romain-girardi-eng/diorthosis/blob/main/docs/stability.md"
 
+# The console entry point is FROZEN (docs/stability.md §1): the subcommand
+# names, the option names and the four exit codes are the contract, not
+# diorthosis.cli's Python shape.
 [project.scripts]
 diorthosis = "diorthosis.cli:run"
 

@@ -30,8 +30,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "src"))
 
+from diorthosis import parse_page_spec  # noqa: E402
 from diorthosis.anchor import anchor_page  # noqa: E402
-from diorthosis.cli import _parse_pages  # noqa: E402
 from diorthosis.conspectus import bootstrap_registry  # noqa: E402
 from diorthosis.ingest import ingest_pdf  # noqa: E402
 from diorthosis.model import Layer  # noqa: E402
@@ -274,7 +274,7 @@ def measure(edition: Edition, workdir: Path, sample_size: int) -> dict:
 
   try:
     doc = ingest_pdf(
-      edition.pdf, pages=_parse_pages(edition.pages), text_lang=edition.text_lang)
+      edition.pdf, pages=parse_page_spec(edition.pages), text_lang=edition.text_lang)
     registry, conspectus_note = bootstrap_registry(
       str(edition.pdf), edition.conspectus_page)
     for siglum in edition.sigla:
