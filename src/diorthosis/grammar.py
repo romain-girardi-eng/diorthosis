@@ -278,6 +278,17 @@ _FOREIGN_WITNESS = re.compile(r"^\d{1,4}-\d{1,4}°?$|^\d+°$")
 MARKER_MAX_UNCONSUMED_TOKEN_RATIO = 0.60
 
 
+def _names_an_authority(attribution: Attribution) -> bool:
+  """Does this attribution name WHO reads the segment?
+
+  Witness sigla, editor abbreviations and cited text versions are the
+  apparatus' evidence.  Qualifiers are deliberately excluded: "ed.", "cf.",
+  "et", "sic" are ordinary prose words, and a footnote band full of them
+  would otherwise look attributed.
+  """
+  return bool(attribution.witnesses or attribution.editors or attribution.sources)
+
+
 def _looks_foreign(flat: str) -> bool:
   if flat.count("]") > flat.count("["):
     return True
@@ -343,6 +354,24 @@ def gate_marker_band(entries: list[object], registry: Registry | None,
       grammar,
       f"only {parsed_count}/{len(marker_entries)} marker entries parsed in trial "
       "(minimum 50%)",
+    )
+  # An apparatus criticus records WHO reads WHAT: somewhere in the band a
+  # proposed variant must name a witness, an editor or a cited version.
+  # Numbered prose — editorial footnotes, fontes paragraphs, translators'
+  # notes — carries the same superscript numbering and the same ": " as the
+  # convention, so shape alone cannot tell them apart; the printed sigla can.
+  # This is a WHOLE-BAND floor on purpose.  A single entry may stay bare:
+  # editions collated against one witness print their readings without a
+  # siglum by design, and refusing them entry by entry cost the reference
+  # edition 6 points of parse rate (99.0 -> 93.0, review adjudication).
+  readings = [reading for parsed in trial if parsed is not None
+              for reading in parsed.readings]
+  if not any(_names_an_authority(reading.attribution) for reading in readings):
+    return GateDecision.refuse(
+      grammar,
+      f"no witness, editor or source is named on any of the {len(readings)} "
+      f"reading(s) proposed by {parsed_count}/{len(marker_entries)} trial-parsed "
+      "entries — a numbered prose band, not a variant apparatus",
     )
   return GateDecision.accept(grammar)
 

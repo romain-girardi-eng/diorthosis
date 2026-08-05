@@ -6,6 +6,17 @@ Coverage still measures the printed layers.  Structural claims are stricter:
 ``resolve_parsed`` supplies precisely the structure the TEI emitter sees.
 Candidates are never forgiven by a shared word elsewhere in the edition.
 
+A limit that was never tested is not a limit that held: every skip bucket
+can absorb the whole population (a wholesale convention refusal leaves zero
+production candidates; page-ambiguous lemmas leave zero locatable readings),
+and "0 violations of 0 examined" used to print PASS.  Each declared limit
+now needs an examined denominator at or above ``examination_floor`` before a
+PASS may rest on it; below it the run reports NOT-PROVEN and exits non-zero.
+The skip buckets are unchanged and still fully accounted — what changed is
+only what may be called PASS.  A convention this run refuses wholesale is
+proved elsewhere (``generalize.py`` for the refusal, ``line_check.py`` /
+``plaoul_check.py`` for the structured claim), never here by vacancy.
+
 Usage:
   real_check.py scholar.xml real.pdf --pages A-B [--text-lang la]
     [--conspectus-page N] [--max-apps N]
@@ -15,6 +26,7 @@ Usage:
 
 from __future__ import annotations
 
+import math
 import re
 import sys
 import unicodedata
@@ -34,6 +46,29 @@ from diorthosis.tei import resolve_parsed
 TEI = "{http://www.tei-c.org/ns/1.0}"
 XML_ID = "{http://www.w3.org/XML/1998/namespace}id"
 CONTAMINATION_RADIUS = 100
+MIN_EXAMINED_FRACTION = 0.10
+
+
+def examination_floor(source_apps: int) -> int:
+  """The smallest examined denominator a PASS may rest on.
+
+  A tenth of the ground truth: nearly six times below the weakest
+  examination measured on a certified real-PDF corpus (balex arbitrates 321
+  production candidates and 527 rejected readings against 555 source apps,
+  58 % and 95 %; SBLGNT Matthew 767 and 488 against 770, 100 % and 63 %), so
+  it convicts an examination that COLLAPSED without ever convicting a
+  legitimate one.  A ground truth with no apps at all still floors at one:
+  an empty comparison proves nothing about anything."""
+  return max(1, math.ceil(MIN_EXAMINED_FRACTION * source_apps))
+
+
+def unproven(source_apps: int, examinations: dict[str, int]) -> list[str]:
+  """Declared limits whose denominator is too small to license a PASS."""
+  floor = examination_floor(source_apps)
+  return [f"{name} examined {count}, below the floor of {floor} "
+          f"({MIN_EXAMINED_FRACTION:.0%} of {source_apps} source apps): "
+          "this limit was not tested, so it did not hold"
+          for name, count in examinations.items() if count < floor]
 
 
 def fold(s: str) -> str:
@@ -377,6 +412,10 @@ def main() -> int:
   print(f"false structures : {len(false_structures)}/{structure_examined} examined "
         f"production candidates | {sum(structure_skips.values())} skipped "
         f"{dict(structure_skips)}")
+  print(f"examined floor   : {examination_floor(total)} "
+        f"({MIN_EXAMINED_FRACTION:.0%} of {total} source apps) | "
+        f"contamination examined {contamination_examined} | "
+        f"false-structure examined {structure_examined}")
   for candidate in false_structures:
     print(f"   e.g. p{candidate['page_label']} {candidate['grammar']} "
           f"{candidate['locus']}: {candidate['lemma'][:60]!r}")
@@ -399,9 +438,19 @@ def main() -> int:
   if (minimum := arg_value("--min-band-coverage")) is not None \
      and band_pct < float(minimum):
     failures.append(f"band coverage {band_pct:.1f} < declared limit {minimum}")
+  not_proven = unproven(total, {
+    "contamination": contamination_examined,
+    "false-structure": structure_examined,
+  })
+  for failure in failures:
+    print(f"ERROR LIMIT: {failure}")
+  for reason in not_proven:
+    print(f"NOT-PROVEN: {reason}")
   if failures:
-    for failure in failures:
-      print(f"ERROR LIMIT: {failure}")
+    print("FAIL: declared real-PDF limits breached")
+    return 1
+  if not_proven:
+    print("NOT-PROVEN: no PASS on an examination this small")
     return 1
   print("PASS: all declared real-PDF limits hold")
   return 0

@@ -1,4 +1,4 @@
-# md-ce/0.2 — Markdown for Critical Editions
+# md-ce/0.3 — Markdown for Critical Editions
 
 A md-ce file is a UTF-8, NFC-normalised, LF-terminated Markdown document. It is a
 DERIVED, DELIBERATELY LOSSY VIEW of a TEI P5 file produced from the same document
@@ -9,17 +9,36 @@ below that is decidable from the file alone (I1-I7, I10-I12; I8/I9 concern the
 relationship to the source and are enforced at emission). Exit 0 = clean,
 exit 1 = violations, one line each.
 
+**What 0.3 changed.** The meta line used to carry `anchored: a/b` counting the
+view's own numeric markers, while the same invocation printed a different score
+on the console and the TEI showed a third picture (an `<app>` with only its end
+anchor counted as fully anchored). 0.3 replaces it with ONE `report` production,
+rendered identically in the meta line, under every page header, and by the CLI,
+splitting the entries on both axes that made the old number unreadable. A 0.2
+file is not a 0.3 file: the validator rejects the version it does not check.
+
 ## Grammar (every production starts at column 0; SP = U+0020)
 
     file       = title LF LF meta 1*page
     title      = "# " text-run
     meta       = "<!-- md-ce/" ver " · diorthosis " semver " · ingest: " id
-                 " · pages: " range " · anchored: " int "/" int
+                 " · pages: " range " · coverage: " report
+                 " · refusals: " tally
                  " · generative-blocks: " int " · escaped-lines: " int
                  " · tei: " filename " -->"
-    page       = LF LF "## page " folio " (file index " int ")" page-stats 1*block
+    page       = LF LF "## page " folio " (file index " int ")" page-stats
+                 LF page-cov 1*block
     folio      = 1*(%x21-27 / %x2A-FF)          ; printed folio, or "–" if none printed
     page-stats = " [markers=" int " entries=" int " unresolved=" int "]"
+    page-cov   = "<!-- md-ce page: " report " -->"
+    report     = int " entries — " int " parsed, " int " refused, "
+                 int " unparsed; " int " anchored (" int " attached, "
+                 int " end-only), " int " unanchored"
+    tally      = "none" / item *("; " item)
+    item       = int "× " reason
+    reason     = the refusing gate's own sentence, every run of digits replaced
+                 by "n" so one key names one refusal CLASS; MUST NOT contain
+                 ";" or "·", the field separators of the lines it lives on
     block      = LF LF "### " layer SP metadata [LF refs] LF LF body
     layer      = "text" / "apparatus" / "translation" / "notes" / "heading"
                / "unclassified"
@@ -31,30 +50,37 @@ exit 1 = violations, one line each.
     app-entry  = [marker SP] source-entry        ; apparatus body: ONE entry per line
     source-entry = exact source slice with each CRLF/LF/CR replaced by one SP
 
+`page-stats` keeps md-ce/0.2's three fields, in that order, so a consumer
+matching it with an end-anchored regex keeps working; `unresolved` is the
+report's `unanchored` and `entries` is its `entries`.
+
 ## Invariants (normative; each is mechanically checkable)
 
     I1  Line-start discipline. Every line matching /^(#{1,6} |<!-- md-ce)/ is
         structural. Emitters MUST escape such a line inside `body` by prefixing
         "\\" and MUST count it in meta `escaped-lines`. Consumers MAY therefore
         split on /^### / with no lookahead. A file where `escaped-lines` differs
-        from the count of /^\\#{1,6} / lines in bodies is invalid.
+        from the count of /^\\(#{1,6} |<!-- md-ce)/ lines in bodies is invalid.
     I2  No text/apparatus mixing. Splitting on /^### / yields sections whose layer
         is the first token of the header; no section contains another header.
     I3  Marker syntax and scope. Markers are page-scoped: ⟦folio:n⟧. For each
         apparatus entry marker ⟦f:n⟧ without "?", exactly one ⟦f:n⟧ occurs in a
-        `text` block of page f. With "?", zero occur. Duplicate ⟦f:n⟧ inside one
-        page is invalid.
+        `text` or `heading` block of page f — a printed section title carries
+        the constituted text and its markers with it. With "?", zero occur.
+        Duplicate ⟦f:n⟧ inside one page is invalid.
     I4  Delimiter purity. U+27E6/U+27E7 MUST NOT appear in body text except as
         `marker`. An emitter encountering them in source text MUST refuse (exit
         non-zero) rather than emit an ambiguous file.
     I5  Metadata parseability. Every `### ` line matches `metadata` exactly; keys
         appear in the fixed order source, generative, confidence, block; no key is
         omitted; `confidence` always has 2 decimals.
-    I6  Addressability. (folio, layer, block) is unique in the file. `block` is the
-        0-based ordinal of the block within its page, counting furniture, so it is
-        stable against md-ce's own filtering and matches the TEI block order.
+    I6  Addressability. (folio, block) is unique in the file, and determines the
+        layer. `block` is the 0-based ordinal of the block within its page,
+        counting furniture, so it is stable against md-ce's own filtering and
+        matches the TEI block order.
     I7  Page ordering. Pages appear in strictly increasing `file index` order, and
-        each folio appears at most once. A build whose page selection is not
+        each PRINTED folio appears at most once — "–" is the absence of a printed
+        folio, not a folio, and may repeat. A build whose page selection is not
         ascending MUST be normalised before emission, never emitted permuted.
     I8  Order preservation. Within a page, blocks appear in printed order; within
         an apparatus block, entries appear in printed order; nothing is merged,
@@ -68,9 +94,23 @@ exit 1 = violations, one line each.
     I10 Provenance. `generative=true` marks recognition-engine output. It is derived
         from the model, never from content; no body line can introduce or alter it
         (guaranteed by I1). meta `generative-blocks` equals the count of such headers.
-    I11 Honesty of coverage. meta `anchored=a/b` equals the sum of per-page
-        `entries − unresolved` over `entries`; the numbers are recomputable from the
-        file itself, so an unverifiable coverage claim is impossible.
+    I11 Honesty of coverage. ONE report, three renderings: `coverage:` in the meta
+        line, `page-cov` under every page header, and the line the tool prints are
+        the same `report` production, so one invocation can never announce two
+        scores. Each report partitions its own entries twice — parsed + refused +
+        unparsed = entries (what structure is claimed) and attached + end-only +
+        unanchored = entries (how the entry reaches the text). `attached` is a
+        complete double-end-point link (TEI @from AND @to); `end-only` carries @to
+        alone because the lemma's start could not be located, and counting it as
+        plainly "anchored" is the coverage claim this invariant forbids. Every
+        refused entry is named in `tally`, whose counts sum to `refused`; "none"
+        is legal only when `refused` is 0. The meta report is the sum of the page
+        reports, and each page's `entries` equals the number of apparatus entry
+        lines on that page. Since md-ce omits the parsed structure and every
+        non-numeric anchor (I9), `parsed` and `attached` are not re-derivable from
+        the bodies; the bodies BOUND them instead — a page's resolved ⟦f:n⟧
+        entries never exceed its `anchored`, and its ⟦f:n?⟧ entries never exceed
+        its `unanchored`.
     I12 Determinism. Byte-identical input + version ⇒ byte-identical output. This is
         enforced by `tools/golden/double_build.py`, which runs the same build in two
         separate processes and byte-compares every output file so process-specific

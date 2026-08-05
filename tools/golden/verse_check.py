@@ -4,8 +4,19 @@ REAL printed NT edition vs the scholars' TEI — zero errors or fail.
 
 Alignment is by verse reference (@loc / @n), k-th entry to k-th entry
 within each verse. Wrong structure (lemma, reading text, witness set,
-phantom/lost entries, misplaced anchor) is an ERROR; an entry diorthosis
-kept as a verbatim note, or left unanchored, is a GAP.
+phantom entries, misplaced anchor) is an ERROR; an entry diorthosis kept
+as a verbatim note, or left unanchored, is a GAP.
+
+A source app inside a COVERED verse that received no counterpart at all is
+neither: it is UNACCOUNTED and fatal. Filing it under "gaps" asserted that
+it survived as a verbatim note, which nothing here verifies, and let it
+leave the ground-truth accounting in silence. The only non-fatal exit is a
+typed divergence record naming ``UNACCOUNTED`` whose band evidence still
+holds — the same fail-closed contract every other error kind uses.
+
+The four outcome buckets partition the ground truth exactly:
+``source apps == compared + unaccounted + documented-unaccounted +
+uncovered``, and a violation is itself an ERROR.
 
 Usage: verse_check.py scholar.xml ours.tei.xml [--book B01] [--rng rng]
 """
@@ -157,6 +168,8 @@ def main() -> int:
 
   errors_raw: list[tuple[str, str, str]] = []  # (key, kind, message)
   gaps: list[str] = []
+  unaccounted: list[str] = []
+  unaccounted_documented: list[str] = []
   fired: dict[str, set[str]] = defaultdict(set)
   matched = 0
   # Partial-page builds remain useful, but the missing source denominator is
@@ -180,13 +193,26 @@ def main() -> int:
       return False
     return True
 
+  def adjudicated(exc_key: str, kind: str, band: str) -> bool:
+    """A typed divergence record absorbs one observed outcome, or nothing.
+
+    Absorption needs the record to name the kind AND its stored evidence to
+    still match the extracted band, so a stale or unproven record cannot
+    retire a finding by merely existing."""
+    record = known.get(exc_key)
+    if record is None or kind not in record["error_kinds"]:
+      return False
+    if not evidence_ok(exc_key, record, band):
+      return False
+    fired[exc_key].add(kind)
+    return True
+
   def record_error(exc_key: str, kind: str, message: str, band: str) -> None:
     record = known.get(exc_key)
     if record is None or kind not in record["error_kinds"]:
       errors_raw.append((exc_key, kind, message))
       return
-    if evidence_ok(exc_key, record, band):
-      fired[exc_key].add(kind)
+    adjudicated(exc_key, kind, band)
 
   for loc, gapps in sorted(gold_covered.items()):
     oapps = ours.get(loc, [])
@@ -200,7 +226,16 @@ def main() -> int:
       key = f"{loc}[{k}]"
       exc_key = f"{book}:{key}" if book else key
       if k >= len(oapps):
-        gaps.append(f"{key}: LOST/unparsed (verbatim note expected)")
+        # Nothing here proves the app survived as a verbatim note, so it
+        # cannot be called an honest gap: it is a source app for which the
+        # oracle produced no verdict at all.
+        band = " | ".join(a["band"] for a in oapps)
+        line = (f"{key}: no counterpart emitted — scholar lemma "
+                f"{g['lemma'][:40]!r}; our band at {loc}: {band[:160]!r}")
+        if adjudicated(exc_key, "UNACCOUNTED", band):
+          unaccounted_documented.append(line)
+        else:
+          unaccounted.append(line)
         continue
       o = oapps[k]
       errs: list[tuple[str, str]] = []
@@ -265,9 +300,17 @@ def main() -> int:
   covered_total = sum(len(v) for v in gold_covered.values())
   uncovered_locs = sorted(set(gold) - covered)
   uncovered_apps = sum(len(gold[loc]) for loc in uncovered_locs)
+  accounted = (matched + len(unaccounted) + len(unaccounted_documented)
+               + uncovered_apps)
+  if accounted != source_total:
+    errors_raw.append(("accounting", "ACCOUNTING",
+                       f"outcome buckets sum to {accounted}, the scholars' "
+                       f"ground truth has {source_total} source apps"))
   label = book or "selected corpus"
   print(f"{source_total} source apps | {covered_total} in covered loci | "
-        f"{matched} compared | {uncovered_apps} uncovered apps in "
+        f"{matched} compared | {len(unaccounted)} unaccounted | "
+        f"{len(unaccounted_documented)} documented-unaccounted | "
+        f"{uncovered_apps} uncovered apps in "
         f"{len(uncovered_locs)} loci | {len(errors_raw)} ERRORS | "
         f"{len(gaps)} gaps | {len(fired)} documented print/TEI divergences | "
         f"{len(notes)} verbatim notes")
@@ -276,9 +319,15 @@ def main() -> int:
         (f" ({', '.join(uncovered_locs[:12])})" if uncovered_locs else ""))
   for _, _, e_ in errors_raw[:25]:
     print(f"  ERROR {e_}")
+  # never truncated: this is the fatal queue a human has to adjudicate, and
+  # a hidden tail is exactly the silence this bucket exists to break
+  for u_ in unaccounted:
+    print(f"  UNACCOUNTED {u_}")
+  for u_ in unaccounted_documented:
+    print(f"  unaccounted-documented {u_}")
   for g_ in gaps[:8]:
     print(f"  gap   {g_}")
-  if errors_raw:
+  if errors_raw or unaccounted:
     print("FAIL")
     return 1
   print("PASS: zero apparatus errors")

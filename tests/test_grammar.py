@@ -5,7 +5,8 @@ the page during the calibration loop."""
 from __future__ import annotations
 
 from diorthosis.conspectus import Registry, with_builtin_editors
-from diorthosis.grammar import parse_entry
+from diorthosis.grammar import gate_marker_band, parse_entry
+from diorthosis.model import Anchor, ApparatusEntry
 
 
 def registry() -> Registry:
@@ -148,3 +149,96 @@ class TestForeignSeriesRefusal:
     assert e is not None and e.lemma == "Μωσέως"
     e2 = parse_entry("Ἰακὼβ :   Ἰὼβ Sylb.   [ὅτι] prop. Thirlb.", registry())
     assert e2 is not None  # balanced editorial brackets are ours
+
+
+def marker_entry(number: str, raw: str) -> ApparatusEntry:
+  return ApparatusEntry(raw=raw, anchor=Anchor(kind="marker", value=number))
+
+
+class TestMarkerBandAttributionFloor:
+  """Numbered editorial PROSE — footnotes, fontes, translators' notes —
+  carries the marker convention's whole printed shape: a superscript number
+  glued to a word, a colon inside the note. Shape alone cannot tell it from
+  an apparatus; the printed sigla can. Hence a whole-band floor: somewhere
+  in an accepted band a proposed variant must name a witness, an editor or
+  a cited version. Measured inert on the reference edition (Bobichon,
+  pages 188-560: 186/186 marker bands still accepted)."""
+
+  def test_numbered_footnote_band_is_refused(self) -> None:
+    # /tmp/gen10/insolubles.pdf page 63, verbatim: an ENGLISH editorial
+    # footnote band. Note 46 refuses; note 47's PROSE colon made it "parse",
+    # one entry in two cleared the 50% floor, and the note was emitted as
+    # <lem>/<rdg> with the footnote number as the locus.
+    entries = [
+      marker_entry("46", "See Aristotelis opera cum Averrois commentaria, "
+                         "vol. VIII In Metaphysicen V 7, de ente, comm. 14 f. 117E."),
+      marker_entry("47", "Note that in this argument, Segrave implicitly appeals "
+                         "to Bradwardine’s famous second postulate : “Every "
+                         "proposition signifies or means as a matter of fact or "
+                         "absolutely everything which follows from it as a matter "
+                         "of fact or absolutely”."),
+    ]
+
+    decision = gate_marker_band(entries, registry(), resolved_markers=1)
+
+    assert not decision.accepted
+    assert decision.evidence.startswith("marker convention gate refused band:")
+    assert "no witness, editor or source is named" in decision.evidence
+    assert "1/2 trial-parsed entries" in decision.evidence
+
+  def test_bibliographic_note_band_without_readings_is_refused(self) -> None:
+    # same edition, page 16: a pure reference note. It parses only because a
+    # trailing locus ("p. 198.") looks like an attribution, and proposes NO
+    # reading at all — a band that claims a lemma and nothing else is prose.
+    entries = [
+      marker_entry("13", "See, e.g., Klima, ‘Existence and Reference in "
+                         "Medieval Logic’, p. 198."),
+    ]
+
+    decision = gate_marker_band(entries, registry(), resolved_markers=1)
+
+    assert not decision.accepted
+    assert "no witness, editor or source is named on any of the 0 reading(s)" \
+      in decision.evidence
+
+  def test_bare_entry_rides_on_the_band_of_an_attributed_neighbour(self) -> None:
+    # THE distinction this floor must not cross: editions collated against a
+    # single witness print their readings bare by design (Bobichon's codex A,
+    # ~121 entries). Refusing them entry by entry cost 6 points of parse rate
+    # (99.0 -> 93.0) and was reverted; the floor is band-level for that reason.
+    bare = marker_entry("1", "Ἰακὼβ : Ἰὼβ")
+    entries = [bare, marker_entry("2", "Μωσέως : Μωϋσέως Mign.")]
+
+    decision = gate_marker_band(entries, registry(), resolved_markers=1)
+
+    assert decision.accepted and decision.evidence == ""
+    parsed = parse_entry(bare.raw, registry())
+    assert parsed is not None
+    assert parsed.readings[0].attribution.empty
+
+  def test_a_cited_version_satisfies_the_floor(self) -> None:
+    # "Ἔθνεσιν : τῷ ἔθνει LXX" — a version is an authority like a siglum
+    entries = [marker_entry("4", "Ἔθνεσιν : τῷ ἔθνει LXX")]
+
+    assert gate_marker_band(entries, registry(), resolved_markers=1).accepted
+
+  def test_qualifiers_alone_do_not_satisfy_the_floor(self) -> None:
+    # "om.", "ed.", "cf.", "sic" are ordinary prose words as often as they
+    # are apparatus latinity; a band evidenced only by them names nobody
+    entries = [marker_entry("5", "Alpha : beta om."),
+               marker_entry("6", "Gamma : delta cf.")]
+
+    decision = gate_marker_band(entries, registry(), resolved_markers=1)
+
+    assert not decision.accepted
+    assert "no witness, editor or source is named" in decision.evidence
+
+  def test_earlier_gate_conditions_still_report_first(self) -> None:
+    # the floor is the LAST condition: a foreign separator must keep naming
+    # itself, so the refusal evidence stays diagnostic
+    entries = [marker_entry("1", "Alpha : beta || Gamma : delta")]
+
+    decision = gate_marker_band(entries, registry(), resolved_markers=1)
+
+    assert not decision.accepted
+    assert "foreign separator '||'" in decision.evidence

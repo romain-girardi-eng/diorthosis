@@ -244,6 +244,12 @@ def measure(edition: Edition, workdir: Path, sample_size: int) -> dict:
     sys.executable, "-m", "diorthosis.cli", "build", str(edition.pdf),
     "--pages", edition.pages, "--text-lang", edition.text_lang,
     "--title", edition.edition, "-o", str(out),
+    # this harness MEASURES what the tool does on unseen conventions, so a
+    # build the tool refuses to certify is a row of the table, not a missing
+    # row: blacasset's tagged PDF duplicates folios and its md-ce fails I7,
+    # which is exactly the kind of result the generalization study exists to
+    # publish. The refusal itself is reported in the validate column.
+    "--ignore-self-check",
   ]
   if edition.conspectus_page is not None:
     command += ["--conspectus-page", str(edition.conspectus_page)]

@@ -12,6 +12,13 @@ button assembles ``overrides.json``; ``diorthosis build --overrides``
 replays it on every rebuild, marking each correction
 ``resp="#human-review"`` in the TEI.
 
+Each exported record carries the CONTENT BINDING of the entry it was made
+against (``source_sha``, shown next to the key). The binding is injected at
+download time from the page's own data, never from the editable textarea, so
+a reviewer cannot detach a correction from its entry by editing JSON — and a
+later build whose band splitting drifted refuses to replay it instead of
+re-targeting a scholar's authority onto a different entry.
+
 Rendering needs the optional review extra: ``pip install
 diorthosis[review]`` (pypdfium2 — BSD/Apache — and Pillow).
 """
@@ -23,7 +30,7 @@ import json
 from pathlib import Path
 
 from .model import Document
-from .overrides import entry_keys
+from .overrides import FORMAT, entry_keys, source_digest, source_excerpt
 from .tei import resolve_parsed
 
 
@@ -115,7 +122,27 @@ def _attr_str(a) -> str:
   return " · ".join(parts)
 
 
+def bind_record(body: dict, entry) -> dict:
+  """Attach the content binding to a correction body.
+
+  The Python twin of what the download button does in the browser: the
+  reviewer owns the correction, the build owns the binding. Exposed so a
+  scripted export (an inter-annotator study, a batch of adjudications)
+  produces records that replay under the same guarantee as the UI's.
+  """
+  return {**body, "source_sha": source_digest(entry),
+          "source_excerpt": source_excerpt(entry)}
+
+
+def export_file(records: dict[str, dict]) -> dict:
+  """The versioned container the download button writes: bound records
+  under an explicit format marker, so a reader never has to guess."""
+  return {"format": FORMAT, "entries": records}
+
+
 def _override_json(parsed) -> dict:
+  """The editable half of a record — what the reviewer may change. The
+  binding is added by ``bind_record``, never typed into the textarea."""
   if parsed is None:
     return {"action": "verbatim", "note": ""}
   return {
@@ -151,6 +178,7 @@ button.primary{background:#2d5b3e;color:#fff;border-color:#2d5b3e}
 .entry.hidden{display:none}
 .meta{grid-column:1/-1;display:flex;gap:10px;align-items:baseline}
 .key{font-family:ui-monospace,monospace;color:#6d675d}
+.sha{font-family:ui-monospace,monospace;font-size:11px;color:#8c8578}
 .chip{font-size:11px;padding:1px 8px;border-radius:9px;color:#fff}
 .chip.parsed{background:#2d5b3e}.chip.refused{background:#a8620a}
 .chip.unanchored{background:#9a2c2c}.chip.reviewed{background:#2b4d7c}
@@ -179,13 +207,20 @@ function count(){
 function markDirty(cb){
   cb.closest('details').open=true;}
 function download(){
-  const out={};
+  const entries={};
   document.querySelectorAll('.entry').forEach(e=>{
     const cb=e.querySelector('.inc');
     if(!cb||!cb.checked)return;
-    try{out[e.dataset.key]=JSON.parse(e.querySelector('textarea').value);}
-    catch(err){alert('Invalid JSON in '+e.dataset.key+': '+err);throw err;}});
-  const blob=new Blob([JSON.stringify(out,null,1)],{type:'application/json'});
+    let rec;
+    try{rec=JSON.parse(e.querySelector('textarea').value);}
+    catch(err){alert('Invalid JSON in '+e.dataset.key+': '+err);throw err;}
+    // the binding comes from the build, never from the editable textarea:
+    // a correction must not be detachable from the entry it was made against
+    rec.source_sha=e.dataset.sha;
+    rec.source_excerpt=e.dataset.src;
+    entries[e.dataset.key]=rec;});
+  const doc={format:document.body.dataset.format,entries:entries};
+  const blob=new Blob([JSON.stringify(doc,null,1)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download='overrides.json';a.click();}
 window.addEventListener('DOMContentLoaded',()=>{applyFilter();});
@@ -262,11 +297,16 @@ def render_review(doc: Document, pdf_path: str, outdir: Path,
           "<em>refused — kept as a verbatim note</em>" + reason
         )
 
-      ov = json.dumps(_override_json(parsed), ensure_ascii=False, indent=1)
+      body = _override_json(parsed)
+      record = bind_record(body, e)
+      ov = json.dumps(body, ensure_ascii=False, indent=1)
       folio = html.escape(page.printed_page or "?")
+      sha = record["source_sha"]
       rows.append(f"""
-<div class="entry" data-key="{key}" data-status="{status}">
+<div class="entry" data-key="{key}" data-status="{status}"
+     data-sha="{sha}" data-src="{html.escape(record['source_excerpt'])}">
  <div class="meta"><span class="key">{key}</span>
+  <span class="sha">{sha}</span>
   <span>folio {folio}</span>
   <span class="chip {status}">{status}</span></div>
  <div>{f'<img loading="lazy" src="{png_rel}">' if png_rel
@@ -285,7 +325,7 @@ def render_review(doc: Document, pdf_path: str, outdir: Path,
 <html lang="en"><head><meta charset="utf-8">
 <title>diorthosis review — {title}</title>
 <style>{_CSS}</style><script>{_JS}</script></head>
-<body>
+<body data-format="{FORMAT}">
 <header><h1>diorthosis review — {title}</h1>
  <select id="filter" onchange="applyFilter()">
   <option value="all">all entries</option>

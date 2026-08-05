@@ -5,6 +5,8 @@ the pre-v0.2.1 detached-marker bug)."""
 
 from __future__ import annotations
 
+import re
+
 from diorthosis.anchor import anchor_page
 from diorthosis.md import to_markdown
 from diorthosis.mdce_validate import validate_text
@@ -102,9 +104,49 @@ class TestRejectsViolations:
     vs = invariants(swapped)
     assert "I7" in vs or "I11" in vs  # order broken; meta range breaks with it
 
-  def test_i11_forged_coverage(self) -> None:
-    md = fixture_md().replace("anchored: 1/1", "anchored: 9/9")
+  def test_i11_forged_meta_coverage(self) -> None:
+    """The meta report is the sum of the page reports: inflating it alone
+    no longer produces a file that validates."""
+    md = fixture_md().replace("· coverage: 1 entries", "· coverage: 9 entries")
     assert "I11" in invariants(md)
+
+  def test_i11_report_that_does_not_partition_its_entries(self) -> None:
+    md = fixture_md().replace("1 entries — 0 parsed, 1 refused", "1 entries — 1 parsed, 1 refused")
+    assert "I11" in invariants(md)
+
+  def test_i11_anchored_disagrees_with_its_own_split(self) -> None:
+    """'anchored' that is not attached + end-only is the exact defect this
+    report replaced: one number hiding two different things."""
+    md = fixture_md().replace(
+      "1 anchored (0 attached, 1 end-only)", "1 anchored (1 attached, 1 end-only)")
+    assert "I11" in invariants(md)
+
+  def test_i11_missing_page_coverage_line(self) -> None:
+    md = "\n".join(line for line in fixture_md().split("\n")
+                   if not line.startswith("<!-- md-ce page: "))
+    assert "I11" in invariants(md)
+
+  def test_i11_refusal_tally_must_sum_to_refused(self) -> None:
+    md = fixture_md().replace(
+      "refusals: 1× marker convention", "refusals: 4× marker convention")
+    assert "I11" in invariants(md)
+
+  def test_i11_refusals_without_a_stated_reason(self) -> None:
+    md = re.sub(r"refusals: 1× [^·]+·", "refusals: none ·", fixture_md())
+    assert "I11" in invariants(md)
+
+  def test_i11_more_resolved_markers_than_anchored_entries(self) -> None:
+    """The bodies bound the counters md-ce cannot recompute (I9): a page
+    claiming zero anchored entries while printing a resolved ⟦f:n⟧ is
+    caught even though the anchor itself lives in the TEI."""
+    md = fixture_md().replace(
+      "1 anchored (0 attached, 1 end-only), 0 unanchored",
+      "0 anchored (0 attached, 0 end-only), 1 unanchored")
+    assert "I11" in invariants(md)
+
+  def test_older_format_version_is_refused_not_guessed_at(self) -> None:
+    md = fixture_md().replace("md-ce/0.3", "md-ce/0.2", 1)
+    assert "grammar" in invariants(md)
 
   def test_i10_forged_generative_count(self) -> None:
     md = fixture_md().replace("generative-blocks: 0", "generative-blocks: 3")
