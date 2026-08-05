@@ -138,17 +138,28 @@ class _HocrParser(HTMLParser):
       return
     self._stack[-1].parts.append(data)
 
-  def finish(self) -> None:
-    """Close the parse and judge what it had to flush.
+  def finish(self, source: str = "") -> None:
+    """Close the parse and judge what the input left half-written.
 
-    The flush carries either a legitimate trailing text run (an unfinished
-    character reference is enough to defer one) or the remains of a tag the
-    file stops inside. Only the first is text; the second sets
-    :attr:`unterminated` and the caller refuses the file.
+    The verdict is taken from the SOURCE, not from the parser's behaviour on
+    it, because that behaviour is not stable across interpreters: given a file
+    ending in ``<span class='ocr_line'``, CPython 3.13 flushes the half-written
+    tag through :meth:`handle_data` (which is how such a fragment once became
+    edition text), while 3.14 discards it silently — refusing nothing, and
+    leaving an empty document behind. A tag the file stops inside is a fact
+    about the file: after the last ``>``, no ``<`` may remain.
+
+    The flush is still held aside and judged, because a legitimate trailing
+    text run can be deferred to close time by an unfinished character
+    reference; that run is text and is appended.
     """
     self._draining = True
     self.close()
     self._draining = False
+    cut = source[source.rfind(">") + 1:] if ">" in source else source
+    if "<" in cut:
+      self.unterminated = " ".join(cut.split())
+      return
     tail = "".join(data for _, data in self._drained)
     if "<" in tail:
       self.unterminated = " ".join(tail.split())
@@ -269,8 +280,9 @@ def ingest_hocr(paths: list[str | Path]) -> Document:
   index = 0
   for p in paths:
     parser = _HocrParser()
-    parser.feed(read_source_text(p, "hOCR"))
-    parser.finish()
+    source = read_source_text(p, "hOCR")
+    parser.feed(source)
+    parser.finish(source)
     if parser.unterminated is not None:
       fragment = parser.unterminated
       shown = fragment if len(fragment) <= 60 else fragment[:57] + "…"

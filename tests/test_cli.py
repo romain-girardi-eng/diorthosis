@@ -540,8 +540,15 @@ def test_cli_surface_is_frozen() -> None:
   )
 
 
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
 def test_every_subcommand_has_a_help_page(cli) -> None:
+  # styling is stripped before matching: CPython 3.14's argparse colourises
+  # its usage line when FORCE_COLOR is set in the environment, and a user's
+  # terminal preference must not decide whether the suite passes
   for name in EXPECTED_SURFACE:
     result = cli(name, "--help")
     assert result.returncode == EXIT_OK, result.report()
-    assert result.stdout.startswith(f"usage: diorthosis {name}"), result.report()
+    plain = _ANSI.sub("", result.stdout)
+    assert plain.startswith(f"usage: diorthosis {name}"), result.report()
