@@ -36,31 +36,35 @@ Inside such a block:
 At the time of writing NO block in the shipped documentation carries the
 marker — the count is asserted, not assumed, and the harness itself is proven
 end to end by ``test_the_runnable_harness_runs_and_catches_rot`` on a doc
-written inside the test. Adding the marker to a real block is wave B's job;
-the machinery is waiting for it.
+written inside the test.
 
-KNOWN DEFECTS AT HEAD — RED on purpose, each one a false statement in the
-shipped documentation:
+WHOSE SCORE IS IT — the scope of the coverage check
+===================================================
 
-- ``test_reproduced_tool_output_states_the_shipped_version``: the README's
-  ``validate`` transcript prints ``OK: md-ce/0.2 invariants hold``; the tool
-  prints ``0.3``.
-- ``test_console_transcripts_match_the_report_the_tool_prints``: the README's
-  ``build`` transcript prints ``apparatus anchoring: 277/287 entries
-  anchored``, a console line ``cli.py`` no longer emits — the shipped report
-  is ``coverage: …`` + ``refusals: …`` — and its ``review`` transcript is
-  missing the ``N reviewed`` field ``cli.py``'s review branch prints.
-- ``test_md_ce_samples_match_the_spec``: the README's md-ce sample is stale on
-  four counts against the shipped SPEC — no ``page-stats`` on the page header,
-  no ``page-cov`` line under it, no ``block=`` key in either block header, and
-  page-unscoped ``⟦7⟧`` markers where I3 requires ``⟦294:7⟧``.
-- ``test_documented_repo_paths_exist``: ``docs/cli.md`` links to
-  ``tutorial.md`` and ``troubleshooting.md``, which do not exist. Measured on
-  a tree where the documentation set is actively being written; the check is
-  dynamic and clears itself the moment the pages land.
+``test_console_transcripts_match_the_report_the_tool_prints`` enforces SPEC
+I11, and I11 is a rule about **diorthosis's own report**: "the line the tool
+prints" is one of the three renderings of one measurement. The documentation
+also quotes, verbatim, the reports of *other* programs — ``plaoul_check.py``,
+``line_check.py``, ``sblgnt_nt_driver.py`` — which have their own formats and
+are not bound by I11, and it quotes diorthosis lines that mention anchoring
+without stating a score (the self-check's ``…nothing is anchored.``).
 
-None of them is fixed here: this file is a test module, and the documents
-belong to the wave rewriting them.
+The check is therefore scoped twice, and each scope is proven by
+``test_the_score_check_catches_rot_and_only_rot``:
+
+1. **by producer** — an output line belongs to the last ``$`` command above
+   it. Only lines produced by a ``diorthosis`` / ``python -m diorthosis.cli``
+   invocation are judged. A block with no command at all stays in scope: an
+   unattributed coverage line is diorthosis's until proven otherwise.
+2. **by adjacency** — a line *states a score* when a count sits next to a
+   score word (``anchoring: 277/287``, ``anchored 206/235``, ``100 %
+   anchored``). A sentence that merely contains ``anchored`` and, elsewhere, a
+   number is not a score claim.
+
+Both narrow the check; neither whitelists a document, a line or an edition.
+The rot this test was written for — ``apparatus anchoring: 277/287 entries
+anchored`` under a ``diorthosis build`` — is still caught, and the self-test
+asserts exactly that.
 """
 
 from __future__ import annotations
@@ -310,30 +314,121 @@ KNOWN_REPORT_LINES = (
              r"\d+ reviewed; \d+ snippets$"),
   re.compile(r"^overrides: \d+ parses replaced, \d+ forced verbatim$"),
 )
-CLAIMS_A_SCORE = re.compile(r"\b(anchor\w*|coverage|refusals|snippets)\b", re.I)
-HAS_A_NUMBER = re.compile(r"\d")
-"""A --help line names those words too; only a line carrying figures is
-STATING a score."""
+SCORE_WORD = r"anchor\w*|coverage|refusals|snippets"
+COUNT = r"\d[\d.,]*\s*%?(?:\s*(?:/|of)\s*\d[\d.,]*)?"
+STATES_A_SCORE = re.compile(
+  rf"(?:{SCORE_WORD})\W{{0,3}}(?:{COUNT})"          # anchoring: 277/287
+  rf"|(?:{COUNT})(?:\s+\w+){{0,2}}\s+(?:{SCORE_WORD})",  # 277/287 entries anchored
+  re.I)
+"""A --help line names those words, and a prose finding may name one beside an
+unrelated count. Only a count sitting NEXT TO a score word is a score."""
+
+ENV_ASSIGNMENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=\S*")
 
 
-def test_console_transcripts_match_the_report_the_tool_prints() -> None:
-  """A transcript line that states a score must state it in the production the
-  tool actually emits — SPEC I11 allows exactly one."""
+def is_diorthosis_command(command: str) -> bool:
+  """Does this command line run THIS tool's CLI?
+
+  SPEC I11 governs the report diorthosis prints. ``plaoul_check.py`` and the
+  other golden drivers print their own, and the documentation quotes them
+  verbatim; they are not judged against I11's production.
+  """
+  words = command.split()
+  while words and ENV_ASSIGNMENT.fullmatch(words[0]):
+    words.pop(0)
+  if not words:
+    return False
+  return words[0].rsplit("/", 1)[-1] == "diorthosis" or "diorthosis.cli" in command
+
+
+def diorthosis_output_lines(fence: Fence) -> list[tuple[int, str]]:
+  """(offset, line) for every output line this fence attributes to diorthosis.
+
+  Output belongs to the last ``$`` command above it. A block with no command
+  at all is attributed to diorthosis: an unsourced coverage line is this
+  tool's until proven otherwise.
+  """
+  out: list[tuple[int, str]] = []
+  mine = True
+  for offset, raw in enumerate(fence.body.split("\n")):
+    line = raw.strip()
+    if line.startswith("$"):
+      mine = is_diorthosis_command(line[1:].strip())
+      continue
+    if line and mine:
+      out.append((offset, line))
+  return out
+
+
+def score_claims_in_the_wrong_shape(fences: list[Fence]) -> list[str]:
+  """Every diorthosis transcript line that states a score the tool no longer
+  prints. Empty list = the documentation renders one report."""
   wrong: list[str] = []
-  for fence in shell_fences():
-    for offset, raw in enumerate(fence.body.split("\n")):
-      line = raw.strip()
-      if not line or line.startswith("$") or not CLAIMS_A_SCORE.search(line):
-        continue
-      if not HAS_A_NUMBER.search(line):
+  for fence in fences:
+    for offset, line in diorthosis_output_lines(fence):
+      if not STATES_A_SCORE.search(line):
         continue
       if any(rx.match(line) for rx in KNOWN_REPORT_LINES):
         continue
       wrong.append(f"{shown(fence.path)}:{fence.line + 1 + offset}: "
                    f"{line!r}")
+  return wrong
+
+
+def test_console_transcripts_match_the_report_the_tool_prints() -> None:
+  """A transcript line that states a score must state it in the production the
+  tool actually emits — SPEC I11 allows exactly one."""
+  wrong = score_claims_in_the_wrong_shape(shell_fences())
   assert not wrong, (
     "these transcript lines claim a score in a shape diorthosis no longer "
     f"prints: {wrong}")
+
+
+def test_the_score_check_catches_rot_and_only_rot(tmp_path) -> None:
+  """Never trust a narrowing that has never been tested.
+
+  Four blocks: the rot this check exists for, the same words under another
+  program's command, a diorthosis finding that names anchoring without
+  scoring it, and the shipped report itself. Exactly the first must be
+  caught.
+  """
+  doc = tmp_path / "scope.md"
+  doc.write_text(
+    "```console\n"
+    "$ diorthosis build edition.pdf -o out/\n"
+    "apparatus anchoring: 277/287 entries anchored\n"
+    "```\n\n"
+    "```console\n"
+    "$ python3 tools/golden/plaoul_check.py lectio1.xml lectio1.pdf\n"
+    "235 scholar apps | 235 compared | 0 ERRORS | anchored 206/235\n"
+    "```\n\n"
+    "```console\n"
+    "$ diorthosis build edition.pdf --pages 172-180 -o appcrit/\n"
+    "  degenerate: 9 apparatus band(s) were detected but no entry was split "
+    "from any of them: the apparatus is present in the TEI as verbatim prose "
+    "only, and nothing is anchored.\n"
+    "```\n\n"
+    "```console\n"
+    "$ diorthosis build edition.pdf -o out/\n"
+    "coverage: 563 entries — 563 parsed, 0 refused, 0 unparsed; 563 anchored "
+    "(515 attached, 48 end-only), 0 unanchored\n"
+    "refusals: none\n"
+    "```\n",
+    encoding="utf-8")
+  blocks = fences(doc.read_text(encoding="utf-8"), doc)
+  rotted, other_tool, finding, shipped = blocks
+
+  caught = score_claims_in_the_wrong_shape([rotted])
+  assert len(caught) == 1 and "apparatus anchoring" in caught[0], caught
+  assert not score_claims_in_the_wrong_shape([other_tool])
+  assert not score_claims_in_the_wrong_shape([finding])
+  assert not score_claims_in_the_wrong_shape([shipped])
+  # and the narrowing is not a hole: the same rot with no command above it,
+  # or under a bare `100 % anchored`, is still caught.
+  loose = tmp_path / "loose.md"
+  loose.write_text("```console\n100 % anchored\n```\n", encoding="utf-8")
+  assert score_claims_in_the_wrong_shape(
+    fences(loose.read_text(encoding="utf-8"), loose))
 
 
 TOOL_OUTPUT_VERSION = (

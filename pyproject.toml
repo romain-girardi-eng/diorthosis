@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "diorthosis"
-version = "0.7.0"
+version = "1.0.0"
 description = "Compile published critical editions (PDF or OCR output) into TEI P5 with anchored apparatus, plus a deterministic AI-ready Markdown view"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -35,6 +35,11 @@ dev = ["pytest>=8", "ruff>=0.5", "lxml>=5"]
 # the review UI rasterizes page snippets; pypdfium2 is BSD/Apache
 # (PyMuPDF's AGPL is deliberately avoided)
 review = ["pypdfium2>=4", "Pillow>=10"]
+# the evidence harness under tools/golden/: lxml for every checker, saxonche
+# (Saxon-C HE) to run LombardPress's own critical.xslt for the Plaoul and
+# Gracilis PDFs. The external binaries it also needs — tectonic, git, curl —
+# are listed in MAINTAINING.md; pip cannot install those.
+golden = ["lxml>=5", "saxonche>=12"]
 
 [project.urls]
 Homepage = "https://github.com/romain-girardi-eng/diorthosis"

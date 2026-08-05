@@ -55,6 +55,17 @@
   "reason": "B02 4:37[2]: the PRINTED band reads 'αυτο ηδη γεμιζεσθα' where the TEI re-encoding reads 'αυτο ηδη γεμιζεσθαι' — verified against the extracted band (printed form present, TEI form absent), 2026-08-04. diorthosis follows the printed page.",
   "tei_form": "lemma=ηδη γεμιζεσθαι το πλοιον; readings=['ηδη γεμιζεσθαι το πλοιον', 'αυτο ηδη γεμιζεσθαι']"
  },
+ "B02:6:33[1]": {
+  "band_evidence": "33  ἐπέγνωσαν NIV ] + αὐτὸν RP; ἔγνωσαν WH Treg",
+  "book": "B02",
+  "error_kinds": [
+   "UNACCOUNTED"
+  ],
+  "locus": "6:33",
+  "print_form": "ἐπέγνωσαν NIV ] + αὐτὸν RP; ἔγνωσαν WH Treg",
+  "reason": "Mk 6:33: the 2010 print omits this entry. On 62-SBLGNT-Mark.pdf PDF p. 17 = printed p. 83 the constituted text of v. 33 carries TWO single-word markers — '⸀ἐπέγνωσαν πολλοί' and 'προῆλθον ⸀αὐτούς' — while the band on the same page prints exactly one v. 33 entry and runs straight into v. 34: '33 ἐπέγνωσαν NIV ] + αὐτὸν RP; ἔγνωσαν WH Treg 34 εἶδεν WH Treg NIV ] + ὁ Ἰησοῦς RP • αὐτοὺς WH Treg NIV ] αὐτοῖς RP'. The marker on αὐτούς is orphaned: no '•' entry follows, v. 33 is complete on that page in both text and band, and the string 'συνῆλθον' occurs nowhere in the whole printed Mark PDF. The TEI's second v. 33 app (lem αὐτούς, rdg2 '+ καὶ συνῆλθον πρὸς αὐτόν' RP, resp='#JJM' = Joey McCollum's 2021 TEI conversion) restores what the print left out; diorthosis follows the printed page and emits only the entry the band shows. print_form is the printed band's whole v. 33 content. PDF-verified 2026-08-05.",
+  "tei_form": "lemma=αυτουσ; readings=['αυτουσ', '+ και συνηλθον προσ αυτον']"
+ },
  "B02:8:35[3]": {
   "band_evidence": "8:35 ⸄ψυχὴν αὐτοῦ⸅ WH NIV ] ἑαυτοῦ ψυχὴν Treg RP",
   "book": "B02",
@@ -325,6 +336,28 @@
   "reason": "Jn 8:41 εἶπαν: printed band compacts '+ οὖν RP NA' into one reading; the TEI separates rdg2 '+ οὖν' (NA, resp=#JJM) from rdg3 'εἶπον οὖν' (RP, resp=#JJM) — encoder refinement, band-verified 2026-08-04.",
   "tei_form": "lemma=ειπαν; readings=['ειπαν', '+ ουν', 'ειπον ουν']"
  },
+ "B04:9:11[3]": {
+  "band_evidence": "11  ἐκεῖνος WH Treg NIV ] + καὶ εἶπεν RP | Ὁ ἄνθρωπος ὁ WH \nTreg NIV ] Ἄνθρωπος RP | ὅτιὅτι WH Treg NIV ] – RP",
+  "book": "B04",
+  "error_kinds": [
+   "UNACCOUNTED"
+  ],
+  "locus": "9:11",
+  "print_form": "ἐκεῖνος WH Treg NIV ] + καὶ εἶπεν RP",
+  "reason": "Jn 9:11 straddles a page break and the print heads the continuation band with the WRONG verse. Printed p. 211 (64-SBLGNT-John.pdf PDF p. 23) ends v. 11 mid-sentence at 'καὶ εἶπέν μοι ⸀ὅτι' and its band closes with the three v. 11 entries quoted in print_form/band_evidence. Printed p. 212 (PDF p. 24, running head '9:11–24') opens with the rest of v. 11 — 'Ὕπαγε εἰς ⸀τὸν Σιλωὰμ καὶ νίψαι· ἀπελθὼν ⸀οὖν καὶ νιψάμενος ἀνέβλεψα.' — but heads its band '9:12 τὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 …'. Everywhere else in John the band's leading reference is the C:V of its first entry, including when the page opens mid-verse (printed p. 199 '5:16 οἱ Ἰουδαῖοι …', p. 203 '6:39 με …', p. 211 '8:54 δοξάσω …'); the repeated '12' two entries later betrays the slip. τὸν and οὖν are therefore printed under 9:12, where diorthosis emits them (see the typed records B04:9:12 and B04:9:12[0]), and the TEI files them under the true verse 9:11. print_form is one of the three entries the printed 9:11 band does contain; this app is not among them. PDF-verified 2026-08-05.",
+  "tei_form": "lemma=τον; readings=['τον', 'την κολυμβηθραν του']"
+ },
+ "B04:9:11[4]": {
+  "band_evidence": "11  ἐκεῖνος WH Treg NIV ] + καὶ εἶπεν RP | Ὁ ἄνθρωπος ὁ WH \nTreg NIV ] Ἄνθρωπος RP | ὅτιὅτι WH Treg NIV ] – RP",
+  "book": "B04",
+  "error_kinds": [
+   "UNACCOUNTED"
+  ],
+  "locus": "9:11",
+  "print_form": "Ὁ ἄνθρωπος ὁ WH Treg NIV ] Ἄνθρωπος RP",
+  "reason": "Jn 9:11 straddles a page break and the print heads the continuation band with the WRONG verse. Printed p. 211 (64-SBLGNT-John.pdf PDF p. 23) ends v. 11 mid-sentence at 'καὶ εἶπέν μοι ⸀ὅτι' and its band closes with the three v. 11 entries quoted in print_form/band_evidence. Printed p. 212 (PDF p. 24, running head '9:11–24') opens with the rest of v. 11 — 'Ὕπαγε εἰς ⸀τὸν Σιλωὰμ καὶ νίψαι· ἀπελθὼν ⸀οὖν καὶ νιψάμενος ἀνέβλεψα.' — but heads its band '9:12 τὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 …'. Everywhere else in John the band's leading reference is the C:V of its first entry, including when the page opens mid-verse (printed p. 199 '5:16 οἱ Ἰουδαῖοι …', p. 203 '6:39 με …', p. 211 '8:54 δοξάσω …'); the repeated '12' two entries later betrays the slip. τὸν and οὖν are therefore printed under 9:12, where diorthosis emits them (see the typed records B04:9:12 and B04:9:12[0]), and the TEI files them under the true verse 9:11. print_form is one of the three entries the printed 9:11 band does contain; this app is not among them. PDF-verified 2026-08-05.",
+  "tei_form": "lemma=ουν; readings=['ουν', 'δε']"
+ },
  "B04:9:12": {
   "band_evidence": "9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP | 9:12 οὖνοὖν WH Treg NIV ] δὲ RP | 9:12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP",
   "book": "B04",
@@ -333,7 +366,7 @@
   ],
   "locus": "9:12",
   "print_form": "τον",
-  "reason": "B04 9:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖνοὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 ἐν ᾗ ἡμέρᾳ WH Treg NIV ] ὅτε '. Verified 2026-08-04; diorthosis follows the printed page.",
+  "reason": "Jn 9:11–12: the print heads the p. 212 band with the wrong verse. Verse 9:11 straddles the page break: 64-SBLGNT-John.pdf PDF p. 24 = printed p. 212 (running head '9:11–24') opens with the tail of v. 11, 'Ὕπαγε εἰς ⸀τὸν Σιλωὰμ καὶ νίψαι· ἀπελθὼν ⸀οὖν καὶ νιψάμενος ἀνέβλεψα.', yet its band reads '9:12 τὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 …'. Elsewhere in John the leading reference is always the C:V of the band's first entry, mid-verse page openings included (printed p. 199 '5:16 …', p. 203 '6:39 …', p. 211 '8:54 …'), and the '12' repeated two entries later betrays the slip. diorthosis follows the printed reference, so τὸν and οὖν — v. 11 entries in the TEI (B04:9:11[3], B04:9:11[4]) — land at 9:12, giving three of ours against the TEI's one and a first-entry lemma mismatch. Re-verified against the publisher's PDF 2026-08-05; the earlier 'bracketed-passage / Western non-interpolation' wording named a mechanism this locus does not exhibit.",
   "tei_form": "1 source apps at locus; emitted 3"
  },
  "B04:9:12[0]": {
@@ -344,7 +377,7 @@
   ],
   "locus": "9:12",
   "print_form": "τον",
-  "reason": "B04 9:12: the printed band opens this verse with a bracketed-passage entry ('… ] 〚WH〛' — Western non-interpolation family) or an entry the TEI does not encode as <app>; alignment shifts. Band: '9:12 τὸντὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖνοὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 ἐν ᾗ ἡμέρᾳ WH Treg NIV ] ὅτε '. Verified 2026-08-04; diorthosis follows the printed page.",
+  "reason": "Jn 9:11–12: the print heads the p. 212 band with the wrong verse. Verse 9:11 straddles the page break: 64-SBLGNT-John.pdf PDF p. 24 = printed p. 212 (running head '9:11–24') opens with the tail of v. 11, 'Ὕπαγε εἰς ⸀τὸν Σιλωὰμ καὶ νίψαι· ἀπελθὼν ⸀οὖν καὶ νιψάμενος ἀνέβλεψα.', yet its band reads '9:12 τὸν WH Treg NIV ] τὴν κολυμβήθραν τοῦ RP • οὖν WH Treg NIV ] δὲ RP 12 καὶ εἶπαν WH Treg NIV ] Εἶπον οὖν RP 14 …'. Elsewhere in John the leading reference is always the C:V of the band's first entry, mid-verse page openings included (printed p. 199 '5:16 …', p. 203 '6:39 …', p. 211 '8:54 …'), and the '12' repeated two entries later betrays the slip. diorthosis follows the printed reference, so τὸν and οὖν — v. 11 entries in the TEI (B04:9:11[3], B04:9:11[4]) — land at 9:12, giving three of ours against the TEI's one and a first-entry lemma mismatch. Re-verified against the publisher's PDF 2026-08-05; the earlier 'bracketed-passage / Western non-interpolation' wording named a mechanism this locus does not exhibit.",
   "tei_form": "lemma=και ειπαν; readings=['και ειπαν', 'ειπον ουν']"
  },
  "B05:15:7[1]": {

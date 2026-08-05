@@ -4,6 +4,16 @@ regreek does the character-level work (legacy Greek font decoding with its
 zero-fabrication contract) and the page-level work (layer separation,
 printed-folio extraction). This adapter maps its output onto the diorthosis
 model; nothing here is generative.
+
+It also owns the dependency chain's failures. regreek reads PDFs with
+pdfminer, and pdfminer says ``PDFSyntaxError: No /Root object!``,
+``PSEOF: Unexpected EOF`` or ``PDFPasswordIncorrect:`` with nothing after the
+colon. Those are the library's words about its own internals; the user's
+question is "what is wrong with MY file", and :func:`_refusal` answers it —
+empty download, text file renamed ``.pdf``, truncated copy, encrypted
+publisher's PDF. Only pdfminer's own exception hierarchy is translated: a
+``TypeError`` raised inside regreek or here is a defect of ours and still
+travels to exit 3.
 """
 
 from __future__ import annotations
@@ -12,9 +22,12 @@ import re
 from collections import Counter
 from pathlib import Path
 
+from pdfminer.pdfdocument import PDFEncryptionError
+from pdfminer.psexceptions import PSException
 from regreek.layers import layer_pages
 
 from ..model import Block, Document, Layer, Page, Source
+from .errors import SourceRefused
 
 _LAYER_MAP = {
   "greek_text": Layer.TEXT,
@@ -63,10 +76,66 @@ def _foot_colophon_split(lines: list) -> tuple[list, list]:
   return lines, []
 
 
+_PDF_SIGNATURE = b"%PDF-"
+
+
+def _head_and_tail(pdf_path: str | Path) -> tuple[int, bytes, bytes]:
+  """``(size, first bytes, last bytes)`` — enough to tell an empty file from
+  a renamed text file from a truncated one, without reading a 500 MB scan
+  back into memory on the way to a refusal."""
+  try:
+    with Path(pdf_path).open("rb") as fh:
+      head = fh.read(1024)
+      size = fh.seek(0, 2)
+      fh.seek(max(0, size - 2048))
+      return size, head, fh.read()
+  except OSError:
+    return 0, b"", b""
+
+
+def _refusal(pdf_path: str | Path, exc: Exception) -> SourceRefused:
+  """Say, about this file, what pdfminer said about its own parser.
+
+  Order is the diagnosis. Encryption first: an encrypted file is unreadable
+  for a reason that has nothing to do with its bytes being intact. Then the
+  two cases whose signature settles them — no content at all, and content
+  that never was a PDF. Truncation last, because a text file renamed ``.pdf``
+  also "ends early", and naming the wrong cause is worse than naming none.
+  """
+  if isinstance(exc, PDFEncryptionError):
+    return SourceRefused(
+      f"{pdf_path}: the PDF is encrypted and diorthosis has no password for "
+      f"it — open it with the password and save a decrypted copy, then build "
+      f"that copy")
+  size, head, tail = _head_and_tail(pdf_path)
+  if not head.strip():
+    return SourceRefused(
+      f"{pdf_path}: the file is empty ({size} bytes) — the download or the "
+      f"export produced no data")
+  if not head.startswith(_PDF_SIGNATURE):
+    return SourceRefused(
+      f"{pdf_path}: not a PDF — the file does not begin with the %PDF "
+      f"signature (a text file saved under a .pdf name?)")
+  if b"%%EOF" not in tail:
+    return SourceRefused(
+      f"{pdf_path}: the PDF is truncated — it stops before the end of its "
+      f"own structure (an interrupted download or copy?)")
+  detail = str(exc).strip()
+  return SourceRefused(
+    f"{pdf_path}: this file cannot be read as a PDF"
+    + (f" — {detail}" if detail else ""))
+
+
 def ingest_pdf(pdf_path: str | Path, pages: list[int] | None = None,
                text_lang: str = "grc") -> Document:
   doc = Document(source_name=Path(pdf_path).name, ingest="borndigital")
-  layered = layer_pages(pdf_path, pages=pages)
+  try:
+    layered = layer_pages(pdf_path, pages=pages)
+  except PSException as exc:
+    # pdfminer's OWN hierarchy (PDFSyntaxError, PSEOF, PDFPasswordIncorrect…):
+    # the library is saying the DOCUMENT is bad, which is the user's to fix.
+    # Anything else propagates untouched — exit 3 is for our defects.
+    raise _refusal(pdf_path, exc) from None
   # a printer's/license footer repeats VERBATIM at the foot of many pages
   # (the mirror of a running head); the geometric split alone cannot
   # catch it under a deep apparatus, where the gap shrinks to normal pitch

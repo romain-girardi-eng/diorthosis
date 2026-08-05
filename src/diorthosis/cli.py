@@ -31,7 +31,13 @@ from pathlib import Path
 
 from .anchor import anchor_page
 from .conspectus import Registry, bootstrap_registry, with_builtin_editors
-from .ingest import ingest_alto, ingest_hocr, ingest_pagexml, ingest_pdf
+from .ingest import (
+  SourceRefused,
+  ingest_alto,
+  ingest_hocr,
+  ingest_pagexml,
+  ingest_pdf,
+)
 from .md import Coverage, MarkerDelimiterError, coverage, to_markdown
 from .model import Document, Layer
 from .tei import resolve_parsed, to_tei
@@ -92,6 +98,32 @@ def _parse_pages(spec: str | None) -> list[int] | None:
   # regardless of the requested order; an unsorted list would silently
   # cross-label pages (content of one page under another's index)
   return sorted(out)
+
+
+def _output_dir(raw: str) -> Path:
+  """Check ``-o`` as a directory path, BEFORE the build does its work.
+
+  ``-o`` aimed at an existing file used to raise out of ``mkdir()`` and reach
+  the generic handler, so a plain typo was reported as "a diorthosis defect …
+  please report it" at exit 3. Choosing where the output goes is the user's
+  job, and getting it wrong is a `2`.
+  """
+  out = Path(raw)
+  if out.exists() and not out.is_dir():
+    raise ValueError(
+      f"-o {out}: exists and is not a directory — build writes several files "
+      f"(.tei.xml, .md, .witnesses.json), so -o takes a directory path")
+  return out
+
+
+def _make_output_dir(out: Path) -> Path:
+  """Create the output directory, or say why the path cannot be used."""
+  try:
+    out.mkdir(parents=True, exist_ok=True)
+  except OSError as exc:
+    raise ValueError(f"-o {out}: cannot create the output directory "
+                     f"({exc.strerror or exc})") from None
+  return out
 
 
 def degeneracies(doc: Document, cov: Coverage) -> list[str]:
@@ -235,13 +267,16 @@ def main(argv: list[str] | None = None) -> int:
     return EXIT_OK
 
   if args.cmd == "inspect":
+    # ingested FIRST so that an unreadable PDF is refused by the adapter that
+    # owns pdfminer, in its words and at exit 2 — the conspectus search reads
+    # the same file and would meet the library's exception first
+    doc = ingest_pdf(args.pdf, pages=[args.page])
     # same registry bootstrap as build: without it, anchoring cannot
     # discriminate duplicate markers by lemma and inspect would show a
     # DIFFERENT structure than the one build emits
     registry, note = bootstrap_registry(args.pdf, args.conspectus_page)
     if note:
       print(note, file=sys.stderr)
-    doc = ingest_pdf(args.pdf, pages=[args.page])
     for page in doc.pages:
       anchor_page(page, registry)
     cov = coverage(doc, registry)
@@ -259,19 +294,20 @@ def main(argv: list[str] | None = None) -> int:
       return EXIT_INPUT
     from .review import render_review
 
+    outdir = _output_dir(args.out)
+    doc = ingest_pdf(args.pdf, _parse_pages(args.pages),
+                     text_lang=args.text_lang)
     registry, note = bootstrap_registry(args.pdf, args.conspectus_page)
     if note:
       print(note)
-    doc = ingest_pdf(args.pdf, _parse_pages(args.pages),
-                     text_lang=args.text_lang)
     for page in doc.pages:
       anchor_page(page, registry)
     if args.overrides:
       from .overrides import apply_overrides, load_overrides
 
       apply_overrides(doc, load_overrides(args.overrides))
-    stats = render_review(doc, args.pdf, Path(args.out), registry)
-    print(f"wrote {Path(args.out) / 'index.html'}")
+    stats = render_review(doc, args.pdf, outdir, registry)
+    print(f"wrote {outdir / 'index.html'}")
     print(f"review: {stats['entries']} entries — {stats['parsed']} parsed, "
           f"{stats['refused']} refused, {stats['unanchored']} unanchored, "
           f"{stats['reviewed']} reviewed; {stats['snippets']} snippets")
@@ -287,6 +323,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.conspectus_page is not None:
       ap.error("--conspectus-page points into a PDF; OCR page files carry no "
                "front matter to search")
+  # checked before the source is read: an unusable -o is a typo, and learning
+  # about it after several minutes of ingestion helps nobody
+  outdir = _output_dir(args.out)
   if args.alto:
     doc = ingest_alto(args.alto)
   elif args.hocr:
@@ -310,10 +349,18 @@ def main(argv: list[str] | None = None) -> int:
     registry = with_builtin_editors(Registry())
 
   if getattr(args, "sigla", None):
+    added = []
     for siglum in args.sigla.split(","):
       siglum = siglum.strip()
       if siglum and siglum not in registry.witnesses:
         registry.witnesses[siglum] = "user-supplied siglum (--sigla)"
+        added.append(siglum)
+    # the conspectus line above reports what the EDITION declared; without
+    # this, supplying seven sigla on an edition that prints no conspectus
+    # still reads "0 witnesses" and the user cannot tell the flag took
+    print(f"--sigla: {len(added)} witness(es) supplied by hand "
+          f"({', '.join(added)}); registry now holds "
+          f"{len(registry.witnesses)}")
 
   if not doc.pages:
     raise ValueError("no pages ingested: the requested pages do not exist "
@@ -336,8 +383,7 @@ def main(argv: list[str] | None = None) -> int:
   # render this same object, so a build can no longer announce two scores
   cov = coverage(doc, registry)
 
-  outdir = Path(args.out)
-  outdir.mkdir(parents=True, exist_ok=True)
+  _make_output_dir(outdir)
   stem = Path(doc.source_name).stem[:60] or "edition"
   md_path = outdir / f"{stem}.md"
   witness_path = outdir / f"{stem}.witnesses.json"
@@ -411,6 +457,14 @@ def run() -> int:
     # the source is legitimate, the format simply refuses to represent it.
     print(f"refused: {exc}", file=sys.stderr)
     return EXIT_REFUSED
+  except SourceRefused as exc:
+    # an ingest adapter could not read the file it was given, and says so in
+    # diorthosis's own words, naming it. The user chose the file: exit 2,
+    # never 3 — this is not a defect to report. (SourceRefused is a
+    # ValueError, so the clause below would land it here anyway; it is
+    # written out because the mapping is the contract, not a side effect.)
+    print(f"error: {exc}", file=sys.stderr)
+    return EXIT_INPUT
   except (ValueError, KeyError) as exc:
     print(f"error: {exc}", file=sys.stderr)
     return EXIT_INPUT

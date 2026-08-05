@@ -39,7 +39,7 @@ The same error can appear *from inside a harness driver*. The drivers in
 not inherit that:
 
 ```console
-$ python3 tools/golden/double_build.py /tmp/ldlt-balex.pdf --pages 82-84 …
+$ python3 tools/golden/double_build.py balex.pdf --pages 82-84 …
 build 1: …/python3 -m diorthosis.cli build …
 …: Error while finding module specification for 'diorthosis.cli' (ModuleNotFoundError: No module named 'diorthosis')
 build 1 failed with exit code 1
@@ -309,6 +309,9 @@ measured before/after:
 
 ## `validate` rejects an older md-ce file
 
+The file below is a build kept from diorthosis 0.6; if you have none, the same
+two violations come from any file whose meta comment is `md-ce/0.2`.
+
 ```console
 $ diorthosis validate old-build/Bellum_Alexandrinum.md
 old-build/Bellum_Alexandrinum.md: [grammar] line 3: meta comment does not match the grammar
@@ -321,7 +324,8 @@ the version it does not check. 0.3 replaced the old `anchored: a/b` meta
 field with the single `coverage:` report (SPEC I11). Rebuild the edition with
 this diorthosis.
 
-A file that is not md-ce at all gives:
+A file that is not md-ce at all gives — here an ordinary Markdown note whose
+first line happens to be a `# ` title, so only the meta comment is missing:
 
 ```console
 $ diorthosis validate notes.md
@@ -356,11 +360,14 @@ $ diorthosis roundtrip mt/61-SBLGNT-Matthew.md mt/61-SBLGNT-Matthew.tei.xml
 mt/…md <> mt/…tei.xml: TEI translation for folio –: cannot assign it to a page (folio is not unique)
 … (repeated)
 mt/…md <> mt/…tei.xml: page – (file index 27): translation differs (md-ce='13:44–58'; TEI='')
-mt/…md <> mt/…tei.xml: page – (file index 33): text differs (md-ce='Σαδδουκαίων. 12 τότε συνῆκαν …'; TEI='Σαδδουκαίων. 12 τότε συνῆκαν …')
+mt/…md <> mt/…tei.xml: page – (file index 33): text differs (md-ce='Σαδδουκαίων. 12 τότε συνῆκαν ὅτι οὐκ εἶπεν προσέχειν ἀπὸ τῆς ζύμης ⸂τῶν ἄρτων⸃ ἀλλ ὰ ἀπὸ τῆς διδαχῆς τῶν Φαρισαίων καὶ …'; TEI='Σαδδουκαίων. 12 τότε συνῆκαν ὅτι οὐκ εἶπεν προσέχειν ἀπὸ τῆς ζύμης ⸂τῶν ἄρτων⸃ ἀλλ ὰ ἀπὸ τῆς διδαχῆς τῶν Φαρισαίων καὶ …')
 76 violation(s)
 $ echo $?
 1
 ```
+
+(The `mt/…md` abbreviations are this page's; every other character is the
+tool's, including the `…` with which it truncates its own quotations.)
 
 Of those 76, 33 are the `folio is not unique` line (counted by piping the
 same command through `grep -c "folio is not unique"`).
@@ -438,6 +445,11 @@ $ pip install 'diorthosis[review]'
 
 ## `review` crashes with `SystemError: tile cannot extend outside image`
 
+The file below is Walter Segrave's *Insolubles* (Open Book Publishers 2024,
+CC BY-NC 4.0), fetched and checksummed in
+[cookbook.md](cookbook.md#the-edition-this-recipe-was-written-for); nothing
+here is specific to it, only to its CropBox.
+
 With Pillow 12.1.1:
 
 ```console
@@ -462,12 +474,21 @@ $ echo $?
 2
 ```
 
+Page by page, on Pillow 12.1.1:
+
 ```console
-$ for p in 40 41 42; do diorthosis review insolubles.pdf --pages $p --text-lang la -o rv-$p; done
-page 40: exit=2 error: cannot write empty image                       # Pillow 12.3.0
+$ for p in 40 41 42; do
+    out=$(diorthosis review insolubles.pdf --pages $p --text-lang la -o rv-$p 2>&1)
+    echo "page $p: exit=$? $(echo "$out" | grep -E '^(error|internal error)')"
+  done
+page 40: exit=3 internal error: SystemError: tile cannot extend outside image
 page 41: exit=2 error: Coordinate 'lower' is less than 'upper'
 page 42: exit=2 error: Coordinate 'lower' is less than 'upper'
 ```
+
+Under Pillow 12.3.0 the same loop reported page 40 as
+`exit=2 error: cannot write empty image` — a third face of one defect, and the
+reason none of the three should be read as a verdict on your input.
 
 If `review` fails on a PDF while `build` succeeds, suspect this regardless of
 which of the three messages you got.
@@ -498,6 +519,12 @@ pdfminer bbox (0, 0, 612.0, 792.0)
 
 **Workaround: remove the CropBox.** pdfium then renders the MediaBox, which
 is the space the boxes are already in. This is lossless for the text stream:
+
+`pikepdf` is not a diorthosis dependency — install it just for this repair:
+
+```console
+$ pip install pikepdf
+```
 
 ```console
 $ python3 -c "
@@ -645,6 +672,8 @@ correction, you do not gain a false one), so it warns and continues:
 ```console
 $ diorthosis build … --overrides stale.json -o out/
 [!] 1 override key(s) matched no entry (stale file?): p99-e0
+overrides: 0 parses replaced, 0 forced verbatim
+…
 $ echo $?
 0
 ```

@@ -126,9 +126,12 @@ $ diorthosis build --alto page1.xml page2.xml -o out/   # any OCR engine
   naming its layer with bracketed provenance, so **a chunker can never mix
   apparatus into text**; numeric markers appear as `⟦folio:n⟧` in the text and
   at the head of the matching entry. Twelve mechanically checkable invariants
+  (ten of them decidable from the file alone by `diorthosis validate`; I8/I9
+  concern the relationship to the source and are enforced at emission)
   ([SPEC.md](SPEC.md)), enforced by `diorthosis validate`.
 
-Real output, from the build above:
+Real output, from the build above — `out/balex.md`, first page. Long
+listings on this page are cut, and every cut is marked `…`:
 
 ```markdown
 ## page – (file index 82) [markers=0 entries=7 unresolved=0]
@@ -140,10 +143,13 @@ Real output, from the build above:
 
 Ciliciaque omnem classem arcessit. Creta sagittarios, eq-
 
+…
+
 ### apparatus [source=born_digital generative=false confidence=0.90 block=2]
 
 5 cotidie operibus USTV | cotidie M (cf. BC 3.112.9) | nouis cotidie  operibus Castiglioni (cf. Tac. Hist. 2.76.4)
 7 aptantur MUSTV (u.  BC 3.112.7–9 et cf. Virg. Aen. 3.472) | temptantur Nipperdey (cf. BC  3.40.1) | alii alia (u. Gaertner-Hausburg 48 n.87)
+…
 ```
 
 and the first of those entries in the TEI:
@@ -154,6 +160,7 @@ and the first of those entries in the TEI:
   <rdg wit="#wit-M">cotidie</rdg>
   <rdg source="#ed-Castiglioni">nouis cotidie operibus</rdg>
   <note type="comment">(cf. BC 3.112.9)</note>
+  <note type="comment">(cf. Tac. Hist. 2.76.4)</note>
   <note type="verbatim">5 cotidie operibus USTV | cotidie M (cf. BC 3.112.9) | nouis cotidie
 
 operibus Castiglioni (cf. Tac. Hist. 2.76.4)</note>
@@ -161,18 +168,32 @@ operibus Castiglioni (cf. Tac. Hist. 2.76.4)</note>
 ```
 
 On a numeric-marker edition the two views share page-scoped markers, so an
-entry and its place in the text can be matched without parsing the TEI:
+entry and its place in the text can be matched without parsing the TEI. balex
+as printed is line-referenced and carries none (`markers=0` above); this is
+the retypeset balex golden, which prints the numeric-marker convention —
+page 25 of `work/balex/out/Bellum_Alexandrinum.md`, cut, built by the recipe
+in [docs/cookbook.md](docs/cookbook.md#consume-the-md-ce-for-retrieval):
 
 ```markdown
+## page 25 (file index 7) [markers=4 entries=4 unresolved=0]
+<!-- md-ce page: 4 entries — 4 parsed, 0 refused, 0 unparsed; 4 anchored (4 attached, 0 end-only), 0 unanchored -->
+
 ### text [source=born_digital generative=false confidence=0.90 block=1]
 
-… illud expectans⟦25:1⟧ primum ut, cum in duas partes es-
-set urbs⟦25:2⟧ diuisa, acies uno consilio atque imperio administraretur …
+…
+
+parte urbis excluderet, illud expectans⟦25:1⟧ primum ut, cum in duas partes es-
+
+set urbs⟦25:2⟧ diuisa, acies uno consilio atque imperio administraretur, deinde ut
+
+…
 
 ### apparatus [source=born_digital generative=false confidence=0.90 block=2]
 
 ⟦25:1⟧ Expectans M U S T V : spectans Vascosanus
 ⟦25:2⟧ Urbs U : ubrs M : urbis S T V
+⟦25:3⟧ Alterius rei copiam exiguam, alterius M U T V : alterius S
+⟦25:4⟧ Multitudinem <armatorum> Fischer : multitudinem M U S T V : <militum> multitudinem  Dauisius
 ```
 
 ## The provenance contract
@@ -227,7 +248,8 @@ counted as `refused` with the refusing gate's own sentence as the reason.
 Nothing is dropped; what you lose is structure, not evidence.
 
 **The measured result of that policy.** On nine reviewer-supplied editions
-the grammars had never seen (before/after table in
+the grammars had never seen (before/after table, and the checksummed fetch
+script that rebuilds the corpus, in
 [docs/generalization.md](docs/generalization.md)), whole-band convention
 gating fails closed. Eight are 100 % verbatim-refused. The ninth, Segrave's
 *Insolubilia*, parses 20 of 923 entries (2.2 %) — the locally separator-free
@@ -261,11 +283,17 @@ with every block `unclassified` and zero apparatus parsed; and consequently
 **no accuracy figures exist for noisy OCR input**. Every number on this page
 is measured on born-digital PDFs.
 
+**Broken today.** `diorthosis review` crashes on any PDF whose CropBox differs
+from its MediaBox — a common class, and it exits `3` or `2` depending on your
+Pillow version. `build`, `validate` and `roundtrip` are unaffected; the
+diagnosis and a lossless one-line workaround are in
+[docs/troubleshooting.md](docs/troubleshooting.md#review-crashes-with-systemerror-tile-cannot-extend-outside-image).
+
 ## Evidence — and what each test does and does not prove
 
 The suite is layered by epistemic strength. Read the labels: they are
-different claims. Every figure below was re-derived on 2026-08-05 at commit
-`bd01130`, except where marked.
+different claims. Every figure below was re-derived on 2026-08-05 on the 1.0
+tree, except where marked.
 
 **1. Adversarial backtest** — the printed PDF and the scholarly TEI were
 produced *independently*. The whole SBLGNT New Testament: the official
@@ -273,19 +301,19 @@ published PDFs against the PTA's TEI re-encoding of the same apparatus.
 
 ```
 TOTAL: 6921 source leaf apps = 6797 compared + 61 refused-with-reason + 60 uncovered
-       + 3 unaccounted + 0 adjudicated + 0 unexamined | 0 ERRORS | 430 gaps | 59 typed divergences
+       + 0 unaccounted + 3 adjudicated + 0 unexamined | 0 ERRORS | 430 gaps | 62 typed divergences
 ACCOUNTING: identity holds — 6921 == 6921 source leaf apps, all 27 books reconciled
-UNACCOUNTED (fatal, pending human adjudication): 3 source apps in no outcome bucket
 ```
 
-**6,797 entries compared, 0 structural errors**, with 59 print-vs-TEI
+**6,797 entries compared, 0 structural errors**, with 62 print-vs-TEI
 divergences documented one by one under an explicit adjudication protocol (a
 claimed divergence must be *provable from the extracted band itself*; every
 key carries its citation). The driver asserts that every source app lands in
-exactly one bucket — and **exits 1**, because three apps land in none. They
-are named, with their scholar lemma and our extracted band, for human
-adjudication. This is the strongest evidence the suite has, and it covers ONE
-convention on ONE atypically regular apparatus (editions cited, not
+exactly one bucket, and refuses to exit 0 otherwise: three apps landed in none
+until each was checked against the publisher's own PDF and given a typed,
+evidenced record, which is why they now read `3 adjudicated` rather than
+`3 unaccounted (fatal)`. This is the strongest evidence the suite has, and it
+covers ONE convention on ONE atypically regular apparatus (editions cited, not
 manuscripts).
 
 **2. Toolchain inversion** — the official PDF is *generated from* the
@@ -296,13 +324,16 @@ parser and typesetter see the same conventions.
 563 scholar apps | 563 compared | 0 ERRORS | 0 gaps | 17 documented divergences | 0 verbatim notes
 PASS: zero apparatus errors                        (DLL Bellum Alexandrinum, real printed PDF)
 
-235 scholar apps | 235 compared | 0 ERRORS | 0 documented divergences | anchored 206/235
+235 scholar apps | 235 compared | 0 ERRORS | 0 documented divergences | 2 suffix-unverified | anchored 206/235 | excluded rendered fields={'lemma_attribution_not_printed': 13, 'app_note_not_printed': 45}
 PASS: zero apparatus errors                        (Plaoul lectio 1, LombardPress toolchain PDF)
 ```
 
 Sweeping all thirty Plaoul lectios with the same checker: **6,293 apps
 compared, 0 errors** (235 + 82 + 155 + … + 255; the per-lectio table is
-`plaoul_check.py` run thirty times).
+`plaoul_check.py` run thirty times). `tools/golden/plaoul_build_pdf.py`
+regenerates those thirty PDFs from the pinned upstream — see
+[docs/cookbook.md](docs/cookbook.md#the-scholastic-double-apparatus) for the
+licence constraint on the TEI it fetches.
 
 Those 563 balex entries are `515 attached + 48 end-only` in the coverage report —
 the same graph the old "100 % anchored" described less carefully. These prove
@@ -332,9 +363,10 @@ because deleting it would flatter the others. Read that last number honestly:
 roughly one entry in ten needs a human eye on its attributions. On such
 editions diorthosis is a *pre-annotation* tool, not a replacement for review.
 
-**Also green at `bd01130`:** `219 passed` (`pytest -q`, fresh clone),
-`ruff check src/` clean, byte-identical double build, and the emitted TEI
-valid against `tei_all.rng`.
+**Also green:** `pytest -q` with `0 failed` and `ruff check src/` clean (the
+pass *count* is commit-coupled — it was `219 passed` in a fresh clone of
+`bd01130` and grows with the suite), byte-identical double build, and the
+emitted TEI valid against `tei_all.rng`.
 
 **Still not demonstrated:** double-keyed human validation of the parses. The
 sampling design, annotation unit, agreement statistics and adjudication

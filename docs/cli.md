@@ -26,6 +26,7 @@ positional arguments:
   {build,inspect,validate,roundtrip,review}
     build               compile a source into TEI + Markdown
     inspect             show one page's anchored structure
+…
 ```
 
 **From a working copy, uninstalled.** There is no console script, and
@@ -81,6 +82,7 @@ usage: diorthosis build [-h] [--alto XML [XML ...]] [--hocr HTML [HTML ...]]
                         [--text-lang {grc,la}] [--overrides JSON]
                         [--sigla S1,S2,…] [--ignore-self-check]
                         [pdf]
+…
 ```
 
 ### Source — exactly one
@@ -197,11 +199,25 @@ $ grep -o '<app [^>]*>' out/balex.tei.xml | grep -c 'from='  # 515
 ```
 
 `refusals:` is `none`, or `N× reason; M× reason`, with every run of digits in
-a reason replaced by `n` so one key names one refusal *class*:
+a reason replaced by `n` so one key names one refusal *class*. Build the whole
+balex file — front matter, indices and all — with neither of the two flags
+that make it work, and you can see both halves at once:
 
+```console
+$ diorthosis build balex.pdf --text-lang la -o all/ --ignore-self-check
+conspectus: 5 witnesses, 0 editors declared
+…
+coverage: 720 entries — 0 parsed, 720 refused, 0 unparsed; 0 anchored (0 attached, 0 end-only), 720 unanchored
+refusals: 563× line convention gate refused band: only n/n trial sides carry convention attribution (n, minimum n); 157× marker convention gate refused band: numeric-marker entry splitting found no boundary
 ```
-refusals: 64× marker convention gate refused band: numeric-marker entry splitting found no boundary; 2× marker convention gate refused band: n numeric markers resolved against the text layer
-```
+
+The `n`s are the masking, not a measurement: the tally replaces every run of
+digits so that 563 distinct measurements collapse into one class instead of
+563 keys. The unmasked per-band evidence is carried on each refused entry in
+memory — for file page 82 of that run it reads `only 2/16 trial sides carry
+convention attribution (12.5%; minimum 60%)`. `diorthosis review` renders it
+per entry in `index.html`; it is deliberately NOT written into the TEI or the
+md-ce, which record what the edition says, not how this tool decided.
 
 An OCR source adds a permanent stderr warning:
 
@@ -223,11 +239,11 @@ $ diorthosis inspect PDF --page N [--conspectus-page M]
 ```
 
 ```console
-$ PYTHONPATH=$PWD/src python3 -m diorthosis.cli inspect /tmp/ldlt-balex.pdf --page 82
+$ PYTHONPATH=$PWD/src python3 -m diorthosis.cli inspect balex.pdf --page 82
 conspectus: 5 witnesses, 0 editors declared
 coverage: 0 entries — 0 parsed, 0 refused, 0 unparsed; 0 anchored (0 attached, 0 end-only), 0 unanchored
 refusals: none
-# ldlt-balex.pdf
+# balex.pdf
 …
 ### heading [source=born_digital generative=false confidence=0.85 block=0]
 

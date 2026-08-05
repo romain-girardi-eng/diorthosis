@@ -10,15 +10,22 @@ Layer classification is not attempted here in P1: ALTO gives lines and word
 confidences but no typographic registers comparable to a born-digital page.
 Blocks arrive as ``UNKNOWN`` for a human or a later pass to label; honesty
 over guesswork.
+
+Two things this adapter refuses before reading a single ``String``: a file it
+cannot parse (see :mod:`.errors` — a dependency's ``ParseError`` is not a
+diagnosis), and a well-formed XML file that is simply not ALTO. The second
+matters because the generic advice for a build that yielded nothing is "run an
+OCR engine and pass its output with --alto/--hocr/--page-xml" — which, to
+someone who has just done exactly that with the wrong file, says nothing.
 """
 
 from __future__ import annotations
 
 import contextlib
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from ..model import Block, Document, Layer, Page, Source
+from .errors import SourceRefused, parse_xml
 
 
 def _local(tag: str) -> str:
@@ -29,8 +36,10 @@ def ingest_alto(paths: list[str | Path]) -> Document:
   """Ingest one ALTO file per page, in order."""
   doc = Document(source_name=Path(paths[0]).stem if paths else "alto", ingest="alto")
   for i, p in enumerate(paths):
-    tree = ET.parse(str(p))
-    root = tree.getroot()
+    root = parse_xml(p, "ALTO")
+    if _local(root.tag) != "alto":
+      raise SourceRefused(
+        f"{p}: not ALTO — root is <{_local(root.tag)}>, expected <alto>")
     page = Page(index=i, printed_page=None)
     for tb in root.iter():
       if _local(tb.tag) != "TextBlock":

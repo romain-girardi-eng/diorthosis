@@ -6,7 +6,7 @@ instead: Tesseract, kraken, OCRopus, Calamari and Transkribus all export hOCR
 is **generative** — a recognition model's guess, not a decoding of a character
 stream — and every block is permanently marked so.
 
-Three refusals, inherited from the ALTO adapter:
+Four refusals, the first three inherited from the ALTO adapter:
 
 - **No layer classification.** hOCR does define logical classes
   (``ocr_header``, ``ocr_pageno``, ``ocr_caption``…), but engines in practice
@@ -21,6 +21,15 @@ Three refusals, inherited from the ALTO adapter:
   Tesseract's hOCR is well-formed XHTML, but engines that emit HTML5 void
   tags (``<meta charset="utf-8">``) or named entities (``&nbsp;``) make it
   raise ``ParseError``. ``html.parser`` (stdlib) accepts both flavours.
+- **No recovery INTO text.** ``html.parser``'s tolerance has one dangerous
+  edge: when the input stops in the middle of a tag, closing the parse
+  flushes the half-written tag as character data. A file cut mid-write at
+  ``<span class='ocr_line'`` then produced an md-ce whose edition text *was*
+  that fragment — the source's own markup, certified at exit 0, in the same
+  family as any other fabricated text. Whatever the input left half-written
+  is held aside by :class:`_HocrParser` and the file is refused (see
+  :mod:`.errors`): an adapter that could not parse its input says so instead
+  of handing its bytes onward.
 
 Confidence follows this format's own scale. The spec asks producers to give
 ``x_wconf`` "values between 0 and 100", so a block whose confidences exceed 1
@@ -42,6 +51,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from ..model import Block, Document, Layer, Page, Source
+from .errors import SourceRefused, read_source_text
 
 _PAGE_CLASSES = frozenset({"ocr_page"})
 _BLOCK_CLASSES = frozenset({"ocr_carea", "ocrx_block"})
@@ -82,12 +92,19 @@ class _Node:
 
 
 class _HocrParser(HTMLParser):
-  """Tolerant tree builder: accepts XHTML and HTML5 hOCR alike."""
+  """Tolerant tree builder: accepts XHTML and HTML5 hOCR alike.
+
+  Tolerant of the flavours, not of truncation: see :meth:`finish`.
+  """
 
   def __init__(self) -> None:
     super().__init__(convert_charrefs=True)
     self.root = _Node("", frozenset(), {})
     self._stack: list[_Node] = [self.root]
+    self._draining = False
+    self._drained: list[tuple[_Node, str]] = []
+    self.unterminated: str | None = None
+    """Markup the input left half-written, if any — set by :meth:`finish`."""
 
   def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
     if tag in _VOID_TAGS:
@@ -113,7 +130,31 @@ class _HocrParser(HTMLParser):
         return
 
   def handle_data(self, data: str) -> None:
+    if self._draining:
+      # Closing the parse flushes whatever the input left half-written. Held
+      # aside rather than appended: if it is markup, appending it is exactly
+      # how a truncated export becomes edition text.
+      self._drained.append((self._stack[-1], data))
+      return
     self._stack[-1].parts.append(data)
+
+  def finish(self) -> None:
+    """Close the parse and judge what it had to flush.
+
+    The flush carries either a legitimate trailing text run (an unfinished
+    character reference is enough to defer one) or the remains of a tag the
+    file stops inside. Only the first is text; the second sets
+    :attr:`unterminated` and the caller refuses the file.
+    """
+    self._draining = True
+    self.close()
+    self._draining = False
+    tail = "".join(data for _, data in self._drained)
+    if "<" in tail:
+      self.unterminated = " ".join(tail.split())
+      return
+    for node, data in self._drained:
+      node.parts.append(data)
 
 
 def _title_props(title: str | None) -> dict[str, str]:
@@ -228,11 +269,18 @@ def ingest_hocr(paths: list[str | Path]) -> Document:
   index = 0
   for p in paths:
     parser = _HocrParser()
-    parser.feed(Path(p).read_text(encoding="utf-8"))
-    parser.close()
+    parser.feed(read_source_text(p, "hOCR"))
+    parser.finish()
+    if parser.unterminated is not None:
+      fragment = parser.unterminated
+      shown = fragment if len(fragment) <= 60 else fragment[:57] + "…"
+      raise SourceRefused(
+        f"{p}: not hOCR — the file ends inside unterminated markup "
+        f"({shown!r}); this export is truncated, so re-export the page from "
+        f"your OCR engine")
     pages = _outermost(parser.root, _PAGE_CLASSES)
     if not pages:
-      raise ValueError(f"{p}: no ocr_page element — not hOCR output")
+      raise SourceRefused(f"{p}: no ocr_page element — not hOCR output")
     for src in pages:
       page = Page(index=index, printed_page=src.props.get("lpageno") or None)
       index += 1

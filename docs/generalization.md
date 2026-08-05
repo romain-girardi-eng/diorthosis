@@ -53,7 +53,70 @@ SHA-256-derived seed and checked manually against their exact `source_slice`;
 representative rendered pages established each band's visual convention. This
 is a fabrication spot-check, not the double annotation study proposed below.
 
-## Locating the edition pages and sigla
+## The corpus
+
+### Obtaining it
+
+Until 1.0 this study was **irreproducible**: `tools/golden/generalize.py` named
+its nine PDFs by hardcoded `/tmp` path and recorded no URL, so no reader could
+re-derive a single row. The provenance has been recovered and is now executable:
+
+```console
+$ sh tools/golden/fetch_generalization_corpus.sh
+$ sh tools/golden/fetch_generalization_corpus.sh --with-gracilis
+```
+
+The script downloads each edition from its publisher into `/tmp/gen10` — the
+location `generalize.py` expects — and refuses any file whose SHA-256 does not
+match. diorthosis ships no edition content; this is the same fetch-at-use
+contract as `fetch_sources.sh`. Checksums are abbreviated below; the script
+carries them in full, and is where they are re-pinned.
+
+| Edition | Source | Licence | SHA-256 of the measured file |
+|---|---|---|---|
+| Insolubilia | Open Book Publishers, [doi:10.11647/obp.0359](https://doi.org/10.11647/obp.0359) | CC BY-NC 4.0 | `ca331c49…36716b29` |
+| Britannico | HAL [tel-01706755](https://theses.hal.science/tel-01706755) (Rossetti 2017) | HAL open deposit | `096a4d99…2e2b5a5b` |
+| Herodian | HAL [tel-04929819](https://theses.hal.science/tel-04929819) (de Rivas 2022) | HAL open deposit | `8bf36a36…4e322499` |
+| Iacopone | HAL [tel-02905402](https://theses.hal.science/tel-02905402) (Giraudo 2020) | HAL open deposit | `dd59c499…34988ca3` |
+| Blacasset | Ledizioni / Zenodo, [doi:10.5281/zenodo.11658375](https://doi.org/10.5281/zenodo.11658375) | CC BY 4.0 | `93ada3b0…6a1b700f` |
+| Pigna | BIT&S, `bitesonline.it`, ISBN 979-12-80391-44-5 | CC BY-NC-ND 3.0 IT | `a3764856…ae816337` |
+| Universal Śaivism † | Brill, [doi:10.1163/9789004384361](https://doi.org/10.1163/9789004384361) | CC BY-NC | `45501a52…971a4829` |
+| Suśruta | HASP, [doi:10.11588/hasp.1203](https://doi.org/10.11588/hasp.1203) | CC BY-SA 4.0 | `34afb984…6d509c30` |
+| Gracilis ‡ | SCTA `graciliscommentary`, TEI at `f4f168e3` | CC BY-NC-SA 4.0 | `c0f87ef2…f1d5c536` (built) |
+
+Two publishers disagree about who `curl` is, and the script says so where it
+handles them: Open Book Publishers answers curl's default agent with `202` and
+an empty body, so that one download announces a browser; HAL sits behind an
+anti-bot interstitial that challenges browser agents, so those three must not.
+
+**† Universal Śaivism is reviewer-local, by the publisher's design.** The
+measured file is a direct Brill.com download, and Brill stamps the download
+date into a footer on every page — the exact bytes above are unique to a
+download made on 2018-09-10 and **cannot be fetched again by anyone**, this
+author included. The script therefore fetches the OAPEN copy of the same
+open-access book (`library.oapen.org`, handle `20.500.12657/25345`,
+SHA-256 `24d89e30…72821ad4`), which carries a fixed stamp. Re-measuring the row
+against it was done rather than assumed: 82 pages, 82 entries, 0 parsed,
+100 % refused, 0 anchored, the same layer-block counts, the same two refusal
+reasons, `validate` PASS and `roundtrip` PASS — every published figure of this
+row is reproduced. One diagnostic number moves, and only one: apparatus
+characters 153,294 → 153,622, which is 82 pages × the 4 characters by which
+OAPEN's stamp is formatted differently. Read that cell of the second table as
+reviewer-local; read the rest of the row as reproducible.
+
+**‡ Gracilis was never published as a PDF.** It is typeset locally from the
+SCTA TEI by the LombardPress toolchain `plaoul_build_pdf.py` already pins, and
+that is why the study labels it "same-toolchain unseen content" rather than an
+independent publisher convention. `--with-gracilis` pins the TEI to the commit
+whose bytes produced the measured PDF (`f4f168e3`, SHA-256 `1db9209e…ee526cb9`;
+that file has changed four times upstream since, so `master` would not
+reproduce the row) and rebuilds it. Verified on
+2026-08-05 with tectonic 0.17.0: the rebuilt PDF is byte-identical to the
+measured one. A different TeX toolchain may legitimately produce different
+bytes, and the script reports that as a note to re-derive the row, not as a
+silent pass.
+
+### Locating the edition pages and sigla
 
 Page ranges were found first with pdfminer text probes for section headings,
 language/script changes, and terminal index/translation headings, then checked
@@ -203,7 +266,7 @@ and `tools/golden/generalize.py` carries it into the refusal counts.
 | Retypeset SBLGNT golden | 6,906 compared; **0 errors, 0 gaps** |
 | Retypeset *Problemata* golden | 5,524 compared; **0 errors, 50 gaps** (47 at v0.6; the three added by the gate are named in `tools/golden/README.md`) |
 | Real SBLGNT Matthew verse grammar | 822 compared; **0 errors** |
-| Whole real NT, source-complete oracle | 6,797 compared, **0 errors**, 59 typed divergences; partition 6,797 + 61 refused + 60 uncovered + 3 unaccounted = 6,921 = source total |
+| Whole real NT, source-complete oracle | 6,797 compared, **0 errors**, 62 typed divergences; partition 6,797 + 61 refused + 60 uncovered + 0 unaccounted + 3 adjudicated = 6,921 = source total |
 | Bobichon marker grammar, pages 188–560 | 2,031 entries; **99.3% anchoring, 99.0% parse, 97.5% concordance, 89.9% attribution**; 186/186 marker bands accepted by the gate |
 
 “563/563 anchored” is not “100% attached”. diorthosis anchors by internal

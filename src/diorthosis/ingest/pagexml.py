@@ -39,6 +39,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from ..model import Block, Document, Layer, Page, Source
+from .errors import SourceRefused, parse_xml
 
 
 def _local(tag: str) -> str:
@@ -127,13 +128,13 @@ def ingest_pagexml(paths: list[str | Path]) -> Document:
   doc = Document(
     source_name=Path(paths[0]).stem if paths else "pagexml", ingest="pagexml")
   for i, p in enumerate(paths):
-    root = ET.parse(str(p)).getroot()
+    root = parse_xml(p, "PAGE-XML")
     if _local(root.tag) != "PcGts":
-      raise ValueError(
+      raise SourceRefused(
         f"{p}: not PAGE-XML — root is <{_local(root.tag)}>, expected <PcGts>")
     sources = _children(root, "Page")
     if not sources:
-      raise ValueError(f"{p}: PAGE-XML file declares no <Page>")
+      raise SourceRefused(f"{p}: PAGE-XML file declares no <Page>")
     src = sources[0]
     declared_order = bool(_children(src, "ReadingOrder"))
     page = Page(index=i, printed_page=None)

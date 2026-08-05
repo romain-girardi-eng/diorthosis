@@ -25,13 +25,13 @@ md-ce, validated. It uses nothing outside `__all__`.
 ```python
 """diorthosis end to end: a printed critical edition -> anchored TEI + md-ce.
 
-    python3 example.py path/to/ldlt-balex.pdf /tmp/out
+    python3 example.py path/to/balex.pdf /tmp/out
 
 The input used below is the Digital Latin Library's own PDF of Cynthia
-Damon's *Bellum Alexandrinum* (LDLT, CC BY): file pages 82-91, conspectus
-siglorum on file page 54. diorthosis ships no edition content, so fetch that
-PDF first -- any born-digital critical edition works, with its own page
-numbers.
+Damon's *Bellum Alexandrinum* (LDLT, CC BY-SA 4.0): file pages 82-91,
+conspectus siglorum on file page 54. diorthosis ships no edition content, so
+fetch that PDF first (pinned URL and checksum in the README's quickstart) --
+any born-digital critical edition works, with its own page numbers.
 """
 
 import sys
@@ -122,11 +122,11 @@ print(f"witnesses used: {len(rows)}")
 print(rows[0] if rows else "no siglum attributed")
 ```
 
-Run on `ldlt-balex.pdf` (diorthosis 0.7.0, regreek 0.7.2, CPython 3.13.5),
+Run on `balex.pdf` (diorthosis 0.7.0, regreek 0.7.2, CPython 3.13.5),
 verbatim:
 
 ```console
-$ python3 example.py ldlt-balex.pdf /tmp/out
+$ python3 example.py balex.pdf /tmp/out
 ingested 10 page(s) via borndigital
 conspectus: 24 witnesses, 103 editors declared
 coverage: 63 entries — 63 parsed, 0 refused, 0 unparsed; 63 anchored (60 attached, 3 end-only), 0 unanchored

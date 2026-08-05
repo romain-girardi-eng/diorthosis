@@ -15,7 +15,10 @@ and honouring it is worth more than freezing much and drifting.
 Six contracts are frozen:
 
 1. the command line — subcommands, flags, and the four exit codes;
-2. `md-ce/0.3` — its grammar, its twelve invariants, its chunking contract;
+2. `md-ce/0.3` — its grammar, its twelve invariants (ten of which
+   `diorthosis validate` decides from the file alone; I8/I9 concern the
+   relationship to the source and are enforced at emission), its chunking
+   contract;
 3. the TEI shape — the element and attribute patterns a consumer selects on;
 4. the `witnesses.json` row schema;
 5. `diorthosis-overrides/1` — the human-review file;
