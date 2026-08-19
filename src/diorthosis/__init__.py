@@ -29,7 +29,7 @@ after the import block breaks the package at import time. ``tests/
 test_public_api.py`` pins this in a fresh interpreter.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 from .anchor import anchor_page, split_entries
 from .conspectus import Registry, bootstrap_registry, with_builtin_editors

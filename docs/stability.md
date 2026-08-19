@@ -43,6 +43,7 @@ diorthosis build     [PDF | --alto XML… | --hocr HTML… | --page-xml XML…]
                      [--text-lang grc|la] [--overrides JSON] [--sigla S1,S2,…]
                      [--ignore-self-check]
 diorthosis inspect   PDF --page N [--conspectus-page N]
+diorthosis probe     PDF [--pages SPEC] [--max-pages N]
 diorthosis validate  FILE.md
 diorthosis roundtrip FILE.md FILE.tei.xml
 diorthosis review    PDF -o DIR [--pages SPEC] [--conspectus-page N]

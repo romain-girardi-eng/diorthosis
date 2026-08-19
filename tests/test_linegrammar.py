@@ -88,6 +88,13 @@ def test_burst_glued_sigla_longest_first():
   assert burst_sigla(["MUSTcVac,"], reg()) == ["M", "U", "S", "Tc", "Vac,"]
 
 
+def test_burst_strips_hand_superscript():
+  hands = Registry()
+  for w in ("A", "B", "V", "G"):
+    hands.witnesses[w] = w
+  assert burst_sigla(["ABVG²"], hands) == ["A", "B", "V", "G"]
+
+
 def test_burst_only_on_complete_dissolution():
   assert burst_sigla(["MUX"], reg()) == ["MUX"]      # X undeclared
   assert burst_sigla(["multa"], reg()) == ["multa"]  # plain word

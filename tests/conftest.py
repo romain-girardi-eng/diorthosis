@@ -11,21 +11,22 @@ before any test module imports the package, and
 ``test_cli.py::test_the_suite_tests_the_working_tree`` asserts that the module
 that answered really is the one in this checkout.
 
-**2. Synthetic editions, built in-process, shipping no edition content.**
-:func:`write_pdf` is a ~50-line PDF writer with no third-party dependency: one
-uncompressed content stream per page, Type 1 Times-Roman, absolute text
-positions. That is enough for the whole pipeline — regreek's geometric layerer
-reads font-size registers and vertical gaps, and both are under our control —
-and it means the net never needs reportlab, a network, or a byte of anyone's
-critical edition. The Latin text below is invented for the fixture; the sigla
-(A, B, Marc.) are shapes, not a real conspectus.
+**2. Edition tests use a checksum-pinned published edition.** The fixture
+accepts an explicit local file, then a gitignored cache, then the pinned
+publisher URL. Every route verifies the same SHA-256 before a test can use the
+file. If no verified copy is available, the tests skip with retrieval
+instructions instead of substituting generated material.
 """
 
 from __future__ import annotations
 
+import hashlib
 import os
 import subprocess
 import sys
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 
 import pytest
@@ -48,177 +49,132 @@ if str(SRC) not in _PYTHONPATH.split(os.pathsep):
 
 
 # --------------------------------------------------------------------------
-# a minimal, dependency-free PDF writer
+# the checksum-pinned real edition
 # --------------------------------------------------------------------------
 
-PAGE_W, PAGE_H = 612.0, 792.0
-"""US Letter, in PDF units — the fixture pages' MediaBox."""
-
-Item = tuple[float, float, float, str]
-"""(x, y, font size, text) — one absolutely positioned line of Type 1 text."""
-
-
-def _escape(text: str) -> bytes:
-  out = text.replace("\\", r"\\").replace("(", r"\(").replace(")", r"\)")
-  return out.encode("cp1252", "replace")
+REAL_EDITION_URL = (
+  "https://raw.githubusercontent.com/Library-of-Digital-Latin-Texts/balex/"
+  "0e6ee82976a6ffeff41b5515594826719bfdfb0f/ldlt-balex.pdf"
+)
+REAL_EDITION_SHA256 = "6702fceb54ec347406c0d857ea508e2ff05e2e4dac9a5111df3f6aa2f96c1325"
+REAL_EDITION_CACHE = REPO_ROOT / ".test-cache" / "ldlt-balex.pdf"
 
 
-def write_pdf(path: Path, pages: list[list[Item]]) -> Path:
-  """Write a born-digital PDF: one uncompressed text stream per page.
+def _sha256(path: Path) -> str:
+  digest = hashlib.sha256()
+  with path.open("rb") as stream:
+    for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+      digest.update(chunk)
+  return digest.hexdigest()
 
-  ``pages`` is one list of :data:`Item` per page. An empty list produces a page
-  carrying no text operator at all — what a scanned page looks like to a text
-  extractor, and the fixture behind the image-only adversarial case.
-  """
-  objs: list[bytes] = [b"", b""]              # 1 = catalog, 2 = page tree
 
-  def add(body: bytes) -> int:
-    objs.append(body)
-    return len(objs)
+def _verified(path: Path) -> tuple[bool, str]:
+  if not path.is_file():
+    return False, "file not found"
+  try:
+    actual = _sha256(path)
+  except OSError as exc:
+    return False, str(exc)
+  if actual != REAL_EDITION_SHA256:
+    return False, f"SHA-256 {actual}, expected {REAL_EDITION_SHA256}"
+  return True, ""
 
-  font_id = add(b"<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman "
-                b"/Encoding /WinAnsiEncoding >>")
-  kids: list[int] = []
-  for items in pages:
-    stream = b"\n".join(
-      b"BT /F1 " + f"{size:g}".encode() + b" Tf " + f"{x:g} {y:g}".encode()
-      + b" Td (" + _escape(text) + b") Tj ET"
-      for x, y, size, text in items
+
+@pytest.fixture(scope="session")
+def real_edition() -> Path:
+  """The published Bellum Alexandrinum PDF, verified before every return path."""
+  failures: list[str] = []
+  configured = os.environ.get("DIORTHOSIS_TEST_PDF")
+  candidates = []
+  if configured:
+    candidates.append(("DIORTHOSIS_TEST_PDF", Path(configured).expanduser()))
+  candidates.append(("test cache", REAL_EDITION_CACHE))
+
+  for label, path in candidates:
+    valid, reason = _verified(path)
+    if valid:
+      return path
+    failures.append(f"{label} {path}: {reason}")
+
+  try:
+    with urllib.request.urlopen(REAL_EDITION_URL, timeout=30) as response:
+      body = response.read()
+  except (OSError, urllib.error.URLError) as exc:
+    failures.append(f"download failed: {exc}")
+  else:
+    actual = hashlib.sha256(body).hexdigest()
+    if actual != REAL_EDITION_SHA256:
+      failures.append(
+        f"download SHA-256 {actual}, expected {REAL_EDITION_SHA256}"
+      )
+    else:
+      try:
+        REAL_EDITION_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        REAL_EDITION_CACHE.write_bytes(body)
+      except OSError as exc:
+        failures.append(f"could not write test cache: {exc}")
+      else:
+        valid, reason = _verified(REAL_EDITION_CACHE)
+        if valid:
+          return REAL_EDITION_CACHE
+        failures.append(f"written test cache failed verification: {reason}")
+
+  pytest.skip(
+    "real-edition tests need the checksum-pinned PDF; set DIORTHOSIS_TEST_PDF "
+    f"to a local copy or fetch {REAL_EDITION_URL}. " + " | ".join(failures)
+  )
+
+
+@dataclass(frozen=True)
+class RealEditionWindow:
+  """A fast page slice of the real edition, with its known-good options."""
+
+  pdf: Path
+  pages: str = "82-84"
+  conspectus_page: int = 54
+  text_lang: str = "la"
+
+  def args(self, *, include_text_lang: bool = True) -> tuple[object, ...]:
+    args: tuple[object, ...] = (
+      self.pdf, "--pages", self.pages,
+      "--conspectus-page", self.conspectus_page,
     )
-    contents = add(b"<< /Length " + str(len(stream)).encode() + b" >>\nstream\n"
-                   + stream + b"\nendstream")
-    kids.append(add(
-      b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "
-      + f"{PAGE_W:g} {PAGE_H:g}".encode() + b"] /Resources << /Font << /F1 "
-      + str(font_id).encode() + b" 0 R >> >> /Contents "
-      + str(contents).encode() + b" 0 R >>"))
-  objs[0] = b"<< /Type /Catalog /Pages 2 0 R >>"
-  objs[1] = (b"<< /Type /Pages /Kids ["
-             + b" ".join(str(k).encode() + b" 0 R" for k in kids)
-             + b"] /Count " + str(len(kids)).encode() + b" >>")
+    if include_text_lang:
+      args += ("--text-lang", self.text_lang)
+    return args
 
-  out = bytearray(b"%PDF-1.4\n")
-  offsets: list[int] = []
-  for i, body in enumerate(objs, start=1):
-    offsets.append(len(out))
-    out += str(i).encode() + b" 0 obj\n" + body + b"\nendobj\n"
-  xref_at = len(out)
-  out += b"xref\n0 " + str(len(objs) + 1).encode() + b"\n0000000000 65535 f \n"
-  for off in offsets:
-    out += f"{off:010d} 00000 n \n".encode()
-  out += (b"trailer\n<< /Size " + str(len(objs) + 1).encode()
-          + b" /Root 1 0 R >>\nstartxref\n" + str(xref_at).encode()
-          + b"\n%%EOF\n")
-  path.write_bytes(bytes(out))
+
+@pytest.fixture(scope="session")
+def real_edition_window(real_edition: Path) -> RealEditionWindow:
+  """Pages 82–84 of the same verified edition; less work, not a smaller PDF."""
+  return RealEditionWindow(real_edition)
+
+
+@pytest.fixture(scope="session")
+def image_only_real_page(real_edition: Path,
+                         tmp_path_factory: pytest.TempPathFactory) -> Path:
+  """One real edition page rasterized into a PDF with no extractable text."""
+  pdfium = pytest.importorskip(
+    "pypdfium2",
+    reason="the real-PDF image-only case needs diorthosis[review] (pypdfium2)",
+  )
+  pytest.importorskip(
+    "PIL",
+    reason="the real-PDF image-only case needs diorthosis[review] (Pillow)",
+  )
+  path = tmp_path_factory.mktemp("image-only") / "ldlt-balex-page-82.pdf"
+  document = pdfium.PdfDocument(real_edition)
+  page = document[82]
+  bitmap = page.render(scale=1)
+  image = bitmap.to_pil().convert("RGB")
+  try:
+    image.save(path, format="PDF", resolution=72.0)
+  finally:
+    image.close()
+    bitmap.close()
+    page.close()
+    document.close()
   return path
-
-
-# --------------------------------------------------------------------------
-# the synthetic edition: a conspectus page + two edition pages
-# --------------------------------------------------------------------------
-
-CONSPECTUS: list[Item] = [
-  (220.0, PAGE_H - 90, 12.0, "CONSPECTVS SIGLORVM"),
-  (120.0, PAGE_H - 130, 10.0, "A = Codex Ambrosianus, s. IX"),
-  (120.0, PAGE_H - 146, 10.0, "B = Codex Bernensis, s. X"),
-  (120.0, PAGE_H - 162, 10.0, "Marc. = Marcovich"),
-]
-
-# Invented Latin, in the shape a marker-convention edition prints: numbered
-# superscript markers glued to the word they annotate, and one entry per line
-# in the foot band, each naming who reads what.
-PAGE_ONE_TEXT = [
-  "Bellum ciuile1 gestum est apud Alexandriam, ubi Caesar",
-  "cum paucis cohortibus2 remansit et hostium impetum",
-  "fortiter sustinuit3 donec auxilia ex Syria uenirent.",
-  "Nam classis regia portum obsidebat et copiae4 regis",
-  "totam urbem tenebant, cum subito nuntius adfuit.",
-]
-PAGE_ONE_APPARATUS = [
-  "1 Ciuile : ciuili A",
-  "2 Cohortibus : cohortes B, Marc.",
-  "3 Sustinuit : sustinet A B",
-  "4 Copiae : copias A",
-]
-PAGE_TWO_TEXT = [
-  "Interim Caesar naues longas1 comparauit atque milites",
-  "in litore instruxit, ne quis exitus hostibus2 pateret.",
-  "Alexandrini contra turres ligneas erexerunt et tela",
-  "in nostros coniecerunt, sed uirtus3 legionum uicit.",
-  "Postero die pax facta est et rex in castra uenit.",
-]
-PAGE_TWO_APPARATUS = [
-  "1 Longas : longos B",
-  "2 Hostibus : hostis A",
-  "3 Uirtus : uirtute Marc.",
-]
-
-
-def edition_page(folio: int, text: list[str], band: list[str]) -> list[Item]:
-  """One edition page: running head, text register, foot band, printed folio.
-
-  The registers are what the layerer keys on — 11 pt text against an 8 pt band
-  separated by a gap far larger than the body pitch — so the geometry, not a
-  content guess, is what puts the apparatus in the apparatus layer.
-  """
-  items: list[Item] = [(PAGE_W / 2 - 40, PAGE_H - 54, 9.0, "LIBER PRIMVS")]
-  y = PAGE_H - 100
-  for line in text:
-    items.append((90.0, y, 11.0, line))
-    y -= 15
-  y = 150.0
-  for line in band:
-    items.append((90.0, y, 8.0, line))
-    y -= 10
-  items.append((PAGE_W / 2 - 4, 50.0, 9.0, str(folio)))
-  return items
-
-
-@pytest.fixture(scope="session")
-def synthetic_edition(tmp_path_factory: pytest.TempPathFactory) -> Path:
-  """A three-page Latin edition: page 0 conspectus, pages 1-2 the edition.
-
-  Built to be compiled with ``--pages 1-2 --text-lang la``: 7 apparatus
-  entries, all of them parseable and anchorable, so it exercises the happy
-  path of every subcommand.
-  """
-  path = tmp_path_factory.mktemp("edition") / "ed.pdf"
-  return write_pdf(path, [
-    CONSPECTUS,
-    edition_page(11, PAGE_ONE_TEXT, PAGE_ONE_APPARATUS),
-    edition_page(12, PAGE_TWO_TEXT, PAGE_TWO_APPARATUS),
-  ])
-
-
-@pytest.fixture(scope="session")
-def numbered_prose_edition(tmp_path_factory: pytest.TempPathFactory) -> Path:
-  """The fabrication shape wave A closed: a NUMBERED EDITORIAL FOOTNOTE band.
-
-  Same printed geometry as an apparatus, same superscript numbering, same
-  ``:`` — and not one siglum, because editorial prose never names a witness.
-  Emitting these as ``<lem>/<rdg>`` variants is the defect an Opus assessment
-  found in the Segrave *Insolubilia*; the band-level marker gate must refuse
-  the whole band and keep the prose verbatim.
-  """
-  band = [
-    "1 Ciuile here renders the phrase discussed at length above.",
-    "2 Cohortibus should be understood in the technical sense.",
-  ]
-  path = tmp_path_factory.mktemp("prose") / "footnotes.pdf"
-  return write_pdf(path, [CONSPECTUS, edition_page(11, PAGE_ONE_TEXT, band)])
-
-
-@pytest.fixture(scope="session")
-def unattributed_edition(tmp_path_factory: pytest.TempPathFactory) -> Path:
-  """A band shaped exactly like an apparatus — but no reading names anybody.
-
-  This reaches the marker gate's last clause (the one the token-consumption
-  and parse-rate floors let through), so it is the direct regression test for
-  wave A's "an apparatus records WHO reads WHAT" rule.
-  """
-  band = ["1 Ciuile : ciuili", "2 Cohortibus : cohortes"]
-  path = tmp_path_factory.mktemp("bare") / "unattributed.pdf"
-  return write_pdf(path, [CONSPECTUS, edition_page(11, PAGE_ONE_TEXT, band)])
 
 
 # --------------------------------------------------------------------------
@@ -272,12 +228,11 @@ def cli():
 
 
 @pytest.fixture(scope="session")
-def built_edition(cli, synthetic_edition: Path,
+def built_edition(cli, real_edition_window: RealEditionWindow,
                   tmp_path_factory: pytest.TempPathFactory):
-  """``build`` of :func:`synthetic_edition`, run once for the whole session."""
+  """A known-good three-page build from the checksum-pinned real edition."""
   out = tmp_path_factory.mktemp("built")
-  result = cli("build", synthetic_edition, "--pages", "1-2",
-               "--text-lang", "la", "-o", out)
+  result = cli("build", *real_edition_window.args(), "-o", out)
   assert result.returncode == 0, result.report()
   return result, out
 

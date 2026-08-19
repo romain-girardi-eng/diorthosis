@@ -8,12 +8,12 @@ stream — and every block is permanently marked so.
 
 Four refusals, the first three inherited from the ALTO adapter:
 
-- **No layer classification.** hOCR does define logical classes
-  (``ocr_header``, ``ocr_pageno``, ``ocr_caption``…), but engines in practice
-  emit only the typesetting ones, and where a logical class *is* declared it
-  remains a model's guess about a page whose registers (text / apparatus /
-  translation) it has no vocabulary for. Blocks arrive as ``UNKNOWN``; the
-  declared classes are copied verbatim into ``evidence`` so nothing is lost.
+- **No guessed layers.** hOCR logical classes (``ocr_header``,
+  ``ocr_pageno``, ``ocr_caption``…) are furniture names, not edition
+  registers. ``ocr_header`` / ``ocr_pageno`` / ``ocr_title`` are honored
+  as running head, page number and heading; ``ocr_footer`` and
+  ``ocr_caption`` stay ``UNKNOWN``. Declared classes are always copied
+  into ``evidence``.
 - **No invented separators.** Word text is read with the whitespace the file
   itself serializes between the word spans — ALTO's rule, where a space
   appears only where ``<SP/>`` appears.
@@ -51,6 +51,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from ..model import Block, Document, Layer, Page, Source
+from .declared import layer_from_declared_type
 from .errors import SourceRefused, read_source_text
 
 _PAGE_CLASSES = frozenset({"ocr_page"})
@@ -59,8 +60,9 @@ _PAR_CLASSES = frozenset({"ocr_par"})
 _LINE_CLASSES = frozenset({"ocr_line", "ocrx_line"})
 _WORD_CLASSES = frozenset({"ocrx_word", "ocr_word"})
 
-# Logical classes hOCR may declare on a block. Never acted on (see the module
-# docstring); recorded in the block's evidence instead.
+# Logical classes hOCR may declare on a block. Furniture names that
+# map onto a layer are honored; the rest stay UNKNOWN (see the module
+# docstring) and are recorded in evidence either way.
 _LOGICAL_CLASSES = frozenset({
   "ocr_abstract", "ocr_author", "ocr_blockquote", "ocr_caption", "ocr_chapter",
   "ocr_display", "ocr_footer", "ocr_header", "ocr_pageno", "ocr_part",
@@ -270,8 +272,23 @@ def _evidence(block: _Node) -> str:
   evidence = f"hOCR {kind}; OCR output — text is generated, not decoded"
   declared = sorted(_declared_logical(block))
   if declared:
-    evidence += f"; logical class declared ({' '.join(declared)}) — not acted on"
+    honored = [c for c in declared
+               if layer_from_declared_type(c) is not Layer.UNKNOWN]
+    if honored:
+      evidence += (f"; logical class declared ({' '.join(declared)}) — "
+                   f"honored as {layer_from_declared_type(honored[0]).value}")
+    else:
+      evidence += (f"; logical class declared ({' '.join(declared)}) — "
+                   "not a critical-edition register")
   return evidence
+
+
+def _hocr_layer(block: _Node) -> Layer:
+  for cls in sorted(_declared_logical(block)):
+    layer = layer_from_declared_type(cls)
+    if layer is not Layer.UNKNOWN:
+      return layer
+  return Layer.UNKNOWN
 
 
 def ingest_hocr(paths: list[str | Path]) -> Document:
@@ -304,7 +321,7 @@ def ingest_hocr(paths: list[str | Path]) -> Document:
         if not lines:
           continue
         page.blocks.append(Block(
-          layer=Layer.UNKNOWN,
+          layer=_hocr_layer(blk),
           text="\n".join(lines),
           source=Source.OCR,
           generative=True,

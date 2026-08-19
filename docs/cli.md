@@ -359,10 +359,31 @@ Notes:
 - `review` reports its own counters, and they are **not** the `build`
   coverage report: `parsed / refused / unanchored / reviewed / snippets`,
   where `unanchored` and `refused` are the work queue.
-- `review` crashes on PDFs whose CropBox differs from their MediaBox — exit
-  `3` or `2` depending on the installed Pillow. Reproduction, diagnosis and a
-  lossless workaround are in
-  [troubleshooting.md](troubleshooting.md#review-crashes-with-systemerror-tile-cannot-extend-outside-image).
+- CropBox ≠ MediaBox used to crash snippet crops; `review` now translates
+  pdfminer boxes onto the pdfium bitmap and skips an empty intersection.
+
+---
+
+## `diorthosis probe`
+
+Sample a born-digital PDF and print the three flags a first `build` needs.
+This is a suggestion, not a certification — `build` still has to succeed
+on its own.
+
+```console
+$ diorthosis probe PDF [--pages SPEC] [--max-pages N]
+```
+
+Without `--pages`, up to `--max-pages` (default 24) file pages are sampled:
+the opening, the close, and evenly spaced hits in between. The report
+names edition-like pages (a body band and an apparatus or notes band), a
+conspectus heading in the front matter if one is found, and whether the
+body is Greek-script (`--text-lang grc`, the default) or Latin-script
+(`--text-lang la`). Two-column pages are listed when regreek split them.
+
+Exit `0` when a `--pages` suggestion could be formed; exit `1` when the
+sample found no edition-like page (pass `--pages` yourself, or raise
+`--max-pages`).
 
 ---
 
@@ -374,5 +395,5 @@ Notes:
   source-band substring in `note[@type="verbatim"]`, whitespace and line
   breaks included.
 - It never guesses a structure past a convention gate. A band whose
-  convention is not one of the four implemented families is kept verbatim and
+  convention is not one of the six implemented families is kept verbatim and
   counted as `refused`, with the gate's own sentence as the reason.

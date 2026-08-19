@@ -8,11 +8,12 @@ character stream — and every block is permanently marked so.
 
 Four refusals:
 
-- **No layer classification.** ``TextRegion/@type`` exists ("paragraph",
-  "heading", "footer", "page-number"…), but it is the producer's layout guess
-  and its vocabulary does not name the registers of a critical edition (text /
-  apparatus / translation). Blocks arrive as ``UNKNOWN``; the declared
-  ``@type`` is copied verbatim into ``evidence`` so nothing is lost.
+- **No guessed layers.** ``TextRegion/@type`` exists ("paragraph",
+  "heading", "footer", "page-number"…). Layout guesses (``paragraph``,
+  ``footer``) stay ``UNKNOWN``. A name that *is* a critical-edition
+  register or page furniture (``apparatus``, ``translation``, ``heading``,
+  ``page-number``, ``header``) is honored. The declared ``@type`` is
+  always copied into ``evidence``.
 - **No reordering.** ``<ReadingOrder>`` may declare a sequence that differs
   from document order. Applying it would silently rewrite the page; the
   document order is kept and the declaration is reported in ``evidence``,
@@ -38,7 +39,8 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from ..model import Block, Document, Layer, Page, Source
+from ..model import Block, Document, Page, Source
+from .declared import layer_from_declared_type
 from .errors import SourceRefused, parse_xml
 
 
@@ -157,7 +159,7 @@ def ingest_pagexml(paths: list[str | Path]) -> Document:
       if declared_order:
         evidence += "; ReadingOrder declared, not applied (document order kept)"
       page.blocks.append(Block(
-        layer=Layer.UNKNOWN,
+        layer=layer_from_declared_type(region_type),
         text="\n".join(lines),
         source=Source.OCR,
         generative=True,

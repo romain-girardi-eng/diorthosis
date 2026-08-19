@@ -6,8 +6,7 @@ console report and a pair of files on disk. This module tests exactly that.
 
 What it pins down:
 
-- each subcommand's happy path on a synthetic edition built in-process
-  (``conftest.write_pdf``: no reportlab, no network, no edition content);
+- each subcommand's happy path on a checksum-pinned published edition;
 - the four documented exit codes, each provoked deliberately;
 - ``--ignore-self-check`` demoting a refusal to a warning, without changing
   what was written or hiding the findings;
@@ -20,23 +19,24 @@ What it pins down:
   emitting it as ``<app>/<lem>/<rdg>`` — the fabrication wave A killed;
 - the CLI surface itself, frozen, so a flag cannot quietly appear or vanish.
 
-KNOWN DEFECTS AT HEAD — these tests are RED on purpose and are the
-deliverable, not an accident (see the report accompanying this change):
-
-- ``test_output_dir_that_is_an_existing_file_is_a_user_error`` — ``-o`` aimed
-  at an existing file exits 3 ("this is a diorthosis defect… please report
-  it") for what is plainly a user input error.
-
-Nothing here is fixed in ``src/``: a test that exposes a defect reports it.
+The ALTO, hOCR and PAGE-XML strings below are synthetic serialisations because
+no real engine export was available. The OCR path therefore has no test that
+stands on real recognition output.
 """
 
 from __future__ import annotations
 
+import hashlib
 import re
 from pathlib import Path
 
 import pytest
-from conftest import REPO_ROOT, assert_no_traceback, write_pdf
+from conftest import (
+  REAL_EDITION_SHA256,
+  REPO_ROOT,
+  RealEditionWindow,
+  assert_no_traceback,
+)
 
 import diorthosis
 from diorthosis.cli import EXIT_INPUT, EXIT_INTERNAL, EXIT_OK, EXIT_REFUSED, _build_parser
@@ -59,6 +59,12 @@ def counts(match: re.Match[str]) -> dict[str, int]:
   return {k: int(v) for k, v in match.groupdict().items()}
 
 
+def source_stem(result) -> str:
+  """The output stem follows the verified source path, including env overrides."""
+  assert result.argv[0] == "build"
+  return Path(result.argv[1]).stem
+
+
 # --------------------------------------------------------------------------
 # what is under test
 # --------------------------------------------------------------------------
@@ -76,6 +82,11 @@ def test_the_suite_tests_the_working_tree() -> None:
   )
 
 
+def test_real_edition_matches_the_pinned_checksum(real_edition: Path) -> None:
+  """The CLI net's edition identity is part of the test contract."""
+  assert hashlib.sha256(real_edition.read_bytes()).hexdigest() == REAL_EDITION_SHA256
+
+
 # --------------------------------------------------------------------------
 # happy paths, one per subcommand
 # --------------------------------------------------------------------------
@@ -83,7 +94,7 @@ def test_the_suite_tests_the_working_tree() -> None:
 
 def test_build_happy_path(built_edition) -> None:
   result, out = built_edition
-  stem = "ed"
+  stem = source_stem(result)
   for suffix in (".tei.xml", ".md", ".witnesses.json"):
     path = out / f"{stem}{suffix}"
     assert path.is_file(), result.report()
@@ -91,48 +102,62 @@ def test_build_happy_path(built_edition) -> None:
 
   tei = (out / f"{stem}.tei.xml").read_text(encoding="utf-8")
   md = (out / f"{stem}.md").read_text(encoding="utf-8")
-  assert tei.count("<app ") == 7, result.report()
-  assert "⟦11:1⟧" in md and "⟦12:1⟧" in md, "markers are page-scoped (I3)"
+  assert tei.count("<app ") == 18, result.report()
+  assert "#a-p82-e0" in tei and "#a-p84-e0" in tei, (
+    "apparatus anchors are scoped to their real PDF page (I3)"
+  )
   assert "### text " in md and "### apparatus " in md
   assert_no_traceback(result)
 
 
 def test_validate_happy_path(cli, built_edition) -> None:
-  _, out = built_edition
-  result = cli("validate", out / "ed.md")
+  built, out = built_edition
+  result = cli("validate", out / f"{source_stem(built)}.md")
   assert result.returncode == EXIT_OK, result.report()
   assert result.stdout.strip() == f"OK: md-ce/{MD_CE_VERSION} invariants hold"
 
 
 def test_roundtrip_happy_path(cli, built_edition) -> None:
-  _, out = built_edition
-  result = cli("roundtrip", out / "ed.md", out / "ed.tei.xml")
+  built, out = built_edition
+  stem = source_stem(built)
+  result = cli("roundtrip", out / f"{stem}.md", out / f"{stem}.tei.xml")
   assert result.returncode == EXIT_OK, result.report()
   assert "OK: md-ce and TEI carry the same content" in result.stdout
 
 
-def test_inspect_happy_path(cli, synthetic_edition) -> None:
-  result = cli("inspect", synthetic_edition, "--page", "1")
+def test_probe_happy_path(cli, real_edition: Path) -> None:
+  result = cli("probe", real_edition, "--pages", "82-84")
+  assert result.returncode == EXIT_OK, result.report()
+  assert "--text-lang la" in result.stdout, result.report()
+  assert "suggested: diorthosis build" in result.stdout
+  assert_no_traceback(result)
+
+
+def test_inspect_happy_path(cli, real_edition: Path) -> None:
+  result = cli("inspect", real_edition, "--page", "82",
+               "--conspectus-page", "54")
   assert result.returncode == EXIT_OK, result.report()
   assert result.stdout.startswith("# "), result.report()
   assert "<!-- md-ce/" in result.stdout
   assert CONSOLE_COVERAGE.search(result.stderr), result.report()
 
 
-def test_inspect_emits_a_valid_md_ce_document(cli, synthetic_edition, tmp_path) -> None:
+def test_inspect_emits_a_valid_md_ce_document(cli, real_edition: Path,
+                                               tmp_path) -> None:
   """``inspect`` prints md-ce to stdout; what it prints must be md-ce."""
-  result = cli("inspect", synthetic_edition, "--page", "1")
+  result = cli("inspect", real_edition, "--page", "82",
+               "--conspectus-page", "54")
   page = tmp_path / "inspected.md"
   page.write_text(result.stdout, encoding="utf-8")
   checked = cli("validate", page)
   assert checked.returncode == EXIT_OK, checked.report()
 
 
-def test_review_happy_path(cli, synthetic_edition, tmp_path) -> None:
+def test_review_happy_path(cli, real_edition_window: RealEditionWindow,
+                           tmp_path) -> None:
   pytest.importorskip("pypdfium2", reason="review needs diorthosis[review]")
   out = tmp_path / "review"
-  result = cli("review", synthetic_edition, "--pages", "1-2",
-               "--text-lang", "la", "-o", out)
+  result = cli("review", *real_edition_window.args(), "-o", out)
   assert result.returncode == EXIT_OK, result.report()
   assert (out / "index.html").is_file()
   assert re.search(
@@ -140,14 +165,14 @@ def test_review_happy_path(cli, synthetic_edition, tmp_path) -> None:
     r"\d+ reviewed; \d+ snippets$", result.stdout, re.M), result.report()
 
 
-def test_review_without_the_optional_extra_is_a_user_error(cli, synthetic_edition,
+def test_review_without_the_optional_extra_is_a_user_error(cli, real_edition: Path,
                                                            tmp_path) -> None:
   """Documented behaviour when ``pypdfium2`` is absent: exit 2 naming the
   extra to install. Only assertable when the extra really is absent."""
   try:
     import pypdfium2  # noqa: F401
   except ImportError:
-    result = cli("review", synthetic_edition, "-o", tmp_path / "r")
+    result = cli("review", real_edition, "-o", tmp_path / "r")
     assert result.returncode == EXIT_INPUT, result.report()
     assert "pip install 'diorthosis[review]'" in result.stderr
   else:
@@ -199,7 +224,9 @@ def test_ocr_ingest_happy_path(cli, tmp_path, flag: str, name: str, body: str) -
 # --------------------------------------------------------------------------
 
 
-def test_exit_codes_are_documented_in_help(cli) -> None:
+def test_exit_codes_are_documented_in_help(cli, real_edition: Path) -> None:
+  # Keep the help path inside the verified real-edition CLI net: without the
+  # edition, this module must not report its nominal contract wholly green.
   result = cli("--help")
   assert result.returncode == EXIT_OK
   for line in ("0  success",
@@ -216,13 +243,14 @@ def test_exit_0_is_success(built_edition) -> None:
 
 @pytest.mark.parametrize("case", ["degenerate-build", "invalid-md-ce",
                                   "roundtrip-mismatch", "marker-delimiter"])
-def test_exit_1_is_a_refusal(cli, synthetic_edition, built_edition, tmp_path,
-                             case: str) -> None:
+def test_exit_1_is_a_refusal(cli, real_edition_window: RealEditionWindow,
+                             built_edition, tmp_path, case: str) -> None:
   """Exit 1 = the command ran and diorthosis does not certify its result."""
-  _, built = built_edition
+  built_result, built = built_edition
   if case == "degenerate-build":
-    # the README's own one-liner: a Latin edition without --text-lang la
-    result = cli("build", synthetic_edition, "--pages", "1-2", "-o", tmp_path / "o")
+    # The real Latin edition without --text-lang la must refuse degeneracy.
+    result = cli("build", *real_edition_window.args(include_text_lang=False),
+                 "-o", tmp_path / "o")
     assert "self-check FAILED" in result.stderr, result.report()
   elif case == "invalid-md-ce":
     bad = tmp_path / "bad.md"
@@ -232,7 +260,8 @@ def test_exit_1_is_a_refusal(cli, synthetic_edition, built_edition, tmp_path,
   elif case == "roundtrip-mismatch":
     other = tmp_path / "other"
     cli("build", "--alto", _write(tmp_path / "p.xml", ALTO), "-o", other)
-    result = cli("roundtrip", built / "ed.md", next(other.glob("*.tei.xml")))
+    result = cli("roundtrip", built / f"{source_stem(built_result)}.md",
+                 next(other.glob("*.tei.xml")))
     assert "violation(s)" in result.stderr, result.report()
   else:  # marker-delimiter: SPEC I4, an ambiguous file is never emitted
     src = _write(tmp_path / "delim.xml",
@@ -267,9 +296,9 @@ def _write(path: Path, body: str) -> Path:
   (("roundtrip", "MISSING.md", "MISSING.xml"), "file not found"),
   (("inspect", "MISSING.pdf", "--page", "0"), "file not found"),
 ])
-def test_exit_2_is_a_user_actionable_input_error(cli, synthetic_edition, tmp_path,
+def test_exit_2_is_a_user_actionable_input_error(cli, real_edition: Path, tmp_path,
                                                  args, expected: str) -> None:
-  resolved = [str(synthetic_edition) if a == "EDITION"
+  resolved = [str(real_edition) if a == "EDITION"
               else str(tmp_path / "out") if a == "OUT" else a for a in args]
   result = cli(*resolved)
   assert result.returncode == EXIT_INPUT, result.report()
@@ -277,8 +306,9 @@ def test_exit_2_is_a_user_actionable_input_error(cli, synthetic_edition, tmp_pat
   assert_no_traceback(result)
 
 
-def test_exit_3_is_an_internal_fault(monkeypatch, synthetic_edition, tmp_path,
-                                     capsys) -> None:
+def test_exit_3_is_an_internal_fault(monkeypatch,
+                                     real_edition_window: RealEditionWindow,
+                                     tmp_path, capsys) -> None:
   """The last-resort handler: an unexpected exception becomes exit 3 with a
   named defect, never a traceback on a scholar's terminal."""
   from diorthosis import cli as cli_mod
@@ -288,8 +318,8 @@ def test_exit_3_is_an_internal_fault(monkeypatch, synthetic_edition, tmp_path,
 
   monkeypatch.setattr(cli_mod, "to_tei", boom)
   monkeypatch.setattr("sys.argv", [
-    "diorthosis", "build", str(synthetic_edition), "--pages", "1-2",
-    "--text-lang", "la", "-o", str(tmp_path / "out")])
+    "diorthosis", "build", *(str(arg) for arg in real_edition_window.args()),
+    "-o", str(tmp_path / "out")])
   code = cli_mod.run()
   captured = capsys.readouterr()
   assert code == EXIT_INTERNAL == 3
@@ -298,22 +328,11 @@ def test_exit_3_is_an_internal_fault(monkeypatch, synthetic_edition, tmp_path,
   assert "Traceback (most recent call last)" not in captured.err
 
 
-def test_output_dir_that_is_an_existing_file_is_a_user_error(cli, synthetic_edition,
-                                                             tmp_path) -> None:
-  """KNOWN DEFECT (red at HEAD). ``-o`` pointing at an existing FILE raises
-  ``FileExistsError`` out of ``outdir.mkdir()``; ``run()``'s generic handler
-  turns it into exit 3 and tells the user to file a bug report. Choosing a bad
-  output path is the user's mistake, and the contract reserves 3 for
-  diorthosis's own.
-
-  Reproduce::
-
-      diorthosis build EDITION --pages 1-2 --text-lang la -o EDITION
-      # internal error: FileExistsError: [Errno 17] File exists: 'EDITION'
-      # exit 3
-  """
-  result = cli("build", synthetic_edition, "--pages", "1-2",
-               "--text-lang", "la", "-o", synthetic_edition)
+def test_output_dir_that_is_an_existing_file_is_a_user_error(
+    cli, real_edition_window: RealEditionWindow) -> None:
+  """``-o`` aimed at an existing file is a typo, not a diorthosis defect."""
+  result = cli("build", *real_edition_window.args(), "-o",
+               real_edition_window.pdf)
   assert_no_traceback(result)
   assert result.returncode == EXIT_INPUT, result.report()
 
@@ -324,12 +343,12 @@ def test_output_dir_that_is_an_existing_file_is_a_user_error(cli, synthetic_edit
 
 
 def test_ignore_self_check_turns_the_refusal_into_a_warning(
-    cli, synthetic_edition, tmp_path) -> None:
+    cli, real_edition_window: RealEditionWindow, tmp_path) -> None:
   strict = tmp_path / "strict"
   loose = tmp_path / "loose"
-  refused = cli("build", synthetic_edition, "--pages", "1-2", "-o", strict)
-  accepted = cli("build", synthetic_edition, "--pages", "1-2", "-o", loose,
-                 "--ignore-self-check")
+  args = real_edition_window.args(include_text_lang=False)
+  refused = cli("build", *args, "-o", strict)
+  accepted = cli("build", *args, "-o", loose, "--ignore-self-check")
 
   assert refused.returncode == EXIT_REFUSED, refused.report()
   assert accepted.returncode == EXIT_OK, accepted.report()
@@ -347,10 +366,12 @@ def test_ignore_self_check_turns_the_refusal_into_a_warning(
          in accepted.stderr, accepted.report()
 
 
-def test_build_refuses_a_degenerate_result(cli, synthetic_edition, tmp_path) -> None:
+def test_build_refuses_a_degenerate_result(
+    cli, real_edition_window: RealEditionWindow, tmp_path) -> None:
   """The README one-liner regression: a build that produced no constituted
   text must not report success — and must name the option that fixes it."""
-  result = cli("build", synthetic_edition, "--pages", "1-2", "-o", tmp_path / "o")
+  result = cli("build", *real_edition_window.args(include_text_lang=False),
+               "-o", tmp_path / "o")
   assert result.returncode == EXIT_REFUSED, result.report()
   assert "no constituted-text block" in result.stderr, result.report()
   assert "--text-lang la" in result.stderr, (
@@ -358,10 +379,11 @@ def test_build_refuses_a_degenerate_result(cli, synthetic_edition, tmp_path) -> 
     + result.report())
 
 
-def test_build_refuses_a_page_carrying_no_text(cli, tmp_path) -> None:
-  """A scanned page, as a text extractor sees it: no text operator at all."""
-  scan = write_pdf(tmp_path / "scan.pdf", [[]])
-  result = cli("build", scan, "--text-lang", "la", "-o", tmp_path / "o")
+def test_build_refuses_a_page_carrying_no_text(cli, image_only_real_page: Path,
+                                               tmp_path) -> None:
+  """A real edition page rasterized without its extractable text layer."""
+  result = cli("build", image_only_real_page, "--text-lang", "la",
+               "-o", tmp_path / "o")
   assert result.returncode == EXIT_REFUSED, result.report()
   assert "no decodable text at all" in result.stderr, result.report()
   assert "--alto/--hocr/--page-xml" in result.stderr, (
@@ -389,7 +411,7 @@ def test_console_meta_and_page_reports_are_one_report(built_edition) -> None:
   """Before 0.3 one invocation announced two scores. Three renderings now, one
   production: the console line, the md-ce meta, and every page comment."""
   result, out = built_edition
-  md = (out / "ed.md").read_text(encoding="utf-8")
+  md = (out / f"{source_stem(result)}.md").read_text(encoding="utf-8")
 
   console = counts(CONSOLE_COVERAGE.search(result.stdout))
   meta_match = META_COVERAGE.search(md)
@@ -404,9 +426,12 @@ def test_console_meta_and_page_reports_are_one_report(built_edition) -> None:
       f"meta {key}={meta[key]} is not the sum of the page reports")
 
 
-def test_refusal_tally_sums_to_refused(cli, unattributed_edition, tmp_path) -> None:
-  result = cli("build", unattributed_edition, "--pages", "1",
-               "--text-lang", "la", "-o", tmp_path / "o")
+def test_refusal_tally_sums_to_refused(cli,
+                                       real_edition_window: RealEditionWindow,
+                                       tmp_path) -> None:
+  result = cli("build", real_edition_window.pdf, "--pages",
+               real_edition_window.pages, "--text-lang",
+               real_edition_window.text_lang, "-o", tmp_path / "o")
   coverage = counts(CONSOLE_COVERAGE.search(result.stdout))
   tally = re.search(r"^refusals: (.+)$", result.stdout, re.M)
   assert tally, result.report()
@@ -425,7 +450,7 @@ def test_anchored_is_split_and_never_over_claims(built_edition) -> None:
   attachment alone. `attached` must mean @from AND @to in the TEI."""
   result, out = built_edition
   c = counts(CONSOLE_COVERAGE.search(result.stdout))
-  tei = (out / "ed.tei.xml").read_text(encoding="utf-8")
+  tei = (out / f"{source_stem(result)}.tei.xml").read_text(encoding="utf-8")
   both_ends = len(re.findall(r"<app\b[^>]*\bfrom=[^>]*\bto=", tei))
   assert both_ends == c["attached"], result.report()
 
@@ -436,16 +461,14 @@ def test_anchored_is_split_and_never_over_claims(built_edition) -> None:
 
 
 def test_numbered_prose_band_is_refused_not_emitted_as_variants(
-    cli, numbered_prose_edition, tmp_path) -> None:
-  """An English editorial footnote printed in the apparatus register carries
-  the same numbering and the same ``:`` as the convention — and never a
-  siglum. Shape alone cannot tell them apart; the printed sigla can."""
+    cli, real_edition: Path, tmp_path) -> None:
+  """Real numbered editorial prose on PDF page 10 is not an apparatus."""
   out = tmp_path / "o"
-  result = cli("build", numbered_prose_edition, "--pages", "1",
-               "--text-lang", "la", "-o", out)
+  result = cli("build", real_edition, "--pages", "10",
+               "--conspectus-page", "54", "--text-lang", "la", "-o", out)
   assert_no_traceback(result)
-  tei = (out / "footnotes.tei.xml").read_text(encoding="utf-8")
-  md = (out / "footnotes.md").read_text(encoding="utf-8")
+  tei = (out / f"{real_edition.stem}.tei.xml").read_text(encoding="utf-8")
+  md = (out / f"{real_edition.stem}.md").read_text(encoding="utf-8")
 
   assert "<app " not in tei, (
     "numbered editorial prose was emitted as an apparatus variant" + result.report())
@@ -455,26 +478,29 @@ def test_numbered_prose_band_is_refused_not_emitted_as_variants(
   assert c["refused"] == c["entries"] > 0, result.report()
   assert "marker convention gate refused band" in result.stdout, result.report()
   # and the prose is preserved verbatim, never dropped
-  assert "here renders the phrase discussed at length above." in md, result.report()
+  assert "The processes summarized here have been the subject" in md, result.report()
 
 
-def test_a_band_naming_no_authority_is_refused(cli, unattributed_edition,
-                                               tmp_path) -> None:
-  """The gate's last clause: an apparatus records WHO reads WHAT. A band whose
-  readings name no witness, editor or version is refused whole."""
+def test_a_band_naming_no_authority_is_refused(
+    cli, real_edition_window: RealEditionWindow, tmp_path) -> None:
+  """Without the real conspectus, the edition's authorities are not guessed."""
   out = tmp_path / "o"
-  result = cli("build", unattributed_edition, "--pages", "1",
-               "--text-lang", "la", "-o", out)
-  tei = (out / "unattributed.tei.xml").read_text(encoding="utf-8")
+  result = cli("build", real_edition_window.pdf, "--pages",
+               real_edition_window.pages, "--text-lang",
+               real_edition_window.text_lang, "-o", out)
+  tei = (out / f"{real_edition_window.pdf.stem}.tei.xml").read_text(
+    encoding="utf-8")
   assert "<app " not in tei, result.report()
-  assert "no witness, editor or source is named" in result.stdout, result.report()
+  c = counts(CONSOLE_COVERAGE.search(result.stdout))
+  assert c["refused"] == c["entries"] == 18, result.report()
+  assert "convention attribution" in result.stdout, result.report()
 
 
 def test_an_attributed_band_is_accepted(built_edition) -> None:
   """The gate is a floor, not a wall: the same shape WITH sigla parses."""
   result, out = built_edition
-  tei = (out / "ed.tei.xml").read_text(encoding="utf-8")
-  assert tei.count("<app ") == 7, result.report()
+  tei = (out / f"{source_stem(result)}.tei.xml").read_text(encoding="utf-8")
+  assert tei.count("<app ") == 18, result.report()
   assert 'wit="' in tei or "wit='" in tei, result.report()
   assert counts(CONSOLE_COVERAGE.search(result.stdout))["refused"] == 0
 
@@ -484,12 +510,12 @@ def test_an_attributed_band_is_accepted(built_edition) -> None:
 # --------------------------------------------------------------------------
 
 
-def test_build_is_byte_deterministic_across_processes(cli, synthetic_edition,
-                                                      tmp_path) -> None:
+def test_build_is_byte_deterministic_across_processes(
+    cli, real_edition_window: RealEditionWindow, tmp_path) -> None:
   """SPEC I12, at CLI level: two separate processes, deliberately different
   hash seeds, byte-identical outputs."""
   first, second = tmp_path / "a", tmp_path / "b"
-  args = (synthetic_edition, "--pages", "1-2", "--text-lang", "la")
+  args = real_edition_window.args()
   one = cli("build", *args, "-o", first, hashseed="0")
   two = cli("build", *args, "-o", second, hashseed="12345")
   assert one.returncode == two.returncode == EXIT_OK
@@ -510,6 +536,7 @@ EXPECTED_SURFACE = {
   "roundtrip": {"md", "tei"},
   "review": {"pdf", "--pages", "--out", "--conspectus-page", "--text-lang",
              "--overrides"},
+  "probe": {"pdf", "--pages", "--max-pages"},
 }
 """The CLI surface, frozen. Changing it is fine — changing it by accident is
 not, and a published tool's flags are a contract with its users."""
@@ -543,7 +570,7 @@ def test_cli_surface_is_frozen() -> None:
 _ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 
-def test_every_subcommand_has_a_help_page(cli) -> None:
+def test_every_subcommand_has_a_help_page(cli, real_edition: Path) -> None:
   # styling is stripped before matching: CPython 3.14's argparse colourises
   # its usage line when FORCE_COLOR is set in the environment, and a user's
   # terminal preference must not decide whether the suite passes

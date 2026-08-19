@@ -6,6 +6,7 @@ Usage::
   diorthosis build --alto p1.xml p2.xml -o out/   # any OCR engine's ALTO
   diorthosis build edition.pdf --pages 290-320 -o out/
   diorthosis inspect edition.pdf --page 300
+  diorthosis probe edition.pdf                    # suggest --pages / --text-lang
   diorthosis validate out/edition.md              # md-ce invariants
   diorthosis roundtrip out/edition.md out/edition.tei.xml
 
@@ -235,6 +236,15 @@ def _build_parser() -> argparse.ArgumentParser:
   r.add_argument("--overrides", default=None, metavar="JSON",
                  help="existing overrides to apply before review "
                       "(reviewed entries show as such)")
+
+  p = sub.add_parser(
+    "probe",
+    help="sample a PDF and suggest --pages, --conspectus-page, --text-lang")
+  p.add_argument("pdf")
+  p.add_argument("--pages", default=None, help="0-based page spec to inspect")
+  p.add_argument("--max-pages", type=int, default=24,
+                 help="when --pages is omitted, how many file pages to sample "
+                      "(default 24)")
   return ap
 
 
@@ -264,6 +274,21 @@ def main(argv: list[str] | None = None) -> int:
       print(f"{len(violations)} violation(s)", file=sys.stderr)
       return EXIT_REFUSED
     print("OK: md-ce and TEI carry the same content")
+    return EXIT_OK
+
+  if args.cmd == "probe":
+    from .probe import probe_pdf, render_report
+
+    if args.max_pages < 1:
+      raise ValueError("--max-pages must be at least 1")
+    report = probe_pdf(
+      args.pdf,
+      pages=_parse_pages(args.pages),
+      max_pages=args.max_pages,
+    )
+    print(render_report(report))
+    if not report.pages_spec:
+      return EXIT_REFUSED
     return EXIT_OK
 
   if args.cmd == "inspect":

@@ -443,7 +443,12 @@ $ pip install 'diorthosis[review]'
 
 ---
 
-## `review` crashes with `SystemError: tile cannot extend outside image`
+## `review` and CropBox ≠ MediaBox
+
+**Fixed.** `diorthosis review` now translates pdfminer (MediaBox) line boxes
+onto the pdfium (CropBox) bitmap and skips a snippet rather than crashing.
+The rest of this section is the diagnosis that found the bug, kept so a
+regression is recognizable.
 
 The file below is Walter Segrave's *Insolubles* (Open Book Publishers 2024,
 CC BY-NC 4.0), fetched and checksummed in

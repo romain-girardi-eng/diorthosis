@@ -14,7 +14,55 @@ and the ones that failed, is [FINDINGS.md](FINDINGS.md).
 
 ## [Unreleased]
 
-The 1.0 waves. Not released; wave B is deliberately red.
+The 1.0 waves. Wave B's red contracts were closed in wave C; the suite is
+green on this tree (real-edition fixtures, not a synthetic PDF).
+
+### First-run probe, OCR registers, Budé omissions
+
+#### Added
+
+- **`diorthosis probe`** samples a PDF and suggests `--pages`,
+  `--conspectus-page` and `--text-lang`. Additive CLI surface; a suggestion
+  is not a certification.
+- **OCR adapters honor unambiguous declared region types** (PAGE
+  `@type=apparatus`, ALTO `TAGREFS`/`LABEL=apparatus`, hOCR `ocr_header` /
+  `ocr_pageno`). Layout guesses (`paragraph`, `footer`) stay `UNKNOWN`.
+- **Budé `om.`-only entries** (`5 χρόνῳ om. L`) and **hand-superscript
+  burst** (`ABVG²` → A B V G). Narrative leftovers still refuse.
+
+#### Changed
+
+- **regreek 0.7.3** (fail-closed two-column split): a bilingual spread
+  becomes `greek_text` | `translation` only when the gutter is empty, both
+  columns have at least three lines, and no line spans the mid-page. A
+  spanning title keeps the page unsplit.
+
+### Teubner / OCT and Budé grammars
+
+#### Added
+
+- **Teubner/OCT colon-negative grammar** (`teubnergrammar.py`). `LINE lemma]
+  reading A : reading B` — the spaced colon the paragraph grammar refuses
+  on purpose, so Plaoul is not stolen. A silent lemma emits `<lem>` without
+  `@wit`; `cett.` is never invented.
+- **Budé grammar** (`budegrammar.py`), written against the printed Herodian
+  shape: `||` separates entries, the lemma carries witnesses, narrative
+  leftovers (`euanida`, `in G uerbum …`) stay verbatim. Segrave-style
+  `|| LINE lemma]` continuation is still refused.
+
+### Cleanup — real fixtures, honest docs, CropBox review
+
+#### Fixed
+
+- **`diorthosis review` no longer crashes when CropBox ≠ MediaBox.** Snippet
+  crops are translated from pdfminer (MediaBox) space onto the pdfium
+  (CropBox) bitmap and skipped when the intersection is empty, instead of
+  raising Pillow's `tile cannot extend outside image` / `lower < upper`.
+- **CLI, adversarial and documentation nets run on a checksum-pinned published
+  edition** (DLL *Bellum Alexandrinum*), not an in-process synthetic PDF.
+- Stale "red on purpose" / "3 unaccounted, exit 1" claims in the test
+  headers, CONTRIBUTING.md and the JOSS paper, which no longer described
+  the tree.
 
 ### Wave A — the refusal promise made true again (`bd01130`)
 

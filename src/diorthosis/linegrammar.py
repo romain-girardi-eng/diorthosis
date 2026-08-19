@@ -122,7 +122,10 @@ def burst_sigla(words: list[str], registry: Registry) -> list[str]:
     return words
   out: list[str] = []
   for w in words:
-    bare = w.rstrip(".,;:")
+    bare = w.rstrip(".,;:¹²³")
+    if len(bare) == 1 and bare in registry.witnesses:
+      out.append(bare)
+      continue
     if len(bare) < 2 or not re.fullmatch(r"[A-Za-zΑ-Ωα-ωϘ-ϡ*]+", bare):
       out.append(w)
       continue
@@ -138,7 +141,7 @@ def burst_sigla(words: list[str], registry: Registry) -> list[str]:
         parts = []
         break
     if len(parts) >= 2:
-      suffix = w[len(bare):]           # trailing punctuation, if any
+      suffix = w[len(bare):].lstrip("¹²³")  # hand marks already stripped
       if suffix:
         parts[-1] += suffix
       out.extend(parts)

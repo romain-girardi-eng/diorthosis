@@ -15,7 +15,7 @@ collaborators for the [Library of Digital Latin Texts](https://digitallatin.org/
 CC BY-SA 4.0. Its born-digital PDF is in the project's own public repository,
 so you can fetch the exact bytes this tutorial used. Latin, ninety PDF pages
 of edition ending at printed page 89, a line-referenced reledmac apparatus —
-one of the four conventions diorthosis implements.
+one of the six conventions diorthosis implements.
 
 ---
 

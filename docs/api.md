@@ -167,13 +167,16 @@ means. Nothing else in the package is.
 | Symbol | What it is |
 |---|---|
 | `ingest_pdf(path, pages=None, text_lang="grc") -> Document` | Born-digital PDF, via regreek: legacy-font decoding, layer separation, printed-folio extraction. `text_lang="la"` reads the Latin-script main band as the constituted text and its foot band as the apparatus. |
-| `ingest_alto(paths) -> Document` | ALTO XML, one file per page — any OCR engine's export. |
-| `ingest_hocr(paths) -> Document` | hOCR, possibly multi-page. |
-| `ingest_pagexml(paths) -> Document` | PAGE-XML, one file per page. |
+| `ingest_alto(paths) -> Document` | ALTO XML, one file per page — any OCR engine's export. A `Tags`/`TAGREFS` label that names a register is honored. |
+| `ingest_hocr(paths) -> Document` | hOCR, possibly multi-page. `ocr_header` / `ocr_pageno` / `ocr_title` are furniture layers; other logical classes stay `UNKNOWN`. |
+| `ingest_pagexml(paths) -> Document` | PAGE-XML, one file per page. `@type=apparatus` (and the other honored names) become layers; `@type=paragraph` does not. |
 | `parse_page_spec(spec) -> list[int] \| None` | `"290-320"`, `"1,5,9"`, `"1,5-7"` → sorted, de-duplicated 0-based indices; `None` passes through. Raises `ValueError` on an empty spec, a reversed range, or a non-numeric element. |
 
 Every block an OCR adapter produces carries `generative=True`, permanently, into
-both outputs. diorthosis never calls a recognition engine itself.
+both outputs. diorthosis never calls a recognition engine itself. A declared
+region type that names a register or page furniture (`apparatus`,
+`translation`, `heading`, `page-number`, `ocr_header`) is honored as a
+`Layer`; a layout guess (`paragraph`, `footer`) stays `UNKNOWN`.
 
 ### The document model
 

@@ -63,7 +63,9 @@ $ shasum -a 256 balex.pdf
 
 Now build it. **Three flags carry the whole result** — which pages are the
 edition, where the sigla are declared, and what language the constituted text
-is in. All page numbers are 0-based PDF indices:
+is in. All page numbers are 0-based PDF indices. On an unfamiliar PDF,
+`diorthosis probe edition.pdf` prints a suggested command; it is a
+suggestion, not a certification.
 
 ```console
 $ diorthosis build balex.pdf --pages 82-171 --conspectus-page 54 --text-lang la -o out/
@@ -230,7 +232,7 @@ ALTO / hOCR / PAGE-XML; separate layers; extract the citable printed folio;
 split apparatus bands into entries and anchor each to its place in the
 constituted text; parse the apparatus into `<app>/<lem>/<rdg>` with witness
 and editor attributions drawn from the edition's own conspectus siglorum,
-under **four convention grammars**:
+under **six convention grammars**:
 
 | family | shape | reference corpus |
 |---|---|---|
@@ -238,11 +240,13 @@ under **four convention grammars**:
 | verse-referenced | `chapter:verse lemma ] reading SIGLA` | biblical editions (SBLGNT) |
 | line-referenced reledmac | `∥ line lemma SIGLA \| reading SIGLA` | DLL family |
 | paragraphed reledmac | numbered `lemma] reading SIG`, double apparatus | LombardPress / scholastic |
+| Teubner / OCT | `LINE lemma] reading SIGLA : reading SIGLA` (negative lemma) | Teubner / OCT print |
+| Budé | `LOCUS lemma WITS : reading WITS` separated by `\|\|` | Budé / CUF print |
 
 plus superscript sigla. Emits schema-valid TEI P5 (validated against
 `tei_all.rng`) and `md-ce/0.3`.
 
-**Refused, on purpose.** A band whose convention is not one of the four is
+**Refused, on purpose.** A band whose convention is not one of the six is
 kept **verbatim** — source slice preserved, no invented structure — and
 counted as `refused` with the refusing gate's own sentence as the reason.
 Nothing is dropped; what you lose is structure, not evidence.
@@ -276,17 +280,24 @@ the gates removed. This is conservative convention recognition, not new
 coverage: a refused layout still needs an explicit grammar and human review
 before it becomes data.
 
-**Not done yet.** Negative apparatus (where the lemma's support is implied by
-silence); two-column layouts; **layering and apparatus parsing on OCR input**
-— today the OCR path gives you a provenance-marked, chunkable transcription
-with every block `unclassified` and zero apparatus parsed; and consequently
-**no accuracy figures exist for noisy OCR input**. Every number on this page
-is measured on born-digital PDFs.
+**Not done yet.** Two-column layouts (Budé / SC bilingue); **layering and
+apparatus parsing on OCR input** — today the OCR path gives you a
+provenance-marked, chunkable transcription with every block `unclassified`
+and zero apparatus parsed; and consequently **no accuracy figures exist for
+noisy OCR input**. The OCR ingest tests use synthetic ALTO, hOCR and
+PAGE-XML serialisations because no real engine export was available, so no
+OCR test stands on real recognition output. Every number on this page is
+measured on born-digital PDFs. Teubner/OCT and Budé grammars are
+unit-tested against printed shapes; they are not yet inverted against an
+independent scholar TEI the way SBLGNT / Plaoul / balex are. Negative
+apparatus (lemma support implied by silence) is encoded as `<lem>` without
+`@wit` — `cett.` is never invented.
 
-**Broken today.** `diorthosis review` crashes on any PDF whose CropBox differs
-from its MediaBox — a common class, and it exits `3` or `2` depending on your
-Pillow version. `build`, `validate` and `roundtrip` are unaffected; the
-diagnosis and a lossless one-line workaround are in
+**Review snippets on cropped PDFs.** `diorthosis review` used to crash when a
+PDF's CropBox differed from its MediaBox (pdfminer boxes in media-space,
+pdfium painting the crop). It now translates the crop into bitmap space and
+skips a snippet rather than taking down the page. The coordinate diagnosis
+stays in
 [docs/troubleshooting.md](docs/troubleshooting.md#review-crashes-with-systemerror-tile-cannot-extend-outside-image).
 
 ## Evidence — and what each test does and does not prove
@@ -434,7 +445,7 @@ tei.py               TEI P5 emission (the canonical output)
 md.py                md-ce renderer + the one coverage measurement
 mdce_validate.py     md-ce invariant checker (SPEC.md, executable)
 roundtrip.py         md-ce ↔ TEI equivalence
-cli.py               build / inspect / validate / roundtrip / review
+cli.py               build / inspect / probe / validate / roundtrip / review
 ```
 
 ## Legal note

@@ -6,8 +6,9 @@ labels: convention
 ---
 
 <!--
-diorthosis implements four convention grammars: numeric-marker, verse-referenced,
-line-referenced (reledmac) and paragraphed-reledmac. Everything else refuses
+diorthosis implements six convention grammars: numeric-marker, verse-referenced,
+line-referenced (reledmac), paragraphed-reledmac, Teubner/OCT, and Budé.
+Everything else refuses
 wholesale, on purpose — docs/generalization.md measures what happened the last
 time a grammar was allowed to guess.
 

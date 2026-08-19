@@ -84,6 +84,14 @@ def test_word_fallback_and_out_of_range_conf_is_dropped(tmp_path) -> None:
   assert block.confidence == 0.0          # conf=88 is not ConfSimpleType
 
 
+def test_declared_apparatus_type_is_honored(tmp_path) -> None:
+  xml = PAGE.replace('type="paragraph"', 'type="apparatus"')
+  doc = ingest_pagexml([_write(tmp_path, "p1.xml", xml)])
+  [block] = doc.pages[0].blocks
+  assert block.layer is Layer.APPARATUS
+  assert "@type=apparatus" in block.evidence
+
+
 def test_non_page_input_is_refused(tmp_path) -> None:
   alto = '<?xml version="1.0"?><alto xmlns="http://www.loc.gov/standards/alto/ns-v4#"/>'
   with pytest.raises(ValueError, match="not PAGE-XML"):

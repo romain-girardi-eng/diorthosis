@@ -215,6 +215,24 @@ def resolve_parsed(e, registry: Registry | None) -> ParsedEntry | None:
       comments=list(pe.comments)
                + [c for r in pe.readings for c in r.comments],
     )
+  if e.parsed_teubner is not None and registry is not None:
+    te = e.parsed_teubner
+    return ParsedEntry(
+      lemma=te.lemma,
+      lemma_attribution=te.lemma_attribution or Attribution(),
+      readings=[Reading(text=r.text, attribution=r.attribution)
+                for r in te.readings],
+      comments=list(te.comments),
+    )
+  if e.parsed_bude is not None and registry is not None:
+    be = e.parsed_bude
+    return ParsedEntry(
+      lemma=be.lemma,
+      lemma_attribution=be.lemma_attribution or Attribution(),
+      readings=[Reading(text=r.text, attribution=r.attribution)
+                for r in be.readings],
+      comments=list(be.comments),
+    )
   if e.marker_eligible and registry is not None:
     return parse_entry(e.raw, registry)
   return None

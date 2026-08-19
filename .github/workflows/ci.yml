@@ -16,6 +16,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e ".[dev]"
+      - run: pip install -e ".[dev,review]"
+      - name: Fetch checksum-pinned real test edition
+        run: |
+          mkdir -p .test-cache
+          curl --fail --location --retry 3 \
+            --output .test-cache/ldlt-balex.pdf \
+            https://raw.githubusercontent.com/Library-of-Digital-Latin-Texts/balex/0e6ee82976a6ffeff41b5515594826719bfdfb0f/ldlt-balex.pdf
+          echo "6702fceb54ec347406c0d857ea508e2ff05e2e4dac9a5111df3f6aa2f96c1325  .test-cache/ldlt-balex.pdf" \
+            | sha256sum --check --strict
       - run: ruff check src/ tests/
       - run: pytest -q

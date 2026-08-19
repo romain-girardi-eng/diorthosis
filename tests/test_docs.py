@@ -26,9 +26,9 @@ Inside such a block:
   this checkout;
 * every other non-empty line is EXPECTED OUTPUT and must occur, as a
   substring, in that command's combined output;
-* the tokens ``EDITION`` and ``OUT`` are substituted with a synthetic edition
-  PDF and a fresh empty directory, so a runnable example ships no edition
-  content and needs no network;
+* the tokens ``EDITION`` and ``OUT`` are substituted with the checksum-pinned
+  real edition and a fresh empty directory; if the edition cannot be verified
+  locally or fetched, the runnable example skips with retrieval instructions;
 * a command must exit 0 unless the block also marks it::
 
       <!-- diorthosis-doc: runnable, expect-exit 1 -->
@@ -578,8 +578,8 @@ RUNNABLE_FENCES = [f for f in shell_fences() if f.runnable]
 @pytest.mark.parametrize("fence", RUNNABLE_FENCES,
                          ids=[f.where for f in RUNNABLE_FENCES])
 def test_runnable_blocks_do_what_they_say(fence: Fence, doc_shell,
-                                          synthetic_edition, tmp_path) -> None:
-  failures = check_runnable_fence(fence, doc_shell, synthetic_edition,
+                                          real_edition, tmp_path) -> None:
+  failures = check_runnable_fence(fence, doc_shell, real_edition,
                                   tmp_path / "out")
   assert not failures, failures
 
@@ -599,7 +599,7 @@ def test_the_runnable_marker_count_is_known() -> None:
       f"test_the_runnable_harness_runs_and_catches_rot")
 
 
-def test_the_runnable_harness_runs_and_catches_rot(doc_shell, synthetic_edition,
+def test_the_runnable_harness_runs_and_catches_rot(doc_shell, real_edition,
                                                    tmp_path) -> None:
   """Never trust a harness that has never failed.
 
@@ -613,17 +613,19 @@ def test_the_runnable_harness_runs_and_catches_rot(doc_shell, synthetic_edition,
     "# a documentation page\n\n"
     "<!-- diorthosis-doc: runnable -->\n"
     "```console\n"
-    "$ diorthosis build EDITION --pages 1-2 --text-lang la -o OUT\n"
-    "wrote OUT/ed.tei.xml\n"
+    "$ diorthosis build EDITION --pages 82-84 --conspectus-page 54 "
+    "--text-lang la -o OUT\n"
+    f"wrote OUT/{real_edition.stem}.tei.xml\n"
     "```\n\n"
     "<!-- diorthosis-doc: runnable -->\n"
     "```console\n"
-    "$ diorthosis build EDITION --pages 1-2 -o OUT\n"
-    "wrote OUT/ed.tei.xml\n"
+    "$ diorthosis build EDITION --pages 82-84 --conspectus-page 54 -o OUT\n"
+    f"wrote OUT/{real_edition.stem}.tei.xml\n"
     "```\n\n"
     "<!-- diorthosis-doc: runnable -->\n"
     "```console\n"
-    "$ diorthosis build EDITION --pages 1-2 --text-lang la -o OUT\n"
+    "$ diorthosis build EDITION --pages 82-84 --conspectus-page 54 "
+    "--text-lang la -o OUT\n"
     "apparatus anchoring: 277/287 entries anchored\n"
     "```\n",
     encoding="utf-8")
@@ -631,30 +633,30 @@ def test_the_runnable_harness_runs_and_catches_rot(doc_shell, synthetic_edition,
     f for f in fences(doc.read_text(encoding="utf-8"), doc) if f.runnable]
 
   assert honest.runnable and honest.expected_exit == 0
-  assert not check_runnable_fence(honest, doc_shell, synthetic_edition,
+  assert not check_runnable_fence(honest, doc_shell, real_edition,
                                   tmp_path / "a")
   # a refused build documented as a success
-  caught = check_runnable_fence(rotted_exit, doc_shell, synthetic_edition,
+  caught = check_runnable_fence(rotted_exit, doc_shell, real_edition,
                                 tmp_path / "b")
   assert caught and "exited 1" in caught[0], caught
   # an output line the tool no longer prints
-  caught = check_runnable_fence(rotted_output, doc_shell, synthetic_edition,
+  caught = check_runnable_fence(rotted_output, doc_shell, real_edition,
                                 tmp_path / "c")
   assert caught and "never printed" in caught[0], caught
 
 
-def test_expect_exit_is_honoured(doc_shell, synthetic_edition, tmp_path) -> None:
+def test_expect_exit_is_honoured(doc_shell, real_edition, tmp_path) -> None:
   """A documented REFUSAL is a documented behaviour: the convention must be
   able to express it, or the docs can only show successes."""
   doc = tmp_path / "refusal.md"
   doc.write_text(
     "<!-- diorthosis-doc: runnable, expect-exit 1 -->\n"
     "```console\n"
-    "$ diorthosis build EDITION --pages 1-2 -o OUT\n"
+    "$ diorthosis build EDITION --pages 82-84 --conspectus-page 54 -o OUT\n"
     "self-check FAILED: this build is not certified\n"
     "```\n",
     encoding="utf-8")
   [fence] = [f for f in fences(doc.read_text(encoding="utf-8"), doc) if f.runnable]
   assert fence.expected_exit == 1
-  assert not check_runnable_fence(fence, doc_shell, synthetic_edition,
+  assert not check_runnable_fence(fence, doc_shell, real_edition,
                                   tmp_path / "out")

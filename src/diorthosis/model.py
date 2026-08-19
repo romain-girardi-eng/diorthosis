@@ -85,6 +85,12 @@ class ApparatusEntry:
   parsed_paragraph: object | None = None
   """A paragraphgrammar.ParagraphEntry when the band follows the
   paragraphed-reledmac convention and this entry parsed; None otherwise."""
+  parsed_teubner: object | None = None
+  """A teubnergrammar.TeubnerEntry when the band follows the Teubner/OCT
+  colon-negative convention and this entry parsed; None otherwise."""
+  parsed_bude: object | None = None
+  """A budegrammar.BudeEntry when the band follows the Budé ``||``
+  convention and this entry parsed; None otherwise."""
   parsed_override: object | None = None
   """A grammar.ParsedEntry supplied by HUMAN REVIEW (overrides file).
   Wins over every grammar; the TEI marks it resp="#human-review"."""

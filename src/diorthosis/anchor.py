@@ -31,7 +31,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from . import linegrammar, paragraphgrammar, versegrammar
+from . import budegrammar, linegrammar, paragraphgrammar, teubnergrammar, versegrammar
 from .conspectus import Registry
 from .grammar import gate_marker_band, parse_entry
 from .match import lemma_matches_before
@@ -436,6 +436,79 @@ def _refuse_line_band(block: Block, stats: dict[str, int],
   block.entries = entries
 
 
+def _refuse_named_band(block: Block, stats: dict[str, int], evidence: str,
+                       split) -> None:
+  """Keep a Teubner/Budé-shaped foreign band split but wholly verbatim."""
+  entries: list[ApparatusEntry] = []
+  for item in split(block.text):
+    entries.append(ApparatusEntry(
+      raw=item.raw,
+      source=item.source_slice,
+      anchor=Anchor(kind="line", value=item.line),
+      refusal_evidence=evidence,
+    ))
+    stats["entries"] += 1
+    stats["unanchored"] += 1
+  block.entries = entries
+
+
+def _anchor_locus_entries(page: Page, block: Block, items: list,
+                          parsed_attr: str, parse, registry: Registry,
+                          stats: dict[str, int]) -> None:
+  """Anchor Teubner/Budé entries by lemma search, the same way as reledmac."""
+  entries: list[ApparatusEntry] = []
+  cursors: dict[int, int] = {}
+  for item in items:
+    parse(item, registry)
+    kwargs = {
+      parsed_attr: item if item.parsed else None,
+    }
+    e = ApparatusEntry(
+      raw=item.raw,
+      source=item.source_slice,
+      anchor=Anchor(kind="line", value=item.line),
+      **kwargs,
+    )
+    entries.append(e)
+    stats["entries"] += 1
+    resolved = False
+    if item.parsed and item.lemma:
+      for bi, tb in enumerate(page.blocks):
+        if tb.layer not in (Layer.TEXT, Layer.HEADING):
+          continue
+        start_at = cursors.get(bi, 0)
+        m = _search_line_lemma(item.lemma, tb.text, start_at)
+        if m is None:
+          continue
+        e.anchor.block_index, e.anchor.char_offset = bi, m.end()
+        e.anchor.digit_start = e.anchor.digit_end = m.end()
+        item.resolved_lemma = tb.text[m.start(): m.end()]
+        cursors[bi] = m.start() + 1
+        resolved = True
+        break
+    if resolved:
+      stats["anchored"] += 1
+    else:
+      stats["unanchored"] += 1
+  block.entries = entries
+
+
+def _anchor_teubner_band(page: Page, block: Block, registry: Registry,
+                         stats: dict[str, int]) -> None:
+  _anchor_locus_entries(
+    page, block, teubnergrammar.split_teubner_entries(block.text),
+    "parsed_teubner", teubnergrammar.parse_teubner_entry, registry, stats,
+  )
+
+
+def _anchor_bude_band(page: Page, block: Block, registry: Registry,
+                      stats: dict[str, int]) -> None:
+  _anchor_locus_entries(
+    page, block, budegrammar.split_bude_entries(block.text),
+    "parsed_bude", budegrammar.parse_bude_entry, registry, stats,
+  )
+
+
 def _anchor_paragraph_band(page: Page, block: Block, registry: Registry,
                            stats: dict[str, int]) -> None:
   """Split and anchor a paragraphed-reledmac band (juxtaposed entries,
@@ -551,6 +624,23 @@ def anchor_page(page: Page, registry: Registry | None = None) -> dict[str, int]:
           _anchor_line_band(page, block, registry, stats)
         else:
           _refuse_line_band(block, stats, decision.evidence)
+      continue
+    if registry is not None and budegrammar.looks_bude(block.text):
+      decision = budegrammar.gate_bude_band(block.text, registry)
+      if decision.accepted:
+        _anchor_bude_band(page, block, registry, stats)
+      else:
+        _refuse_named_band(
+          block, stats, decision.evidence, budegrammar.split_bude_entries)
+      continue
+    if registry is not None and teubnergrammar.looks_teubner(block.text):
+      decision = teubnergrammar.gate_teubner_band(block.text, registry)
+      if decision.accepted:
+        _anchor_teubner_band(page, block, registry, stats)
+      else:
+        _refuse_named_band(
+          block, stats, decision.evidence,
+          teubnergrammar.split_teubner_entries)
       continue
     if registry is not None and \
        paragraphgrammar.looks_paragraph_referenced(block.text):

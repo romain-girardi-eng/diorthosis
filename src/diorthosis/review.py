@@ -93,22 +93,87 @@ def _foot_geometry(pdf_path: str, page_indices: list[int]):
   return geo
 
 
-def _snippet(pdfium_page, page_h: float, boxes: list, out_png: Path,
-             scale: float = 2.2, pad: float = 4.0) -> bool:
+def _cropbox(pdfium_page) -> tuple[float, float, float, float] | None:
+  """pdfium's visible page, or None when the page has no CropBox of its own.
+
+  pdfminer (and therefore the layerer) reports line boxes in MediaBox space.
+  pdfium's ``render()`` paints the CropBox. When those rectangles differ —
+  a common class: Segrave *Insolubles* is 612×792 media against a 442×663
+  crop — a crop taken in media-space falls outside the bitmap and Pillow
+  raises ``SystemError: tile cannot extend outside image``, or, depending
+  on version, ``Coordinate 'lower' is less than 'upper'``.
+  """
+  getter = getattr(pdfium_page, "get_cropbox", None)
+  if getter is None:
+    return None
+  box = getter()
+  if box is None or len(box) != 4:
+    return None
+  return float(box[0]), float(box[1]), float(box[2]), float(box[3])
+
+
+def bitmap_crop_rect(
+    boxes: list,
+    *,
+    scale: float,
+    image_size: tuple[int, int],
+    cropbox: tuple[float, float, float, float] | None,
+    mediabox_height: float,
+    pad: float = 4.0,
+) -> tuple[int, int, int, int] | None:
+  """Map pdfminer (MediaBox) line boxes onto a pdfium (CropBox) bitmap.
+
+  Returns a Pillow ``(left, top, right, bottom)`` inside ``image_size``,
+  or None when the intersection is empty — a missing snippet, never a crash.
+  """
   if not boxes:
-    return False
+    return None
   x0 = min(b[0] for b in boxes) - pad
   y0 = min(b[1] for b in boxes) - pad
   x1 = max(b[2] for b in boxes) + pad
   y1 = max(b[3] for b in boxes) + pad
+  origin_x = 0.0
+  visible_top = mediabox_height
+  if cropbox is not None:
+    origin_x, _floor, _right, visible_top = cropbox
+  # PDF y grows up; the bitmap's grows down. Translate into crop space first.
+  left = int((x0 - origin_x) * scale)
+  top = int((visible_top - y1) * scale)
+  right = int((x1 - origin_x) * scale)
+  bottom = int((visible_top - y0) * scale)
+  width, height = image_size
+  left = max(0, min(left, width))
+  top = max(0, min(top, height))
+  right = max(0, min(right, width))
+  bottom = max(0, min(bottom, height))
+  if right <= left or bottom <= top:
+    return None
+  return left, top, right, bottom
+
+
+def _snippet(pdfium_page, page_h: float, boxes: list, out_png: Path,
+             scale: float = 2.2, pad: float = 4.0) -> bool:
+  if not boxes:
+    return False
   bitmap = pdfium_page.render(scale=scale)
-  img = bitmap.to_pil()
-  # PDF y grows upward; the bitmap's grows downward
-  left, top = max(0, int(x0 * scale)), max(0, int((page_h - y1) * scale))
-  right, bottom = int(x1 * scale), int((page_h - y0) * scale)
-  img.crop((left, top, min(right, img.width),
-            min(bottom, img.height))).save(out_png)
-  return True
+  try:
+    img = bitmap.to_pil()
+    rect = bitmap_crop_rect(
+      boxes, scale=scale, image_size=(img.width, img.height),
+      cropbox=_cropbox(pdfium_page), mediabox_height=page_h, pad=pad,
+    )
+    if rect is None:
+      return False
+    img.crop(rect).save(out_png)
+    return True
+  except Exception:  # noqa: BLE001 — a snippet must never take down review
+    # A snippet is provenance, not the review. The HTML still carries the
+    # verbatim band if the crop cannot be taken.
+    return False
+  finally:
+    close = getattr(bitmap, "close", None)
+    if close is not None:
+      close()
 
 
 def _attr_str(a) -> str:

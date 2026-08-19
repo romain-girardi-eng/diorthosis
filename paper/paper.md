@@ -109,11 +109,11 @@ a limit as untested, that is stated rather than counted as a zero.
    accounts for every one of the 6,921 source leaf entries by an explicit
    outcome — 6,797 compared, 61 refused with a named convention reason
    (the four single-chapter books, whose bands open on bare verse numbers),
-   60 uncovered, 3 unaccounted — and the identity is asserted per book and on
-   the corpus sum before the run may exit 0. It does not exit 0 today: those
-   3 unaccounted entries (Mark 6:33, John 9:11 twice) are named as fatal and
-   await human adjudication rather than being absorbed. This is evidence for
-   that edition and oracle, not for unseen conventions.
+   60 uncovered, 0 unaccounted, 3 adjudicated — and the identity is asserted
+   per book and on the corpus sum before the run may exit 0. The three
+   remaining apps (Mark 6:33, John 9:11 twice) are typed, evidence-checked
+   records rather than a silent remainder. This is evidence for that edition
+   and oracle, not for unseen conventions.
 2. **Publisher-toolchain inversion.** The Digital Latin Library's own
    reledmac PDF of `balex` gives 563 comparisons with zero errors, zero gaps
    and 17 typed divergences, and the LombardPress/SCTA toolchain PDF of

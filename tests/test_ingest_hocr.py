@@ -88,8 +88,9 @@ def test_flat_hocr_still_yields_a_block_and_claims_no_confidence(tmp_path) -> No
   [block] = doc.pages[0].blocks
   assert block.text == "Πρόλογος"
   assert block.confidence == 0.0          # no x_wconf: nothing claimed
-  assert block.layer is Layer.UNKNOWN     # ocr_header declared, not obeyed
-  assert "ocr_header" in block.evidence and "not acted on" in block.evidence
+  assert block.layer is Layer.RUNNING_HEAD  # ocr_header is page furniture
+  assert "ocr_header" in block.evidence
+  assert "honored as running_head" in block.evidence
 
 
 def test_non_hocr_input_is_refused(tmp_path) -> None:

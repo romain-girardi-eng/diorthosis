@@ -6,10 +6,10 @@ hOCR/PAGE, see the sibling adapters). Whatever produced the file, its text is
 **generative** — a recognition model's guess, not a decoding of a character
 stream — and every block is permanently marked so.
 
-Layer classification is not attempted here in P1: ALTO gives lines and word
-confidences but no typographic registers comparable to a born-digital page.
-Blocks arrive as ``UNKNOWN`` for a human or a later pass to label; honesty
-over guesswork.
+Layer classification is not guessed from geometry. When the file itself
+declares a ``Tags``/``TAGREFS`` label that names a critical-edition
+register (``apparatus``, ``translation``…), that label is honored; a
+bare ``TextBlock`` with no tag stays ``UNKNOWN``.
 
 Two things this adapter refuses before reading a single ``String``: a file it
 cannot parse (see :mod:`.errors` — a dependency's ``ParseError`` is not a
@@ -24,12 +24,33 @@ from __future__ import annotations
 import contextlib
 from pathlib import Path
 
-from ..model import Block, Document, Layer, Page, Source
+from ..model import Block, Document, Page, Source
+from .declared import layer_from_declared_type
 from .errors import SourceRefused, parse_xml
 
 
 def _local(tag: str) -> str:
   return tag.rsplit("}", 1)[-1]
+
+
+def _alto_tag_labels(root) -> dict[str, str]:
+  """``Tags/OtherTag@ID → LABEL`` (eScriptorium / OCR-D flavour)."""
+  labels: dict[str, str] = {}
+  for el in root.iter():
+    if _local(el.tag) not in ("OtherTag", "LayoutTag"):
+      continue
+    tag_id = el.get("ID")
+    label = el.get("LABEL") or el.get("TYPE") or ""
+    if tag_id and label:
+      labels[tag_id] = label
+  return labels
+
+
+def _alto_block_label(tb, labels: dict[str, str]) -> str | None:
+  for ref in (tb.get("TAGREFS") or "").split():
+    if ref in labels:
+      return labels[ref]
+  return tb.get("TYPE") or None
 
 
 def ingest_alto(paths: list[str | Path]) -> Document:
@@ -40,6 +61,7 @@ def ingest_alto(paths: list[str | Path]) -> Document:
     if _local(root.tag) != "alto":
       raise SourceRefused(
         f"{p}: not ALTO — root is <{_local(root.tag)}>, expected <alto>")
+    labels = _alto_tag_labels(root)
     page = Page(index=i, printed_page=None)
     for tb in root.iter():
       if _local(tb.tag) != "TextBlock":
@@ -63,13 +85,17 @@ def ingest_alto(paths: list[str | Path]) -> Document:
           lines.append("".join(words).strip())
       if not lines:
         continue
+      declared = _alto_block_label(tb, labels)
+      evidence = "ALTO TextBlock; OCR output — text is generated, not decoded"
+      if declared:
+        evidence += f"; TAG/TYPE={declared}"
       page.blocks.append(Block(
-        layer=Layer.UNKNOWN,
+        layer=layer_from_declared_type(declared),
         text="\n".join(lines),
         source=Source.OCR,
         generative=True,
         confidence=(sum(confs) / len(confs)) if confs else 0.0,
-        evidence="ALTO TextBlock; OCR output — text is generated, not decoded",
+        evidence=evidence,
       ))
     doc.pages.append(page)
   return doc
